@@ -17,6 +17,9 @@ jobs:
         with:
           node-version: '23.x'
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Build
         run: yarn && yarn build
 
