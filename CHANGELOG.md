@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+# [1.3.0](https://github.com/SamikBeach/backend/compare/1.2.0...1.3.0) (2024-12-28)
+
+
+### Features
+
+* cookie-parser package 설치 & 적용 ([81ca950](https://github.com/SamikBeach/backend/commit/81ca950d62064953fad397b0b9d73fe11cb65e7f))
+
 # [1.2.0](https://github.com/SamikBeach/backend/compare/1.1.0...1.2.0) (2024-12-27)
 
 
