@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+# [1.4.0](https://github.com/SamikBeach/backend/compare/1.3.0...1.4.0) (2024-12-29)
+
+
+### Features
+
+* cors origin 설정 ([00afec7](https://github.com/SamikBeach/backend/commit/00afec7be958c710eec94d3d0e37293ce7791e2d))
+
 # [1.3.0](https://github.com/SamikBeach/backend/compare/1.2.0...1.3.0) (2024-12-28)
 
 
