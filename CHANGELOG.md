@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+# [1.5.0](https://github.com/SamikBeach/backend/compare/1.4.0...1.5.0) (2024-12-30)
+
+
+### Features
+
+* logger 옵션 추가 ([93daf6d](https://github.com/SamikBeach/backend/commit/93daf6ddd333e51a4bd51a6db752d62a5ec9565c))
+
 # [1.4.0](https://github.com/SamikBeach/backend/compare/1.3.0...1.4.0) (2024-12-29)
 
 
