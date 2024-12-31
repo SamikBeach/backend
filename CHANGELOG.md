@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+# [1.6.0](https://github.com/SamikBeach/backend/compare/1.5.0...1.6.0) (2024-12-31)
+
+
+### Features
+
+* global ValidationPipe 적용 ([4dcec0d](https://github.com/SamikBeach/backend/commit/4dcec0df8cde371d36ede83f5444502b4a53bd1e))
+
 # [1.5.0](https://github.com/SamikBeach/backend/compare/1.4.0...1.5.0) (2024-12-30)
 
 
