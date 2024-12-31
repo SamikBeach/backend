@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { VersioningType } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
@@ -35,6 +35,17 @@ async function bootstrap() {
     type: VersioningType.URI,
     defaultVersion: '2',
   });
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
   await app.listen(3000);
 }
