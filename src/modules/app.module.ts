@@ -12,6 +12,7 @@ import { AuthorBook } from '@entities/AuthorBook';
 import { UserAuthor } from '@entities/UserAuthor';
 import { Comment } from '@entities/Comment';
 import { Review } from '@entities/Review';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { Review } from '@entities/Review';
       synchronize: process.env.NODE_ENV !== 'production',
     }),
     AuthModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
