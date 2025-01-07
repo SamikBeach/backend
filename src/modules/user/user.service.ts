@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -49,19 +50,24 @@ export class UserService {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
     }
 
-    // 닉네임 중복 확인
+    // 닉네임 변경
     if (updateUserDto.nickname) {
       const existingNickname = await this.userRepository.findOne({
         where: { nickname: updateUserDto.nickname },
       });
 
       if (existingNickname && existingNickname.id !== userId) {
-        throw new UnauthorizedException('이미 사용 중인 닉네임입니다.');
+        throw new ConflictException('이미 사용 중인 닉네임입니다.');
       }
+
+      await this.userRepository.update(userId, {
+        nickname: updateUserDto.nickname,
+        updatedAt: new Date(),
+      });
     }
 
-    // 비밀번호 변경 처리
-    if (updateUserDto.password) {
+    // 비밀번호 변경
+    if (updateUserDto.newPassword) {
       const isPasswordValid = await bcrypt.compare(
         updateUserDto.currentPassword,
         user.password,
@@ -71,20 +77,16 @@ export class UserService {
         throw new UnauthorizedException('현재 비밀번호가 일치하지 않습니다.');
       }
 
-      updateUserDto.password = await bcrypt.hash(
-        updateUserDto.password,
+      const hashedPassword = await bcrypt.hash(
+        updateUserDto.newPassword,
         Number(this.configService.get('HASH_ROUNDS')),
       );
+
+      await this.userRepository.update(userId, {
+        password: hashedPassword,
+        updatedAt: new Date(),
+      });
     }
-
-    // 업데이트할 필드 준비
-    const updateData: Partial<User> = {
-      ...(updateUserDto.nickname && { nickname: updateUserDto.nickname }),
-      ...(updateUserDto.password && { password: updateUserDto.password }),
-      updatedAt: new Date(),
-    };
-
-    await this.userRepository.update(userId, updateData);
 
     return this.findById(userId);
   }

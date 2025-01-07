@@ -17,6 +17,7 @@ import {
 } from './dto/auth.dto';
 import { Response, Request } from 'express';
 import { User } from '@entities/User';
+import { Public } from '@common/decorators/public.decorator';
 
 /**
  * 인증 관련 컨트롤러
@@ -31,6 +32,7 @@ export class AuthController {
    * @param emailVerificationDto 이메일 정보를 담은 DTO
    * @returns 인증 코드 발송 결과
    */
+  @Public()
   @Post('email/verify/send')
   async sendVerificationEmail(
     @Body() emailVerificationDto: EmailVerificationDto,
@@ -43,6 +45,7 @@ export class AuthController {
    * @param verifyEmailDto 이메일과 인증 코드를 담은 DTO
    * @returns 인증 결과
    */
+  @Public()
   @Post('email/verify')
   async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
     return this.authService.verifyEmail(verifyEmailDto);
@@ -53,6 +56,7 @@ export class AuthController {
    * @param checkEmailDto 이메일 정보를 담은 DTO
    * @returns 이메일 사용 가능 여부
    */
+  @Public()
   @Post('register/check-email')
   async checkEmail(@Body() checkEmailDto: CheckEmailDto) {
     return this.authService.checkEmail(checkEmailDto.email);
@@ -64,6 +68,7 @@ export class AuthController {
    * @param initiateRegistrationDto 회원가입 정보를 담은 DTO
    * @returns 회원가입 초기화 결과
    */
+  @Public()
   @Post('register/initiate')
   async initiateRegistration(
     @Body() initiateRegistrationDto: InitiateRegistrationDto,
@@ -77,6 +82,7 @@ export class AuthController {
    * @param completeRegistrationDto 이메일과 인증코드를 담은 DTO
    * @returns 회원가입 완료 결과와 인증 토큰
    */
+  @Public()
   @Post('register/complete')
   async completeRegistration(
     @Body() completeRegistrationDto: CompleteRegistrationDto,
@@ -91,6 +97,7 @@ export class AuthController {
    * @returns 액세스 토큰과 리프레시 토큰
    * @throws UnauthorizedException 인증 실패시
    */
+  @Public()
   @Post('login/email')
   async login(
     @Body() loginDto: LoginDto,
@@ -132,6 +139,7 @@ export class AuthController {
    * @param res Express Response 객체
    * @returns 액세스 토큰
    */
+  @Public()
   @Post('login/google')
   async googleLogin(
     @Body() googleAuthDto: { code: string },
@@ -154,6 +162,7 @@ export class AuthController {
    * 리프레시 토큰으로 새로운 액세스 토큰을 발급합니다.
    * 리프레시 토큰은 쿠키에서 추출합니다.
    */
+  @Public()
   @Post('refresh')
   async refresh(@Req() req: Request) {
     const refreshToken = req.cookies['refreshToken'];
