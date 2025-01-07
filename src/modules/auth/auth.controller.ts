@@ -5,6 +5,7 @@ import {
   Res,
   UnauthorizedException,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
@@ -17,7 +18,7 @@ import {
 } from './dto/auth.dto';
 import { Response, Request } from 'express';
 import { User } from '@entities/User';
-import { Public } from '@common/decorators/public.decorator';
+import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 
 /**
  * 인증 관련 컨트롤러
@@ -32,7 +33,6 @@ export class AuthController {
    * @param emailVerificationDto 이메일 정보를 담은 DTO
    * @returns 인증 코드 발송 결과
    */
-  @Public()
   @Post('email/verify/send')
   async sendVerificationEmail(
     @Body() emailVerificationDto: EmailVerificationDto,
@@ -45,7 +45,6 @@ export class AuthController {
    * @param verifyEmailDto 이메일과 인증 코드를 담은 DTO
    * @returns 인증 결과
    */
-  @Public()
   @Post('email/verify')
   async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
     return this.authService.verifyEmail(verifyEmailDto);
@@ -56,7 +55,6 @@ export class AuthController {
    * @param checkEmailDto 이메일 정보를 담은 DTO
    * @returns 이메일 사용 가능 여부
    */
-  @Public()
   @Post('register/check-email')
   async checkEmail(@Body() checkEmailDto: CheckEmailDto) {
     return this.authService.checkEmail(checkEmailDto.email);
@@ -68,7 +66,6 @@ export class AuthController {
    * @param initiateRegistrationDto 회원가입 정보를 담은 DTO
    * @returns 회원가입 초기화 결과
    */
-  @Public()
   @Post('register/initiate')
   async initiateRegistration(
     @Body() initiateRegistrationDto: InitiateRegistrationDto,
@@ -82,7 +79,6 @@ export class AuthController {
    * @param completeRegistrationDto 이메일과 인증코드를 담은 DTO
    * @returns 회원가입 완료 결과와 인증 토큰
    */
-  @Public()
   @Post('register/complete')
   async completeRegistration(
     @Body() completeRegistrationDto: CompleteRegistrationDto,
@@ -97,7 +93,6 @@ export class AuthController {
    * @returns 액세스 토큰과 리프레시 토큰
    * @throws UnauthorizedException 인증 실패시
    */
-  @Public()
   @Post('login/email')
   async login(
     @Body() loginDto: LoginDto,
@@ -139,7 +134,6 @@ export class AuthController {
    * @param res Express Response 객체
    * @returns 액세스 토큰
    */
-  @Public()
   @Post('login/google')
   async googleLogin(
     @Body() googleAuthDto: { code: string },
@@ -162,7 +156,6 @@ export class AuthController {
    * 리프레시 토큰으로 새로운 액세스 토큰을 발급합니다.
    * 리프레시 토큰은 쿠키에서 추출합니다.
    */
-  @Public()
   @Post('refresh')
   async refresh(@Req() req: Request) {
     const refreshToken = req.cookies['refreshToken'];
@@ -175,5 +168,25 @@ export class AuthController {
     const { accessToken } = await this.authService.refreshTokens(refreshToken);
 
     return { accessToken };
+  }
+
+  /**
+   * 로그아웃 API
+   * 리프레시 토큰 쿠키를 제거하고 클라이언트에서 액세스 토큰을 삭제하도록 합니다.
+   */
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  async logout(@Res({ passthrough: true }) res: Response) {
+    const result = await this.authService.logout();
+
+    // 리프레시 토큰 쿠키 제거
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    return result;
   }
 }

@@ -402,4 +402,15 @@ export class AuthService {
       throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.');
     }
   }
+
+  /**
+   * 로그아웃 처리
+   * 클라이언트에서 액세스 토큰을 삭제하도록 action을 전달합니다.
+   */
+  async logout(): Promise<{ message: string; action: string }> {
+    return {
+      message: '로그아웃되었습니다.',
+      action: 'CLEAR_AUTH',
+    };
+  }
 }
