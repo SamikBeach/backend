@@ -4,6 +4,8 @@ import {
   Body,
   Res,
   UnauthorizedException,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
@@ -14,8 +16,9 @@ import {
   InitiateRegistrationDto,
   CompleteRegistrationDto,
 } from './dto/auth.dto';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { User } from '@entities/User';
+import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 
 /**
  * 인증 관련 컨트롤러
@@ -147,5 +150,43 @@ export class AuthController {
     });
 
     return { accessToken: tokens.accessToken };
+  }
+
+  /**
+   * 리프레시 토큰으로 새로운 액세스 토큰을 발급합니다.
+   * 리프레시 토큰은 쿠키에서 추출합니다.
+   */
+  @Post('refresh')
+  async refresh(@Req() req: Request) {
+    const refreshToken = req.cookies['refreshToken'];
+
+    if (!refreshToken) {
+      throw new UnauthorizedException('리프레시 토큰이 없습니다.');
+    }
+
+    // 새로운 액세스 토큰만 발급
+    const { accessToken } = await this.authService.refreshTokens(refreshToken);
+
+    return { accessToken };
+  }
+
+  /**
+   * 로그아웃 API
+   * 리프레시 토큰 쿠키를 제거하고 클라이언트에서 액세스 토큰을 삭제하도록 합니다.
+   */
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  async logout(@Res({ passthrough: true }) res: Response) {
+    const result = await this.authService.logout();
+
+    // 리프레시 토큰 쿠키 제거
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    return result;
   }
 }

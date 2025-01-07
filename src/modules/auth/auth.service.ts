@@ -363,4 +363,54 @@ export class AuthService {
       await queryRunner.release();
     }
   }
+
+  /**
+   * 리프레시 토큰을 검증하고 새로운 토큰 쌍을 발급합니다.
+   */
+  async refreshTokens(refreshToken: string): Promise<{ accessToken: string }> {
+    try {
+      // 리프레시 토큰 검증
+      const payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.configService.get('REFRESH_TOKEN_SECRET'),
+      });
+
+      // 사용자 조회
+      const user = await this.userRepository.findOne({
+        where: { id: payload.sub },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException('유효하지 않은 토큰입니다.');
+      }
+
+      if (!user.verified) {
+        throw new UnauthorizedException('이메일 인증이 필요합니다.');
+      }
+
+      // 새로운 액세스 토큰만 생성
+      const newPayload: TokenPayload = { email: user.email, sub: user.id };
+      const accessToken = this.jwtService.sign(newPayload, {
+        secret: this.configService.get('ACCESS_TOKEN_SECRET'),
+        expiresIn: this.ACCESS_TOKEN_EXPIRY,
+      });
+
+      return { accessToken };
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.');
+    }
+  }
+
+  /**
+   * 로그아웃 처리
+   * 클라이언트에서 액세스 토큰을 삭제하도록 action을 전달합니다.
+   */
+  async logout(): Promise<{ message: string; action: string }> {
+    return {
+      message: '로그아웃되었습니다.',
+      action: 'CLEAR_AUTH',
+    };
+  }
 }
