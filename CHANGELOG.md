@@ -1,5 +1,19 @@
 # 🚦 CHANGELOG
 
+# [1.7.0](https://github.com/SamikBeach/backend/compare/1.6.0...1.7.0) (2025-01-07)
+
+
+### Bug Fixes
+
+* .gitignore & 포트 번호 수정 ([d5df7d3](https://github.com/SamikBeach/backend/commit/d5df7d3de29f8cdb701e681c717168f41538f3f3))
+
+
+### Features
+
+* tsconfig.json 수정(path alias 추가) ([150a88e](https://github.com/SamikBeach/backend/commit/150a88e5a33f40fe55dc2e80509f03079cc9a8c2))
+* Typeorm 모듈 연결 ([ad2dc8f](https://github.com/SamikBeach/backend/commit/ad2dc8fce1654b27bbc2f8411da4f8ef4c1f597c))
+* typeorm-model-generator로 entities 추가 ([8c6d46a](https://github.com/SamikBeach/backend/commit/8c6d46a6055bc42c624b1bb35dbd69c1c8f994f7))
+
 # [1.6.0](https://github.com/SamikBeach/backend/compare/1.5.0...1.6.0) (2024-12-31)
 
 
