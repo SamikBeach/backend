@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Put,
   Delete,
   Body,
   UseGuards,
@@ -16,6 +15,7 @@ import { User } from '@entities/User';
 import { CurrentUser } from '@common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { Response } from 'express';
+import { Paginate, PaginateQuery } from 'nestjs-paginate';
 
 @UseGuards(JwtAuthGuard)
 @Controller('user')
@@ -82,5 +82,32 @@ export class UserController {
     });
 
     return result;
+  }
+
+  /**
+   * 사용자를 검색합니다.
+   *
+   * @param query PaginateQuery - nestjs-paginate의 쿼리 파라미터
+   * @example
+   * 1. 기본 페이지네이션:
+   * GET /user/search?page=1&limit=10
+   *
+   * 2. 정렬:
+   * GET /user/search?sortBy=createdAt:DESC
+   *
+   * 3. 통합 검색 (이메일, 닉네임):
+   * GET /user/search?search=test
+   *
+   * 4. 필터링:
+   * GET /user/search?filter.email=$ilike:test@
+   * GET /user/search?filter.nickname=$ilike:test
+   * GET /user/search?filter.verified=true
+   *
+   * 5. 복합 쿼리:
+   * GET /user/search?page=1&limit=10&search=test&sortBy=createdAt:DESC&filter.verified=true
+   */
+  @Get('search')
+  async search(@Paginate() query: PaginateQuery) {
+    return this.userService.search(query);
   }
 }

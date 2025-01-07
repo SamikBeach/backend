@@ -3232,6 +3232,7 @@ __metadata:
     jest: "npm:^29.5.0"
     lodash: "npm:^4.17.21"
     mysql2: "npm:^3.12.0"
+    nestjs-paginate: "npm:^10.0.0"
     nodemailer: "npm:^6.9.16"
     prettier: "npm:^3.0.0"
     reflect-metadata: "npm:^0.2.0"
@@ -8983,6 +8984,21 @@ __metadata:
   version: 1.0.0
   resolution: "nerf-dart@npm:1.0.0"
   checksum: 10c0/e19e17d7bd91dfcb1acd07cbdd8df1f0613f3408227538fe91793c6dfcf58e95b5f18b88b4a13e9b31587e89a119fd76d6df4b8d8c65564dd2c409d787819583
+  languageName: node
+  linkType: hard
+
+"nestjs-paginate@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "nestjs-paginate@npm:10.0.0"
+  dependencies:
+    lodash: "npm:^4.17.21"
+  peerDependencies:
+    "@nestjs/common": ^10.0.0
+    "@nestjs/swagger": ^8.0.7
+    express: ^4.0.0
+    fastify: ^4.0.0
+    typeorm: ^0.3.17
+  checksum: 10c0/e064d53ad5ff3fb3a9415a6079b3716dcd980bd7ae8833fdf14a9bfe271ea63069b058e4477bd0cd51d860e18482b54489d9633b32327f77f1700a8a4ce3b865
   languageName: node
   linkType: hard
 
