@@ -15,16 +15,23 @@ export class User {
   @Column('varchar', { name: 'nickname', length: 100 })
   nickname: string;
 
-  @Column('int', { name: 'verification_code', nullable: true })
-  verificationCode: number | null;
-
   @Column('varchar', { name: 'password', length: 200 })
   password: string;
 
-  @Column('tinyint', { name: 'verified', width: 1 })
+  @Column('tinyint', {
+    name: 'verified',
+    width: 1,
+    transformer: {
+      to: (value: boolean) => (value ? 1 : 0),
+      from: (value: number) => Boolean(value),
+    },
+  })
   verified: boolean;
 
-  @Column('datetime', { name: 'created_at' })
+  @Column('datetime', {
+    name: 'created_at',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   createdAt: Date;
 
   @Column('datetime', { name: 'updated_at', nullable: true })
