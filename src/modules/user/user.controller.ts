@@ -15,6 +15,7 @@ import { User } from '@entities/User';
 import { CurrentUser } from '@common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -23,7 +24,6 @@ export class UserController {
    * 현재 로그인한 사용자의 정보를 조회합니다.
    */
   @Get('me')
-  @UseGuards(JwtAuthGuard)
   async getMyProfile(@CurrentUser() user: User) {
     return this.userService.findById(user.id);
   }
