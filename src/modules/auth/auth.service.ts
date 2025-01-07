@@ -69,13 +69,14 @@ export class AuthService {
       throw new UnauthorizedException('이메일 인증이 필요합니다.');
     }
 
+    console.log(user.password);
+    console.log(password);
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
     }
 
-    const { password: _, ...result } = user;
-    return result;
+    return user;
   }
 
   /**
@@ -107,39 +108,51 @@ export class AuthService {
    * 구글 로그인
    */
   async googleLogin(code: string): Promise<AuthTokens> {
-    // 구글 토큰 검증
-    const { tokens } = await this.googleClient.getToken(code);
-    const ticket = await this.googleClient.verifyIdToken({
-      idToken: tokens.id_token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
+    try {
+      // 구글 토큰 검증
+      const { tokens } = await this.googleClient.getToken(code);
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken: tokens.id_token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
 
-    const payload = ticket.getPayload();
-    if (!payload?.email) {
-      throw new UnauthorizedException('구글 인증에 실패했습니다.');
-    }
+      const payload = ticket.getPayload();
+      if (!payload?.email) {
+        throw new UnauthorizedException('구글 인증에 실패했습니다.');
+      }
 
-    // 사용자 조회 또는 생성
-    let user = (await this.userRepository.findOne({
-      where: { email: payload.email },
-    })) as UserWithGoogle;
+      // 사용자 조회
+      let user = (await this.userRepository.findOne({
+        where: { email: payload.email },
+      })) as UserWithGoogle;
 
-    if (user && !user.googleId) {
-      throw new UnauthorizedException(
-        '이미 이메일/비밀번호로 가입된 계정입니다.',
-      );
-    }
+      // 이미 가입된 회원이고 구글 계정으로 가입한 경우
+      if (user && user.googleId) {
+        return this.generateTokens(user);
+      }
 
-    if (!user) {
+      // 이미 가입된 회원이지만 이메일/비밀번호로 가입한 경우
+      if (user && !user.googleId) {
+        throw new UnauthorizedException(
+          '이미 이메일/비밀번호로 가입된 계정입니다.',
+        );
+      }
+
+      // 가입되지 않은 회원인 경우 회원가입 후 로그인
       user = await this.userRepository.save({
         email: payload.email,
         nickname: payload.name,
         googleId: payload.sub,
         verified: true,
       } as Partial<UserWithGoogle>);
-    }
 
-    return this.generateTokens(user);
+      return this.generateTokens(user);
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new UnauthorizedException('유효하지 않은 구글 인증 코드입니다.');
+    }
   }
 
   /**
@@ -321,6 +334,14 @@ export class AuthService {
 
       const result = await queryRunner.manager.findOne(User, {
         where: { id: user.id },
+        select: [
+          'id',
+          'email',
+          'nickname',
+          'verified',
+          'createdAt',
+          'updatedAt',
+        ],
       });
 
       // 토큰 생성
