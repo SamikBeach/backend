@@ -7,10 +7,12 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
-  CreateUserDto,
   EmailVerificationDto,
   LoginDto,
   VerifyEmailDto,
+  CheckEmailDto,
+  InitiateRegistrationDto,
+  CompleteRegistrationDto,
 } from './dto/auth.dto';
 import { Response } from 'express';
 import { User } from '@entities/User';
@@ -31,9 +33,23 @@ export class AuthController {
     return this.authService.verifyEmail(verifyEmailDto);
   }
 
-  @Post('register')
-  async register(@Body() createUserDto: CreateUserDto) {
-    return this.authService.register(createUserDto);
+  @Post('register/check-email')
+  async checkEmail(@Body() checkEmailDto: CheckEmailDto) {
+    return this.authService.checkEmail(checkEmailDto.email);
+  }
+
+  @Post('register/initiate')
+  async initiateRegistration(
+    @Body() initiateRegistrationDto: InitiateRegistrationDto,
+  ) {
+    return this.authService.initiateRegistration(initiateRegistrationDto);
+  }
+
+  @Post('register/complete')
+  async completeRegistration(
+    @Body() completeRegistrationDto: CompleteRegistrationDto,
+  ) {
+    return this.authService.completeRegistration(completeRegistrationDto);
   }
 
   @Post('login')

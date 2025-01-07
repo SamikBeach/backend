@@ -4,6 +4,14 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { User } from '@entities/User';
+import { Author } from '@entities/Author';
+import { Book } from '@entities/Book';
+import { UserBook } from '@entities/UserBook';
+import { AuthorBook } from '@entities/AuthorBook';
+import { UserAuthor } from '@entities/UserAuthor';
+import { Comment } from '@entities/Comment';
+import { Review } from '@entities/Review';
 
 @Module({
   imports: [
@@ -21,7 +29,16 @@ import { AuthModule } from './auth/auth.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+      entities: [
+        Author,
+        Book,
+        AuthorBook,
+        User,
+        UserBook,
+        UserAuthor,
+        Comment,
+        Review,
+      ],
       synchronize: process.env.NODE_ENV !== 'production',
     }),
     AuthModule,

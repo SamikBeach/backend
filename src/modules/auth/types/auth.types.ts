@@ -11,4 +11,9 @@ export interface AuthTokens {
 export interface EmailVerification {
   code: string;
   expires: Date;
+  userData?: {
+    email: string;
+    password: string;
+    nickname: string;
+  };
 }

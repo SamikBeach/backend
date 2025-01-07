@@ -8,7 +8,11 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../entities/User';
-import { CreateUserDto, VerifyEmailDto } from './dto/auth.dto';
+import {
+  CompleteRegistrationDto,
+  InitiateRegistrationDto,
+  VerifyEmailDto,
+} from './dto/auth.dto';
 import * as bcrypt from 'bcrypt';
 import { OAuth2Client } from 'google-auth-library';
 import { ConfigService } from '@nestjs/config';
@@ -79,11 +83,14 @@ export class AuthService {
    */
   private generateTokens(user: User): AuthTokens {
     const payload: TokenPayload = { email: user.email, sub: user.id };
+
     return {
       accessToken: this.jwtService.sign(payload, {
+        secret: this.configService.get('ACCESS_TOKEN_SECRET'),
         expiresIn: this.ACCESS_TOKEN_EXPIRY,
       }),
       refreshToken: this.jwtService.sign(payload, {
+        secret: this.configService.get('REFRESH_TOKEN_SECRET'),
         expiresIn: this.REFRESH_TOKEN_EXPIRY,
       }),
     };
@@ -189,45 +196,150 @@ export class AuthService {
       throw new UnauthorizedException('만료된 인증 코드입니다.');
     }
 
+    // 인증 코드 삭제
     this.verificationCodes.delete(verifyEmailDto.email);
+
+    // 사용자의 verified 상태를 true로 업데이트
+    await this.userRepository.update(
+      { email: verifyEmailDto.email },
+      { verified: true },
+    );
+
     return { verified: true };
   }
 
   /**
-   * 회원가입
+   * 1단계: 이메일 중복 및 유효성 검사
    */
-  async register(
-    createUserDto: CreateUserDto,
-  ): Promise<Omit<User, 'password'>> {
-    // 이메일 중복 확인
+  async checkEmail(email: string): Promise<{ available: boolean }> {
     const existingUser = await this.userRepository.findOne({
-      where: { email: createUserDto.email },
+      where: { email },
     });
 
     if (existingUser) {
-      throw new UnauthorizedException('이미 존재하는 이메일입니다.');
+      throw new UnauthorizedException('이미 사용 중인 이메일입니다.');
     }
 
-    // 이메일 인증 확인
-    const verification = await this.verifyEmail({
-      email: createUserDto.email,
-      code: createUserDto.verificationCode,
+    return { available: true };
+  }
+
+  /**
+   * 2단계: 회원정보 입력 및 인증메일 발송
+   */
+  async initiateRegistration(
+    initiateRegistrationDto: InitiateRegistrationDto,
+  ): Promise<{ message: string }> {
+    // 이메일 중복 확인
+    const existingEmail = await this.userRepository.findOne({
+      where: { email: initiateRegistrationDto.email },
     });
 
-    if (!verification.verified) {
-      throw new UnauthorizedException('이메일 인증이 필요합니다.');
+    if (existingEmail) {
+      throw new UnauthorizedException('이미 가입된 이메일입니다.');
     }
 
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    // 닉네임 중복 확인
+    const existingNickname = await this.userRepository.findOne({
+      where: { nickname: initiateRegistrationDto.nickname },
+    });
 
-    const user = await this.userRepository.save({
-      email: createUserDto.email,
-      nickname: createUserDto.name,
-      password: hashedPassword,
-      verified: true,
-    } as Partial<User>);
+    if (existingNickname) {
+      throw new UnauthorizedException('이미 사용 중인 닉네임입니다.');
+    }
 
-    const { password: _, ...result } = user;
-    return result;
+    // 임시 사용자 정보 저장 (Map 또는 Redis 사용 권장)
+    const tempUserData = {
+      email: initiateRegistrationDto.email,
+      password: await bcrypt.hash(
+        initiateRegistrationDto.password,
+        Number(this.configService.get('HASH_ROUNDS')),
+      ),
+      nickname: initiateRegistrationDto.nickname,
+    };
+
+    // 이메일 인증 코드 발송
+    await this.sendVerificationEmail(initiateRegistrationDto.email);
+
+    // 임시 저장소에 사용자 정보 저장
+    this.verificationCodes.set(initiateRegistrationDto.email, {
+      ...this.verificationCodes.get(initiateRegistrationDto.email),
+      userData: tempUserData,
+    });
+
+    return { message: '인증 코드가 이메일로 전송되었습니다.' };
+  }
+
+  /**
+   * 3단계: 이메일 인증, 회원가입 완료 및 로그인 처리
+   */
+  async completeRegistration(
+    completeRegistrationDto: CompleteRegistrationDto,
+  ): Promise<{ user: Omit<User, 'password'>; tokens: AuthTokens }> {
+    const verification = this.verificationCodes.get(
+      completeRegistrationDto.email,
+    );
+
+    if (
+      !verification ||
+      verification.code !== completeRegistrationDto.verificationCode
+    ) {
+      throw new UnauthorizedException('잘못된 인증 코드입니다.');
+    }
+
+    if (verification.expires < new Date()) {
+      throw new UnauthorizedException('만료된 인증 코드입니다.');
+    }
+
+    const userData = verification.userData;
+    if (!userData) {
+      throw new UnauthorizedException(
+        '회원가입 정보가 없습니다. 처음부터 다시 시도해주세요.',
+      );
+    }
+
+    // 이미 가입된 이메일 체크
+    const existingUser = await this.userRepository.findOne({
+      where: { email: completeRegistrationDto.email },
+    });
+
+    if (existingUser) {
+      throw new UnauthorizedException('이미 가입된 이메일입니다.');
+    }
+
+    // 트랜잭션 시작
+    const queryRunner =
+      this.userRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 사용자 생성
+      const user = await queryRunner.manager.save(User, {
+        ...userData,
+        verified: true,
+      });
+
+      const result = await queryRunner.manager.findOne(User, {
+        where: { id: user.id },
+      });
+
+      // 토큰 생성
+      const tokens = this.generateTokens(user);
+
+      await queryRunner.commitTransaction();
+
+      // 트랜잭션이 성공적으로 완료된 후에 인증 정보 삭제
+      this.verificationCodes.delete(completeRegistrationDto.email);
+
+      return {
+        user: result,
+        tokens,
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException('회원가입에 실패했습니다.');
+    } finally {
+      await queryRunner.release();
+    }
   }
 }
