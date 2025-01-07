@@ -11,12 +11,21 @@ import { UpdateUserDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
+import { UserBook } from '@entities/UserBook';
+import { UserAuthor } from '@entities/UserAuthor';
+import { Review } from '@entities/Review';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(UserBook)
+    private readonly userBookRepository: Repository<UserBook>,
+    @InjectRepository(UserAuthor)
+    private readonly userAuthorRepository: Repository<UserAuthor>,
+    @InjectRepository(Review)
+    private readonly reviewRepository: Repository<Review>,
     private readonly configService: ConfigService,
   ) {}
 
@@ -161,6 +170,42 @@ export class UserService {
         verified: [FilterOperator.EQ],
       },
       maxLimit: 100,
+    });
+  }
+
+  /**
+   * 사용자가 좋아하는 책 목록을 조회합니다.
+   */
+  async getFavoriteBooks(userId: number, query: PaginateQuery) {
+    return paginate(query, this.userBookRepository, {
+      sortableColumns: ['id'],
+      defaultSortBy: [['id', 'DESC']],
+      relations: ['book', 'book.authorBooks', 'book.authorBooks.author'],
+      where: { userId },
+    });
+  }
+
+  /**
+   * 사용자가 좋아하는 저자 목록을 조회합니다.
+   */
+  async getFavoriteAuthors(userId: number, query: PaginateQuery) {
+    return paginate(query, this.userAuthorRepository, {
+      sortableColumns: ['id'],
+      defaultSortBy: [['id', 'DESC']],
+      relations: ['author'],
+      where: { userId },
+    });
+  }
+
+  /**
+   * 사용자가 작성한 리뷰 목록을 조회합니다.
+   */
+  async getReviews(userId: number, query: PaginateQuery) {
+    return paginate(query, this.reviewRepository, {
+      sortableColumns: ['id', 'createdAt', 'updatedAt'],
+      defaultSortBy: [['createdAt', 'DESC']],
+      relations: ['book', 'book.authorBooks', 'book.authorBooks.author'],
+      where: { userId },
     });
   }
 }

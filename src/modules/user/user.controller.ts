@@ -110,4 +110,43 @@ export class UserController {
   async search(@Paginate() query: PaginateQuery) {
     return this.userService.search(query);
   }
+
+  /**
+   * 사용자가 좋아하는 책 목록을 조회합니다.
+   * @param user 현재 로그인한 사용자
+   * @param query 페이지네이션 쿼리
+   */
+  @Get('me/books')
+  async getMyFavoriteBooks(
+    @CurrentUser() user: User,
+    @Paginate() query: PaginateQuery,
+  ) {
+    return this.userService.getFavoriteBooks(user.id, query);
+  }
+
+  /**
+   * 사용자가 좋아하는 저자 목록을 조회합니다.
+   * @param user 현재 로그인한 사용자
+   * @param query 페이지네이션 쿼리
+   */
+  @Get('me/authors')
+  async getMyFavoriteAuthors(
+    @CurrentUser() user: User,
+    @Paginate() query: PaginateQuery,
+  ) {
+    return this.userService.getFavoriteAuthors(user.id, query);
+  }
+
+  /**
+   * 사용자가 작성한 리뷰 목록을 조회합니다.
+   * @param user 현재 로그인한 사용자
+   * @param query 페이지네이션 쿼리
+   */
+  @Get('me/reviews')
+  async getMyReviews(
+    @CurrentUser() user: User,
+    @Paginate() query: PaginateQuery,
+  ) {
+    return this.userService.getReviews(user.id, query);
+  }
 }
