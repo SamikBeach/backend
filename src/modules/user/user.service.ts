@@ -94,7 +94,9 @@ export class UserService {
   /**
    * 사용자 계정을 삭제합니다.
    */
-  async deleteUser(userId: number): Promise<{ message: string }> {
+  async deleteUser(
+    userId: number,
+  ): Promise<{ message: string; action: string }> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
@@ -105,6 +107,9 @@ export class UserService {
 
     await this.userRepository.softDelete(userId);
 
-    return { message: '회원 탈퇴가 완료되었습니다.' };
+    return {
+      message: '회원 탈퇴가 완료되었습니다.',
+      action: 'CLEAR_AUTH', // 클라이언트에서 액세스 토큰을 삭제하도록 알림
+    };
   }
 }

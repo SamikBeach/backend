@@ -8,12 +8,14 @@ import {
   UnauthorizedException,
   Patch,
   BadRequestException,
+  Res,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/user.dto';
 import { User } from '@entities/User';
 import { CurrentUser } from '@common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+import { Response } from 'express';
 
 @UseGuards(JwtAuthGuard)
 @Controller('user')
@@ -65,7 +67,20 @@ export class UserController {
    * 회원 탈퇴를 처리합니다.
    */
   @Delete('me')
-  async deleteMyAccount(@CurrentUser() user: User) {
-    return this.userService.deleteUser(user.id);
+  async deleteMyAccount(
+    @CurrentUser() user: User,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.userService.deleteUser(user.id);
+
+    // 리프레시 토큰 쿠키 제거
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    return result;
   }
 }
