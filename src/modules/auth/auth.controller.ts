@@ -11,7 +11,7 @@ import {
   EmailVerificationDto,
   LoginDto,
   VerifyEmailDto,
-} from './dto/create-user.dto';
+} from './dto/auth.dto';
 import { Response } from 'express';
 import { User } from '@entities/User';
 

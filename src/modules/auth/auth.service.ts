@@ -1,12 +1,17 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { MailerService } from '@nestjs-modules/mailer';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../entities/User';
-import { CreateUserDto, LoginDto, VerifyEmailDto } from './dto/create-user.dto';
-import * as nodemailer from 'nodemailer';
+import { CreateUserDto, VerifyEmailDto } from './dto/auth.dto';
 import * as bcrypt from 'bcrypt';
 import { OAuth2Client } from 'google-auth-library';
+import { ConfigService } from '@nestjs/config';
 import {
   TokenPayload,
   AuthTokens,
@@ -34,6 +39,8 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
+    private readonly mailerService: MailerService,
+    private readonly configService: ConfigService,
   ) {
     this.googleClient = new OAuth2Client(
       process.env.GOOGLE_CLIENT_ID,
@@ -137,30 +144,33 @@ export class AuthService {
 
     this.verificationCodes.set(email, { code, expires });
 
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
+    try {
+      await this.mailerService.sendMail({
+        to: email,
+        from: this.configService.get<string>('MAIL_USER'),
+        subject: '[삼익비치] 이메일 인증 안내',
+        html: `
+          <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px; font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; line-height: 1.6; color: #333333; background: #ffffff;">
+            <div style="text-align: center; margin-bottom: 40px;">
+              <h1 style="font-size: 24px; font-weight: 700; color: #1a1a1a; margin: 0;">삼익비치 이메일 인증 안내</h1>
+            </div>
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 30px; margin-bottom: 30px;">
+              <p style="font-size: 16px; margin: 0 0 20px 0;">안녕하세요.<br/>삼익비치 서비스를 이용해 주셔서 감사합니다.</p>
+              <p style="font-size: 16px; margin: 0 0 15px 0;">아래의 인증번호를 입력해 주세요.</p>
+              <div style="background: #ffffff; border-radius: 8px; padding: 20px; text-align: center; margin: 25px 0;">
+                <h2 style="font-size: 32px; font-weight: 700; color: #4A90E2; margin: 0; letter-spacing: 4px;">${code}</h2>
+              </div>
+              <p style="font-size: 14px; color: #666666; margin: 0;">본 인증번호는 발급 시점으로부터 10분간 유효합니다.</p>
+            </div>
+          </div>
+        `,
+      });
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: '이메일 인증 코드',
-      text: `인증 코드: ${code}`,
-      html: `
-        <h1>이메일 인증 코드</h1>
-        <p>아래의 인증 코드를 입력해주세요:</p>
-        <h2 style="color: #4A90E2;">${code}</h2>
-        <p>이 코드는 10분 후에 만료됩니다.</p>
-      `,
-    });
-
-    return { message: '인증 코드가 전송되었습니다.' };
+      return { message: '인증 코드가 전송되었습니다.' };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('이메일 전송에 실패했습니다.');
+    }
   }
 
   /**
