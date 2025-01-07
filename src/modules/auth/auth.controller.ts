@@ -4,6 +4,7 @@ import {
   Body,
   Res,
   UnauthorizedException,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
@@ -14,7 +15,7 @@ import {
   InitiateRegistrationDto,
   CompleteRegistrationDto,
 } from './dto/auth.dto';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { User } from '@entities/User';
 
 /**
@@ -147,5 +148,23 @@ export class AuthController {
     });
 
     return { accessToken: tokens.accessToken };
+  }
+
+  /**
+   * 리프레시 토큰으로 새로운 액세스 토큰을 발급합니다.
+   * 리프레시 토큰은 쿠키에서 추출합니다.
+   */
+  @Post('refresh')
+  async refresh(@Req() req: Request) {
+    const refreshToken = req.cookies['refreshToken'];
+
+    if (!refreshToken) {
+      throw new UnauthorizedException('리프레시 토큰이 없습니다.');
+    }
+
+    // 새로운 액세스 토큰만 발급
+    const { accessToken } = await this.authService.refreshTokens(refreshToken);
+
+    return { accessToken };
   }
 }
