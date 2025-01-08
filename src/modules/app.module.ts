@@ -13,6 +13,7 @@ import { UserAuthor } from '@entities/UserAuthor';
 import { Comment } from '@entities/Comment';
 import { Review } from '@entities/Review';
 import { UserModule } from './user/user.module';
+import { BookModule } from './book/book.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { UserModule } from './user/user.module';
     }),
     AuthModule,
     UserModule,
+    BookModule,
   ],
   controllers: [AppController],
   providers: [AppService],

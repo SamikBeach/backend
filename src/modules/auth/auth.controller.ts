@@ -18,7 +18,7 @@ import {
 } from './dto/auth.dto';
 import { Response, Request } from 'express';
 import { User } from '@entities/User';
-import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 
 /**
  * 인증 관련 컨트롤러

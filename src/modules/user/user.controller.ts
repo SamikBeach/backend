@@ -12,8 +12,8 @@ import {
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/user.dto';
 import { User } from '@entities/User';
-import { CurrentUser } from '@common/decorators/current-user.decorator';
-import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+import { CurrentUser } from '@decorators/current-user.decorator';
+import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { Response } from 'express';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 
