@@ -9,7 +9,8 @@ import { Repository, DataSource } from 'typeorm';
 import { Review } from '@entities/Review';
 import { Comment } from '@entities/Comment';
 import { Book } from '@entities/Book';
-import { CommentLike } from '@entities/CommentLike';
+import { UserReviewLike } from '@entities/UserReviewLike';
+import { UserCommentLike } from '@entities/UserCommentLike';
 import { CreateReviewDto, UpdateReviewDto } from './dto/review.dto';
 import { CreateCommentDto, UpdateCommentDto } from './dto/comment.dto';
 import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
@@ -23,15 +24,17 @@ export class ReviewService {
     private readonly commentRepository: Repository<Comment>,
     @InjectRepository(Book)
     private readonly bookRepository: Repository<Book>,
-    @InjectRepository(CommentLike)
-    private readonly commentLikeRepository: Repository<CommentLike>,
+    @InjectRepository(UserReviewLike)
+    private readonly userReviewLikeRepository: Repository<UserReviewLike>,
+    @InjectRepository(UserCommentLike)
+    private readonly userCommentLikeRepository: Repository<UserCommentLike>,
     private readonly dataSource: DataSource,
   ) {}
 
   /**
    * 리뷰 목록을 조회합니다.
    */
-  async findAll(query: PaginateQuery) {
+  async searchReviews(query: PaginateQuery) {
     return paginate(query, this.reviewRepository, {
       sortableColumns: ['id', 'createdAt', 'updatedAt'],
       searchableColumns: ['title', 'content'],
@@ -84,7 +87,6 @@ export class ReviewService {
     });
 
     await this.reviewRepository.save(review);
-    await this.bookRepository.increment({ id: bookId }, 'reviewCount', 1);
 
     return review;
   }
@@ -155,11 +157,6 @@ export class ReviewService {
     }
 
     await this.reviewRepository.softDelete(id);
-    await this.bookRepository.decrement(
-      { id: review.bookId },
-      'reviewCount',
-      1,
-    );
 
     return { message: '리뷰가 삭제되었습니다.' };
   }
@@ -181,17 +178,6 @@ export class ReviewService {
       defaultSortBy: [['createdAt', 'ASC']],
       where: { reviewId },
       relations: ['user'],
-      select: {
-        id: true,
-        content: true,
-        createdAt: true,
-        updatedAt: true,
-        likeCount: true,
-        user: {
-          id: true,
-          nickname: true,
-        },
-      },
     });
   }
 
@@ -272,7 +258,50 @@ export class ReviewService {
 
     await this.commentRepository.softDelete(commentId);
 
-    return { message: '댓�이 삭제되었습니다.' };
+    return { message: '댓글이 삭제되었습니다.' };
+  }
+
+  /**
+   * 리뷰 좋아요를 토글합니다.
+   */
+  async toggleReviewLike(reviewId: number, userId: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const review = await queryRunner.manager.findOne(Review, {
+        where: { id: reviewId },
+      });
+
+      if (!review) {
+        throw new NotFoundException('리뷰를 찾을 수 없습니다.');
+      }
+
+      const existingLike = await queryRunner.manager.findOne(UserReviewLike, {
+        where: { userId, reviewId },
+      });
+
+      if (existingLike) {
+        await queryRunner.manager.remove(UserReviewLike, existingLike);
+        await queryRunner.commitTransaction();
+        return { liked: false };
+      } else {
+        await queryRunner.manager.save(UserReviewLike, {
+          userId,
+          reviewId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await queryRunner.commitTransaction();
+        return { liked: true };
+      }
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   /**
@@ -292,33 +321,21 @@ export class ReviewService {
         throw new NotFoundException('댓글을 찾을 수 없습니다.');
       }
 
-      const existingLike = await queryRunner.manager.findOne(CommentLike, {
+      const existingLike = await queryRunner.manager.findOne(UserCommentLike, {
         where: { userId, commentId },
       });
 
       if (existingLike) {
-        await queryRunner.manager.remove(CommentLike, existingLike);
-        await queryRunner.manager.decrement(
-          Comment,
-          { id: commentId },
-          'likeCount',
-          1,
-        );
+        await queryRunner.manager.remove(UserCommentLike, existingLike);
         await queryRunner.commitTransaction();
         return { liked: false };
       } else {
-        await queryRunner.manager.save(CommentLike, {
+        await queryRunner.manager.save(UserCommentLike, {
           userId,
           commentId,
           createdAt: new Date(),
           updatedAt: new Date(),
         });
-        await queryRunner.manager.increment(
-          Comment,
-          { id: commentId },
-          'likeCount',
-          1,
-        );
         await queryRunner.commitTransaction();
         return { liked: true };
       }

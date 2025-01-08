@@ -6,11 +6,11 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Author } from './Author';
 import { Book } from './Book';
+import { Author } from './Author';
 
-@Index('author_book_author_id_fk', ['authorId'], {})
 @Index('author_book_book_id_fk', ['bookId'], {})
+@Index('author_book_author_id_fk', ['authorId'], {})
 @Entity('author_book', { schema: 'samik_beach_v3' })
 export class AuthorBook {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
@@ -22,17 +22,17 @@ export class AuthorBook {
   @Column('int', { name: 'book_id' })
   bookId: number;
 
-  @ManyToOne(() => Author, (author) => author.authorBooks, {
-    onDelete: 'NO ACTION',
-    onUpdate: 'NO ACTION',
-  })
-  @JoinColumn([{ name: 'author_id', referencedColumnName: 'id' }])
-  author: Author;
-
   @ManyToOne(() => Book, (book) => book.authorBooks, {
     onDelete: 'NO ACTION',
     onUpdate: 'NO ACTION',
   })
   @JoinColumn([{ name: 'book_id', referencedColumnName: 'id' }])
   book: Book;
+
+  @ManyToOne(() => Author, (author) => author.authorBooks, {
+    onDelete: 'NO ACTION',
+    onUpdate: 'NO ACTION',
+  })
+  @JoinColumn([{ name: 'author_id', referencedColumnName: 'id' }])
+  author: Author;
 }

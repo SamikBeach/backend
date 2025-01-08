@@ -17,30 +17,17 @@ import { User } from '@entities/User';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { CreateCommentDto, UpdateCommentDto } from './dto/comment.dto';
 
-@Controller('reviews')
-@UseGuards(JwtAuthGuard)
+@Controller('review')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
   /**
-   * �뷰 목록을 조회합니다.
+   * 리뷰 목록을 조회합니다.
    * 페이지네이션, 정렬, 검색, 필터링을 지원합니다.
    */
-  @Get()
-  async getReviews(@Paginate() query: PaginateQuery) {
-    return this.reviewService.findAll(query);
-  }
-
-  /**
-   * 새로운 리뷰를 작성합니다.
-   */
-  @Post('books/:bookId')
-  async createReview(
-    @Param('bookId', ParseIntPipe) bookId: number,
-    @Body() createReviewDto: CreateReviewDto,
-    @CurrentUser() user: User,
-  ) {
-    return this.reviewService.createReview(user.id, bookId, createReviewDto);
+  @Get('search')
+  async searchReviews(@Paginate() query: PaginateQuery) {
+    return this.reviewService.searchReviews(query);
   }
 
   /**
@@ -52,9 +39,23 @@ export class ReviewController {
   }
 
   /**
+   * 새로운 리뷰를 작성합니다.
+   */
+  @Post('book/:bookId')
+  @UseGuards(JwtAuthGuard)
+  async createReview(
+    @Param('bookId', ParseIntPipe) bookId: number,
+    @Body() createReviewDto: CreateReviewDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.reviewService.createReview(user.id, bookId, createReviewDto);
+  }
+
+  /**
    * 리뷰를 수정합니다.
    */
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   async updateReview(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateReviewDto: UpdateReviewDto,
@@ -67,6 +68,7 @@ export class ReviewController {
    * 리뷰를 삭제합니다.
    */
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   async deleteReview(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: User,
@@ -88,7 +90,8 @@ export class ReviewController {
   /**
    * 리뷰에 새로운 댓글을 작성합니다.
    */
-  @Post(':id/comments')
+  @Post(':id/comment')
+  @UseGuards(JwtAuthGuard)
   async createComment(
     @Param('id', ParseIntPipe) reviewId: number,
     @Body() createCommentDto: CreateCommentDto,
@@ -104,7 +107,8 @@ export class ReviewController {
   /**
    * 댓글을 수정합니다.
    */
-  @Patch(':reviewId/comments/:commentId')
+  @Patch(':reviewId/comment/:commentId')
+  @UseGuards(JwtAuthGuard)
   async updateComment(
     @Param('reviewId', ParseIntPipe) reviewId: number,
     @Param('commentId', ParseIntPipe) commentId: number,
@@ -122,7 +126,8 @@ export class ReviewController {
   /**
    * 댓글을 삭제합니다.
    */
-  @Delete(':reviewId/comments/:commentId')
+  @Delete(':reviewId/comment/:commentId')
+  @UseGuards(JwtAuthGuard)
   async deleteComment(
     @Param('reviewId', ParseIntPipe) reviewId: number,
     @Param('commentId', ParseIntPipe) commentId: number,
@@ -132,9 +137,22 @@ export class ReviewController {
   }
 
   /**
+   * 리뷰 좋아요를 토글합니다.
+   */
+  @Post(':id/like')
+  @UseGuards(JwtAuthGuard)
+  async toggleReviewLike(
+    @Param('id', ParseIntPipe) reviewId: number,
+    @CurrentUser() user: User,
+  ) {
+    return this.reviewService.toggleReviewLike(reviewId, user.id);
+  }
+
+  /**
    * 댓글 좋아요를 토글합니다.
    */
-  @Post(':reviewId/comments/:commentId/like')
+  @Post(':reviewId/comment/:commentId/like')
+  @UseGuards(JwtAuthGuard)
   async toggleCommentLike(
     @Param('reviewId', ParseIntPipe) reviewId: number,
     @Param('commentId', ParseIntPipe) commentId: number,

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Book } from '@entities/Book';
-import { UserBook } from '@entities/UserBook';
+import { UserBookLike } from '@entities/UserBookLike';
 import { Review } from '@entities/Review';
 import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
 
@@ -11,6 +11,8 @@ export class BookService {
   constructor(
     @InjectRepository(Book)
     private readonly bookRepository: Repository<Book>,
+    @InjectRepository(UserBookLike)
+    private readonly userBookLikeRepository: Repository<UserBookLike>,
     @InjectRepository(Review)
     private readonly reviewRepository: Repository<Review>,
     private readonly dataSource: DataSource,
@@ -63,6 +65,7 @@ export class BookService {
       maxLimit: 100,
     });
   }
+
   /**
    * 책 좋아요를 토글합니다.
    */
@@ -80,33 +83,21 @@ export class BookService {
         throw new NotFoundException('책을 찾을 수 없습니다.');
       }
 
-      const existingLike = await queryRunner.manager.findOne(UserBook, {
+      const existingLike = await queryRunner.manager.findOne(UserBookLike, {
         where: { userId, bookId },
       });
 
       if (existingLike) {
-        await queryRunner.manager.remove(UserBook, existingLike);
-        await queryRunner.manager.decrement(
-          Book,
-          { id: bookId },
-          'likeCount',
-          1,
-        );
+        await queryRunner.manager.remove(UserBookLike, existingLike);
         await queryRunner.commitTransaction();
         return { liked: false };
       } else {
-        await queryRunner.manager.save(UserBook, {
+        await queryRunner.manager.save(UserBookLike, {
           userId,
           bookId,
           createdAt: new Date(),
           updatedAt: new Date(),
         });
-        await queryRunner.manager.increment(
-          Book,
-          { id: bookId },
-          'likeCount',
-          1,
-        );
         await queryRunner.commitTransaction();
         return { liked: true };
       }

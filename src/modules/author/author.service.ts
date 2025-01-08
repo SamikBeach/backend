@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Author } from '@entities/Author';
-import { UserAuthor } from '@entities/UserAuthor';
+import { UserAuthorLike } from '@entities/UserAuthorLike';
 import { Book } from '@entities/Book';
 import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
 
@@ -13,6 +13,8 @@ export class AuthorService {
     private readonly authorRepository: Repository<Author>,
     @InjectRepository(Book)
     private readonly bookRepository: Repository<Book>,
+    @InjectRepository(UserAuthorLike)
+    private readonly userAuthorLikeRepository: Repository<UserAuthorLike>,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -73,33 +75,21 @@ export class AuthorService {
         throw new NotFoundException('저자를 찾을 수 없습니다.');
       }
 
-      const existingLike = await queryRunner.manager.findOne(UserAuthor, {
+      const existingLike = await queryRunner.manager.findOne(UserAuthorLike, {
         where: { userId, authorId },
       });
 
       if (existingLike) {
-        await queryRunner.manager.remove(UserAuthor, existingLike);
-        await queryRunner.manager.decrement(
-          Author,
-          { id: authorId },
-          'likeCount',
-          1,
-        );
+        await queryRunner.manager.remove(UserAuthorLike, existingLike);
         await queryRunner.commitTransaction();
         return { liked: false };
       } else {
-        await queryRunner.manager.save(UserAuthor, {
+        await queryRunner.manager.save(UserAuthorLike, {
           userId,
           authorId,
           createdAt: new Date(),
           updatedAt: new Date(),
         });
-        await queryRunner.manager.increment(
-          Author,
-          { id: authorId },
-          'likeCount',
-          1,
-        );
         await queryRunner.commitTransaction();
         return { liked: true };
       }

@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { AuthorBook } from './AuthorBook';
-import { UserAuthor } from './UserAuthor';
+import { UserAuthorLike } from './UserAuthorLike';
 
 @Entity('author', { schema: 'samik_beach_v3' })
 export class Author {
@@ -40,6 +40,6 @@ export class Author {
   @OneToMany(() => AuthorBook, (authorBook) => authorBook.author)
   authorBooks: AuthorBook[];
 
-  @OneToMany(() => UserAuthor, (userAuthor) => userAuthor.author)
-  userAuthors: UserAuthor[];
+  @OneToMany(() => UserAuthorLike, (userAuthorLike) => userAuthorLike.author)
+  userAuthorLikes: UserAuthorLike[];
 }

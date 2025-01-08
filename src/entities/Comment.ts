@@ -1,16 +1,19 @@
 import {
   Column,
+  CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Review } from './Review';
 import { User } from './User';
 
-@Index('comment_review_id_fk', ['reviewId'], {})
 @Index('comment_user_id_fk', ['userId'], {})
+@Index('comment_review_id_fk', ['reviewId'], {})
 @Entity('comment', { schema: 'samik_beach_v3' })
 export class Comment {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
@@ -28,11 +31,14 @@ export class Comment {
   @Column('int', { name: 'user_id' })
   userId: number;
 
-  @Column('datetime', { name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @Column('datetime', { name: 'updated_at', nullable: true })
+  @UpdateDateColumn({ name: 'updated_at', nullable: true })
   updatedAt: Date | null;
+
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
+  deletedAt: Date | null;
 
   @ManyToOne(() => Review, (review) => review.comments, {
     onDelete: 'NO ACTION',

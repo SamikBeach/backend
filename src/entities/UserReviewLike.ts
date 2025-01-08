@@ -9,10 +9,10 @@ import {
 import { Review } from './Review';
 import { User } from './User';
 
-@Index('user_comment_review_id_fk', ['reviewId'], {})
-@Index('user_comment_user_id_fk', ['userId'], {})
-@Entity('user_comment', { schema: 'samik_beach_v3' })
-export class UserComment {
+@Index('user_review_user_id_fk', ['userId'], {})
+@Index('user_review_review_id_fk', ['reviewId'], {})
+@Entity('user_review_like', { schema: 'samik_beach_v3' })
+export class UserReviewLike {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
   id: number;
 
@@ -22,14 +22,14 @@ export class UserComment {
   @Column('int', { name: 'review_id' })
   reviewId: number;
 
-  @ManyToOne(() => Review, (review) => review.userComments, {
+  @ManyToOne(() => Review, (review) => review.userReviewLikes, {
     onDelete: 'NO ACTION',
     onUpdate: 'NO ACTION',
   })
   @JoinColumn([{ name: 'review_id', referencedColumnName: 'id' }])
   review: Review;
 
-  @ManyToOne(() => User, (user) => user.userComments, {
+  @ManyToOne(() => User, (user) => user.userReviewLikes, {
     onDelete: 'NO ACTION',
     onUpdate: 'NO ACTION',
   })
