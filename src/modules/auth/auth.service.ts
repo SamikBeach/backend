@@ -23,13 +23,9 @@ import {
 } from './types/auth.types';
 
 // 구글 로그인을 위한 User 타입 확장
-interface UserWithGoogle extends User {
-  googleId?: string;
-}
 
 @Injectable()
 export class AuthService {
-  private readonly googleClient: OAuth2Client;
   // 이메일 인증 코드 저장소
   private readonly verificationCodes: Map<string, EmailVerification> =
     new Map();
@@ -45,13 +41,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly mailerService: MailerService,
     private readonly configService: ConfigService,
-  ) {
-    this.googleClient = new OAuth2Client(
-      process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI,
-    );
-  }
+  ) {}
 
   /**
    * 이메일/비밀번호로 사용자 검증
@@ -60,7 +50,16 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<Omit<User, 'password'>> {
-    const user = await this.userRepository.findOne({ where: { email } });
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        nickname: true,
+        verified: true,
+      },
+    });
     if (!user) {
       throw new UnauthorizedException('존재하지 않는 이메일입니다.');
     }
@@ -107,9 +106,15 @@ export class AuthService {
    */
   async googleLogin(code: string): Promise<AuthTokens> {
     try {
+      const googleClient = new OAuth2Client(
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET,
+        'postmessage',
+      );
       // 구글 토큰 검증
-      const { tokens } = await this.googleClient.getToken(code);
-      const ticket = await this.googleClient.verifyIdToken({
+      const { tokens } = await googleClient.getToken(code);
+
+      const ticket = await googleClient.verifyIdToken({
         idToken: tokens.id_token,
         audience: process.env.GOOGLE_CLIENT_ID,
       });
@@ -120,29 +125,55 @@ export class AuthService {
       }
 
       // 사용자 조회
-      let user = (await this.userRepository.findOne({
+      let user = await this.userRepository.findOne({
         where: { email: payload.email },
-      })) as UserWithGoogle;
+        select: {
+          id: true,
+          email: true,
+          password: true,
+          nickname: true,
+          verified: true,
+        },
+      });
 
       // 이미 가입된 회원이고 구글 계정으로 가입한 경우
-      if (user && user.googleId) {
+      if (user && user.password === null) {
         return this.generateTokens(user);
       }
 
       // 이미 가입된 회원이지만 이메일/비밀번호로 가입한 경우
-      if (user && !user.googleId) {
+      if (user && user.password !== null) {
         throw new UnauthorizedException(
           '이미 이메일/비밀번호로 가입된 계정입니다.',
         );
       }
 
       // 가입되지 않은 회원인 경우 회원가입 후 로그인
-      user = await this.userRepository.save({
-        email: payload.email,
-        nickname: payload.name,
-        googleId: payload.sub,
-        verified: true,
-      } as Partial<UserWithGoogle>);
+      if (!user) {
+        user = await this.userRepository.save({
+          email: payload.email,
+          nickname: payload.name || payload.email.split('@')[0], // name이 없는 경우 이메일 앞부분을 닉네임으로 사용
+          password: null,
+          verified: true,
+        } as Partial<User>);
+
+        // 저장된 사용자 정보 다시 조회
+        const savedUser = await this.userRepository.findOne({
+          where: { id: user.id },
+          select: {
+            id: true,
+            email: true,
+            nickname: true,
+            verified: true,
+          },
+        });
+
+        if (!savedUser) {
+          throw new InternalServerErrorException('회원가입에 실패했습니다.');
+        }
+
+        user = savedUser;
+      }
 
       return this.generateTokens(user);
     } catch (error) {
@@ -375,6 +406,9 @@ export class AuthService {
       // 사용자 조회
       const user = await this.userRepository.findOne({
         where: { id: payload.sub },
+        select: {
+          verified: true,
+        },
       });
 
       if (!user) {
