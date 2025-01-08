@@ -9,10 +9,10 @@ import {
 import { Book } from './Book';
 import { User } from './User';
 
-@Index('user_book_book_id_fk', ['bookId'], {})
 @Index('user_book_user_id_fk', ['userId'], {})
-@Entity('user_book', { schema: 'samik_beach_v3' })
-export class UserBook {
+@Index('user_book_book_id_fk', ['bookId'], {})
+@Entity('user_book_like', { schema: 'samik_beach_v3' })
+export class UserBookLike {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
   id: number;
 
@@ -22,14 +22,14 @@ export class UserBook {
   @Column('int', { name: 'book_id' })
   bookId: number;
 
-  @ManyToOne(() => Book, (book) => book.userBooks, {
+  @ManyToOne(() => Book, (book) => book.userBookLikes, {
     onDelete: 'NO ACTION',
     onUpdate: 'NO ACTION',
   })
   @JoinColumn([{ name: 'book_id', referencedColumnName: 'id' }])
   book: Book;
 
-  @ManyToOne(() => User, (user) => user.userBooks, {
+  @ManyToOne(() => User, (user) => user.userBookLikes, {
     onDelete: 'NO ACTION',
     onUpdate: 'NO ACTION',
   })

@@ -1,26 +1,177 @@
-import { Injectable } from '@nestjs/common';
-import { CreateBookDto } from './dto/create-book.dto';
-import { UpdateBookDto } from './dto/update-book.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, DataSource } from 'typeorm';
+import { Book } from '@entities/Book';
+import { UserBookLike } from '@entities/UserBookLike';
+import { Review } from '@entities/Review';
+import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
 
 @Injectable()
 export class BookService {
-  create(createBookDto: CreateBookDto) {
-    return 'This action adds a new book';
+  constructor(
+    @InjectRepository(Book)
+    private readonly bookRepository: Repository<Book>,
+    @InjectRepository(UserBookLike)
+    private readonly userBookLikeRepository: Repository<UserBookLike>,
+    @InjectRepository(Review)
+    private readonly reviewRepository: Repository<Review>,
+    private readonly dataSource: DataSource,
+  ) {}
+
+  /**
+   * ID로 책을 찾습니다.
+   */
+  async findById(id: number) {
+    const book = await this.bookRepository.findOne({
+      where: { id },
+      relations: ['authorBooks.author'],
+    });
+
+    if (!book) {
+      throw new NotFoundException('책을 찾을 수 없습니다.');
+    }
+
+    return book;
   }
 
-  findAll() {
-    return `This action returns all book`;
+  /**
+   * 책을 검색하고 페이지네이션된 결과를 반환합니다.
+   */
+  async search(query: PaginateQuery) {
+    return paginate(query, this.bookRepository, {
+      sortableColumns: [
+        'id',
+        'title',
+        'publisher',
+        'publicationDate',
+        'likeCount',
+        'reviewCount',
+      ],
+      searchableColumns: [
+        'title',
+        'description',
+        'publisher',
+        'isbn',
+        'isbn13',
+      ],
+      defaultSortBy: [['id', 'DESC']],
+      relations: ['authorBooks', 'authorBooks.author'],
+      filterableColumns: {
+        title: [FilterOperator.ILIKE],
+        publisher: [FilterOperator.ILIKE],
+        isbn: [FilterOperator.EQ],
+        isbn13: [FilterOperator.EQ],
+      },
+      maxLimit: 100,
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} book`;
+  /**
+   * 책 좋아요를 토글합니다.
+   */
+  async toggleLike(userId: number, bookId: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const book = await queryRunner.manager.findOne(Book, {
+        where: { id: bookId },
+      });
+
+      if (!book) {
+        throw new NotFoundException('책을 찾을 수 없습니다.');
+      }
+
+      const existingLike = await queryRunner.manager.findOne(UserBookLike, {
+        where: { userId, bookId },
+      });
+
+      if (existingLike) {
+        await queryRunner.manager.remove(UserBookLike, existingLike);
+        await queryRunner.commitTransaction();
+        return { liked: false };
+      } else {
+        await queryRunner.manager.save(UserBookLike, {
+          userId,
+          bookId,
+        });
+        await queryRunner.commitTransaction();
+        return { liked: true };
+      }
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
-  update(id: number, updateBookDto: UpdateBookDto) {
-    return `This action updates a #${id} book`;
+  /**
+   * 연관된 책 목록(같은 저자의 다른 책들)을 조회합니다.
+   */
+  async getRelatedBooks(bookId: number, query: PaginateQuery) {
+    const book = await this.bookRepository.findOne({
+      where: { id: bookId },
+      relations: ['authorBooks', 'authorBooks.author'],
+    });
+
+    if (!book) {
+      throw new NotFoundException('책을 찾을 수 없습니다.');
+    }
+
+    const authorIds = book.authorBooks.map((ab) => ab.author.id);
+
+    // 저자가 없는 경우 빈 결과 반환
+    if (authorIds.length === 0) {
+      return {
+        data: [],
+        meta: {
+          itemsPerPage: query.limit || 10,
+          totalItems: 0,
+          currentPage: query.page || 1,
+          totalPages: 0,
+        },
+      };
+    }
+
+    const queryBuilder = this.bookRepository
+      .createQueryBuilder('book')
+      .innerJoinAndSelect('book.authorBooks', 'ab')
+      .innerJoinAndSelect('ab.author', 'author')
+      .where('author.id IN (:...authorIds)', { authorIds })
+      .andWhere('book.id != :bookId', { bookId });
+
+    return paginate(query, queryBuilder, {
+      sortableColumns: [
+        'id',
+        'title',
+        'publicationDate',
+        'likeCount',
+        'reviewCount',
+      ],
+      defaultSortBy: [['publicationDate', 'DESC']],
+      maxLimit: 20,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} book`;
+  /**
+   * 책의 리뷰 목록을 조회합니다.
+   */
+  async getBookReviews(bookId: number, query: PaginateQuery) {
+    const book = await this.bookRepository.findOne({
+      where: { id: bookId },
+    });
+
+    if (!book) {
+      throw new NotFoundException('책을 찾을 수 없습니다.');
+    }
+
+    return paginate(query, this.reviewRepository, {
+      sortableColumns: ['id', 'createdAt', 'updatedAt'],
+      defaultSortBy: [['createdAt', 'DESC']],
+      where: { bookId },
+      relations: ['user'],
+    });
   }
 }

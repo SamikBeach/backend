@@ -11,8 +11,8 @@ import { UpdateUserDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
-import { UserBook } from '@entities/UserBook';
-import { UserAuthor } from '@entities/UserAuthor';
+import { UserBookLike } from '@entities/UserBookLike';
+import { UserAuthorLike } from '@entities/UserAuthorLike';
 import { Review } from '@entities/Review';
 
 @Injectable()
@@ -20,10 +20,10 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    @InjectRepository(UserBook)
-    private readonly userBookRepository: Repository<UserBook>,
-    @InjectRepository(UserAuthor)
-    private readonly userAuthorRepository: Repository<UserAuthor>,
+    @InjectRepository(UserBookLike)
+    private readonly userBookLikeRepository: Repository<UserBookLike>,
+    @InjectRepository(UserAuthorLike)
+    private readonly userAuthorLikeRepository: Repository<UserAuthorLike>,
     @InjectRepository(Review)
     private readonly reviewRepository: Repository<Review>,
     private readonly configService: ConfigService,
@@ -72,7 +72,6 @@ export class UserService {
 
       await this.userRepository.update(userId, {
         nickname: updateUserDto.nickname,
-        updatedAt: new Date(),
       });
     }
 
@@ -94,7 +93,6 @@ export class UserService {
 
       await this.userRepository.update(userId, {
         password: hashedPassword,
-        updatedAt: new Date(),
       });
     }
 
@@ -104,9 +102,7 @@ export class UserService {
   /**
    * 사용자 계정을 삭제합니다.
    */
-  async deleteUser(
-    userId: number,
-  ): Promise<{ message: string; action: string }> {
+  async deleteUser(userId: number): Promise<void> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
@@ -116,11 +112,6 @@ export class UserService {
     }
 
     await this.userRepository.softDelete(userId);
-
-    return {
-      message: '회원 탈퇴가 완료되었습니다.',
-      action: 'CLEAR_AUTH', // 클라이언트에서 액세스 토큰을 삭제하도록 알림
-    };
   }
 
   /**
@@ -177,7 +168,7 @@ export class UserService {
    * 사용자가 좋아하는 책 목록을 조회합니다.
    */
   async getFavoriteBooks(userId: number, query: PaginateQuery) {
-    return paginate(query, this.userBookRepository, {
+    return paginate(query, this.userBookLikeRepository, {
       sortableColumns: ['id'],
       defaultSortBy: [['id', 'DESC']],
       relations: ['book', 'book.authorBooks', 'book.authorBooks.author'],
@@ -189,7 +180,7 @@ export class UserService {
    * 사용자가 좋아하는 저자 목록을 조회합니다.
    */
   async getFavoriteAuthors(userId: number, query: PaginateQuery) {
-    return paginate(query, this.userAuthorRepository, {
+    return paginate(query, this.userAuthorLikeRepository, {
       sortableColumns: ['id'],
       defaultSortBy: [['id', 'DESC']],
       relations: ['author'],

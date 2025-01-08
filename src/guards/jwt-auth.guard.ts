@@ -10,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '@entities/User';
 import { Reflector } from '@nestjs/core';
-import { IS_PUBLIC_KEY } from '@common/decorators/public.decorator';
+import { IS_PUBLIC_KEY } from '@decorators/public.decorator';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {

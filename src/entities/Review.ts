@@ -6,13 +6,18 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  DeleteDateColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Comment } from './Comment';
-import { Book } from './Book';
 import { User } from './User';
+import { Book } from './Book';
+import { UserCommentLike } from './UserCommentLike';
+import { UserReviewLike } from './UserReviewLike';
 
-@Index('review_book_id_fk', ['bookId'], {})
 @Index('review_user_id_fk', ['userId'], {})
+@Index('review_book_id_fk', ['bookId'], {})
 @Entity('review', { schema: 'samik_beach_v3' })
 export class Review {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
@@ -30,14 +35,24 @@ export class Review {
   @Column('int', { name: 'book_id' })
   bookId: number;
 
-  @Column('datetime', { name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @Column('datetime', { name: 'updated_at', nullable: true })
+  @UpdateDateColumn({ name: 'updated_at', nullable: true })
   updatedAt: Date | null;
+
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
+  deletedAt: Date | null;
 
   @OneToMany(() => Comment, (comment) => comment.review)
   comments: Comment[];
+
+  @ManyToOne(() => User, (user) => user.reviews, {
+    onDelete: 'NO ACTION',
+    onUpdate: 'NO ACTION',
+  })
+  @JoinColumn([{ name: 'user_id', referencedColumnName: 'id' }])
+  user: User;
 
   @ManyToOne(() => Book, (book) => book.reviews, {
     onDelete: 'NO ACTION',
@@ -46,10 +61,12 @@ export class Review {
   @JoinColumn([{ name: 'book_id', referencedColumnName: 'id' }])
   book: Book;
 
-  @ManyToOne(() => User, (user) => user.reviews, {
-    onDelete: 'NO ACTION',
-    onUpdate: 'NO ACTION',
-  })
-  @JoinColumn([{ name: 'user_id', referencedColumnName: 'id' }])
-  user: User;
+  @OneToMany(
+    () => UserCommentLike,
+    (userCommentLike) => userCommentLike.comment,
+  )
+  userCommentLikes: UserCommentLike[];
+
+  @OneToMany(() => UserReviewLike, (userReviewLike) => userReviewLike.review)
+  userReviewLikes: UserReviewLike[];
 }

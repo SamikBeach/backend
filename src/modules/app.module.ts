@@ -7,12 +7,17 @@ import { AuthModule } from './auth/auth.module';
 import { User } from '@entities/User';
 import { Author } from '@entities/Author';
 import { Book } from '@entities/Book';
-import { UserBook } from '@entities/UserBook';
+import { UserBookLike } from '@entities/UserBookLike';
 import { AuthorBook } from '@entities/AuthorBook';
-import { UserAuthor } from '@entities/UserAuthor';
+import { UserAuthorLike } from '@entities/UserAuthorLike';
 import { Comment } from '@entities/Comment';
 import { Review } from '@entities/Review';
 import { UserModule } from './user/user.module';
+import { BookModule } from './book/book.module';
+import { AuthorModule } from './author/author.module';
+import { ReviewModule } from './review/review.module';
+import { UserCommentLike } from '@entities/UserCommentLike';
+import { UserReviewLike } from '@entities/UserReviewLike';
 
 @Module({
   imports: [
@@ -35,15 +40,20 @@ import { UserModule } from './user/user.module';
         Book,
         AuthorBook,
         User,
-        UserBook,
-        UserAuthor,
+        UserBookLike,
+        UserAuthorLike,
         Comment,
         Review,
+        UserCommentLike,
+        UserReviewLike,
       ],
       synchronize: process.env.NODE_ENV !== 'production',
     }),
     AuthModule,
     UserModule,
+    BookModule,
+    AuthorModule,
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [AppService],
