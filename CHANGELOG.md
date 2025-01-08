@@ -1,5 +1,20 @@
 # 🚦 CHANGELOG
 
+# [1.10.0](https://github.com/SamikBeach/backend/compare/1.9.0...1.10.0) (2025-01-08)
+
+
+### Bug Fixes
+
+* password select 옵션 수정 ([10b86a6](https://github.com/SamikBeach/backend/commit/10b86a61006c1bf5fe63d5ef1f000489d876ae42))
+* 구글 로그인시 항상 유저 새로 생성되는 버그 픽스 ([c3c98bf](https://github.com/SamikBeach/backend/commit/c3c98bf83529a3bdc015eb2daddab574238007e8))
+* 이메일 로그인 이슈 해소 ([46cf95b](https://github.com/SamikBeach/backend/commit/46cf95b03b41e974c01d97d5bcd790f6fb51a819))
+
+
+### Features
+
+* google login 서비스 로직 개선 ([199b123](https://github.com/SamikBeach/backend/commit/199b123271886d9161501bbd77049b832eaf6e96))
+* password nullable 처리 ([22fe2d2](https://github.com/SamikBeach/backend/commit/22fe2d28ea5f8fed09ccb3f8de6b68145d0a123e))
+
 # [1.9.0](https://github.com/SamikBeach/backend/compare/1.8.0...1.9.0) (2025-01-08)
 
 
