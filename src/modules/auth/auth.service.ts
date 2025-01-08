@@ -29,7 +29,6 @@ interface UserWithGoogle extends User {
 
 @Injectable()
 export class AuthService {
-  private readonly googleClient: OAuth2Client;
   // 이메일 인증 코드 저장소
   private readonly verificationCodes: Map<string, EmailVerification> =
     new Map();
@@ -45,13 +44,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly mailerService: MailerService,
     private readonly configService: ConfigService,
-  ) {
-    this.googleClient = new OAuth2Client(
-      process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI,
-    );
-  }
+  ) {}
 
   /**
    * 이메일/비밀번호로 사용자 검증
@@ -107,9 +100,15 @@ export class AuthService {
    */
   async googleLogin(code: string): Promise<AuthTokens> {
     try {
+      const googleClient = new OAuth2Client(
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET,
+        'postmessage',
+      );
       // 구글 토큰 검증
-      const { tokens } = await this.googleClient.getToken(code);
-      const ticket = await this.googleClient.verifyIdToken({
+      const { tokens } = await googleClient.getToken(code);
+
+      const ticket = await googleClient.verifyIdToken({
         idToken: tokens.id_token,
         audience: process.env.GOOGLE_CLIENT_ID,
       });
@@ -141,6 +140,7 @@ export class AuthService {
         email: payload.email,
         nickname: payload.name,
         googleId: payload.sub,
+        password: null,
         verified: true,
       } as Partial<UserWithGoogle>);
 

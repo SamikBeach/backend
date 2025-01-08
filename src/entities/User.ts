@@ -25,8 +25,13 @@ export class User {
   @Column('varchar', { name: 'nickname', length: 100 })
   nickname: string;
 
-  @Column('varchar', { name: 'password', length: 200, select: false })
-  password: string;
+  @Column('varchar', {
+    name: 'password',
+    length: 200,
+    select: false,
+    nullable: true,
+  })
+  password: string | null;
 
   @Column('tinyint', {
     name: 'verified',
