@@ -14,6 +14,8 @@ import { Comment } from '@entities/Comment';
 import { Review } from '@entities/Review';
 import { UserModule } from './user/user.module';
 import { BookModule } from './book/book.module';
+import { AuthorModule } from './author/author.module';
+import { ReviewModule } from './review/review.module';
 
 @Module({
   imports: [
@@ -46,6 +48,8 @@ import { BookModule } from './book/book.module';
     AuthModule,
     UserModule,
     BookModule,
+    AuthorModule,
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [AppService],

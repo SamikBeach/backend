@@ -6,7 +6,6 @@ import { Book } from '@entities/Book';
 import { UserBook } from '@entities/UserBook';
 import { Review } from '@entities/Review';
 import { JwtService } from '@nestjs/jwt';
-import { UserModule } from '@modules/user/user.module';
 import { User } from '@entities/User';
 
 @Module({

@@ -11,8 +11,6 @@ export class BookService {
   constructor(
     @InjectRepository(Book)
     private readonly bookRepository: Repository<Book>,
-    @InjectRepository(UserBook)
-    private readonly userBookRepository: Repository<UserBook>,
     @InjectRepository(Review)
     private readonly reviewRepository: Repository<Review>,
     private readonly dataSource: DataSource,
