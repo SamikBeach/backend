@@ -50,7 +50,16 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<Omit<User, 'password'>> {
-    const user = await this.userRepository.findOne({ where: { email } });
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        nickname: true,
+        verified: true,
+      },
+    });
     if (!user) {
       throw new UnauthorizedException('존재하지 않는 이메일입니다.');
     }
@@ -374,6 +383,9 @@ export class AuthService {
       // 사용자 조회
       const user = await this.userRepository.findOne({
         where: { id: payload.sub },
+        select: {
+          verified: true,
+        },
       });
 
       if (!user) {
