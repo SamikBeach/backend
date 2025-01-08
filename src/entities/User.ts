@@ -28,7 +28,6 @@ export class User {
   @Column('varchar', {
     name: 'password',
     length: 200,
-    select: false,
     nullable: true,
   })
   password: string | null;

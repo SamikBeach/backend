@@ -23,9 +23,6 @@ import {
 } from './types/auth.types';
 
 // 구글 로그인을 위한 User 타입 확장
-interface UserWithGoogle extends User {
-  googleId?: string;
-}
 
 @Injectable()
 export class AuthService {
@@ -119,17 +116,18 @@ export class AuthService {
       }
 
       // 사용자 조회
-      let user = (await this.userRepository.findOne({
+      let user = await this.userRepository.findOne({
         where: { email: payload.email },
-      })) as UserWithGoogle;
+      });
 
       // 이미 가입된 회원이고 구글 계정으로 가입한 경우
-      if (user && user.googleId) {
+      if (user && user.password === null) {
         return this.generateTokens(user);
       }
 
       // 이미 가입된 회원이지만 이메일/비밀번호로 가입한 경우
-      if (user && !user.googleId) {
+      console.log({ user });
+      if (user && user.password !== null) {
         throw new UnauthorizedException(
           '이미 이메일/비밀번호로 가입된 계정입니다.',
         );
@@ -139,10 +137,9 @@ export class AuthService {
       user = await this.userRepository.save({
         email: payload.email,
         nickname: payload.name,
-        googleId: payload.sub,
         password: null,
         verified: true,
-      } as Partial<UserWithGoogle>);
+      } as Partial<User>);
 
       return this.generateTokens(user);
     } catch (error) {
