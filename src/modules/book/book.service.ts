@@ -1,10 +1,6 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Book } from '@entities/Book';
 import { UserBook } from '@entities/UserBook';
 import { Review } from '@entities/Review';
@@ -19,6 +15,7 @@ export class BookService {
     private readonly userBookRepository: Repository<UserBook>,
     @InjectRepository(Review)
     private readonly reviewRepository: Repository<Review>,
+    private readonly dataSource: DataSource,
   ) {}
 
   /**
@@ -27,18 +24,14 @@ export class BookService {
   async findById(id: number) {
     const book = await this.bookRepository.findOne({
       where: { id },
-      relations: ['authorBooks', 'authorBooks.author'],
+      relations: ['authorBooks.author'],
     });
 
     if (!book) {
       throw new NotFoundException('책을 찾을 수 없습니다.');
     }
 
-    // Transform the response to include authors directly
-    return {
-      ...book,
-      authors: book.authorBooks.map((ab) => ab.author),
-    };
+    return book;
   }
 
   /**
@@ -72,36 +65,58 @@ export class BookService {
       maxLimit: 100,
     });
   }
-
   /**
    * 책 좋아요를 토글합니다.
    */
   async toggleLike(userId: number, bookId: number) {
-    const book = await this.bookRepository.findOne({
-      where: { id: bookId },
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    if (!book) {
-      throw new NotFoundException('책을 찾을 수 없습니다.');
-    }
-
-    const existingLike = await this.userBookRepository.findOne({
-      where: { userId, bookId },
-    });
-
-    if (existingLike) {
-      await this.userBookRepository.remove(existingLike);
-      await this.bookRepository.decrement({ id: bookId }, 'likeCount', 1);
-      return { liked: false };
-    } else {
-      await this.userBookRepository.save({
-        userId,
-        bookId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+    try {
+      const book = await queryRunner.manager.findOne(Book, {
+        where: { id: bookId },
       });
-      await this.bookRepository.increment({ id: bookId }, 'likeCount', 1);
-      return { liked: true };
+
+      if (!book) {
+        throw new NotFoundException('책을 찾을 수 없습니다.');
+      }
+
+      const existingLike = await queryRunner.manager.findOne(UserBook, {
+        where: { userId, bookId },
+      });
+
+      if (existingLike) {
+        await queryRunner.manager.remove(UserBook, existingLike);
+        await queryRunner.manager.decrement(
+          Book,
+          { id: bookId },
+          'likeCount',
+          1,
+        );
+        await queryRunner.commitTransaction();
+        return { liked: false };
+      } else {
+        await queryRunner.manager.save(UserBook, {
+          userId,
+          bookId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await queryRunner.manager.increment(
+          Book,
+          { id: bookId },
+          'likeCount',
+          1,
+        );
+        await queryRunner.commitTransaction();
+        return { liked: true };
+      }
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -120,26 +135,37 @@ export class BookService {
 
     const authorIds = book.authorBooks.map((ab) => ab.author.id);
 
-    return paginate(
-      query,
-      this.bookRepository
-        .createQueryBuilder('book')
-        .innerJoinAndSelect('book.authorBooks', 'ab')
-        .innerJoinAndSelect('ab.author', 'author')
-        .where('author.id IN (:...authorIds)', { authorIds })
-        .andWhere('book.id != :bookId', { bookId }),
-      {
-        sortableColumns: [
-          'id',
-          'title',
-          'publicationDate',
-          'likeCount',
-          'reviewCount',
-        ],
-        defaultSortBy: [['publicationDate', 'DESC']],
-        maxLimit: 20,
-      },
-    );
+    // 저자가 없는 경우 빈 결과 반환
+    if (authorIds.length === 0) {
+      return {
+        data: [],
+        meta: {
+          itemsPerPage: query.limit || 10,
+          totalItems: 0,
+          currentPage: query.page || 1,
+          totalPages: 0,
+        },
+      };
+    }
+
+    const queryBuilder = this.bookRepository
+      .createQueryBuilder('book')
+      .innerJoinAndSelect('book.authorBooks', 'ab')
+      .innerJoinAndSelect('ab.author', 'author')
+      .where('author.id IN (:...authorIds)', { authorIds })
+      .andWhere('book.id != :bookId', { bookId });
+
+    return paginate(query, queryBuilder, {
+      sortableColumns: [
+        'id',
+        'title',
+        'publicationDate',
+        'likeCount',
+        'reviewCount',
+      ],
+      defaultSortBy: [['publicationDate', 'DESC']],
+      maxLimit: 20,
+    });
   }
 
   /**

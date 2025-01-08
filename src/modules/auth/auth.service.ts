@@ -69,8 +69,6 @@ export class AuthService {
       throw new UnauthorizedException('이메일 인증이 필요합니다.');
     }
 
-    console.log(user.password);
-    console.log(password);
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
