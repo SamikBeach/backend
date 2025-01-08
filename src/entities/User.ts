@@ -1,14 +1,10 @@
-import {
-  Column,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  DeleteDateColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Comment } from './Comment';
 import { Review } from './Review';
 import { UserAuthor } from './UserAuthor';
 import { UserBook } from './UserBook';
+import { UserComment } from './UserComment';
+import { UserReview } from './UserReview';
 
 @Entity('user', { schema: 'samik_beach_v3' })
 export class User {
@@ -24,14 +20,7 @@ export class User {
   @Column('varchar', { name: 'password', length: 200 })
   password: string;
 
-  @Column('tinyint', {
-    name: 'verified',
-    width: 1,
-    transformer: {
-      to: (value: boolean) => (value ? 1 : 0),
-      from: (value: number) => Boolean(value),
-    },
-  })
+  @Column('tinyint', { name: 'verified', width: 1 })
   verified: boolean;
 
   @Column('datetime', {
@@ -43,7 +32,7 @@ export class User {
   @Column('datetime', { name: 'updated_at', nullable: true })
   updatedAt: Date | null;
 
-  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
+  @Column('datetime', { name: 'deleted_at', nullable: true })
   deletedAt: Date | null;
 
   @OneToMany(() => Comment, (comment) => comment.user)
@@ -57,4 +46,10 @@ export class User {
 
   @OneToMany(() => UserBook, (userBook) => userBook.user)
   userBooks: UserBook[];
+
+  @OneToMany(() => UserComment, (userComment) => userComment.user)
+  userComments: UserComment[];
+
+  @OneToMany(() => UserReview, (userReview) => userReview.user)
+  userReviews: UserReview[];
 }

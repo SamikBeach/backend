@@ -8,8 +8,10 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Comment } from './Comment';
-import { Book } from './Book';
 import { User } from './User';
+import { Book } from './Book';
+import { UserComment } from './UserComment';
+import { UserReview } from './UserReview';
 
 @Index('review_book_id_fk', ['bookId'], {})
 @Index('review_user_id_fk', ['userId'], {})
@@ -39,6 +41,13 @@ export class Review {
   @OneToMany(() => Comment, (comment) => comment.review)
   comments: Comment[];
 
+  @ManyToOne(() => User, (user) => user.reviews, {
+    onDelete: 'NO ACTION',
+    onUpdate: 'NO ACTION',
+  })
+  @JoinColumn([{ name: 'user_id', referencedColumnName: 'id' }])
+  user: User;
+
   @ManyToOne(() => Book, (book) => book.reviews, {
     onDelete: 'NO ACTION',
     onUpdate: 'NO ACTION',
@@ -46,10 +55,9 @@ export class Review {
   @JoinColumn([{ name: 'book_id', referencedColumnName: 'id' }])
   book: Book;
 
-  @ManyToOne(() => User, (user) => user.reviews, {
-    onDelete: 'NO ACTION',
-    onUpdate: 'NO ACTION',
-  })
-  @JoinColumn([{ name: 'user_id', referencedColumnName: 'id' }])
-  user: User;
+  @OneToMany(() => UserComment, (userComment) => userComment.review)
+  userComments: UserComment[];
+
+  @OneToMany(() => UserReview, (userReview) => userReview.review)
+  userReviews: UserReview[];
 }
