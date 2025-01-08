@@ -1,5 +1,24 @@
 # 🚦 CHANGELOG
 
+# [1.9.0](https://github.com/SamikBeach/backend/compare/1.8.0...1.9.0) (2025-01-08)
+
+
+### Bug Fixes
+
+* entity 업데이트 ([88d90c6](https://github.com/SamikBeach/backend/commit/88d90c6f862202a94b63135941d0e98b3340565c))
+* 불필요한 코드 제거 ([6f8e90c](https://github.com/SamikBeach/backend/commit/6f8e90c480cf9cde6e52eb3786f6bdfbbabc7b78))
+* 외부 노출 필드 제한 방식 변경 ([1d5834b](https://github.com/SamikBeach/backend/commit/1d5834b9721ca57876f2f7ffd04ab9fc267bc590))
+
+
+### Features
+
+* author controller, service 로직 개선 ([e1c0108](https://github.com/SamikBeach/backend/commit/e1c0108a3d6edb9041d5d36ae94267c05f5f29b3))
+* book controller, service 로직 개선 ([2a1d8e9](https://github.com/SamikBeach/backend/commit/2a1d8e940dcfa865248b0fba14bcdbf4cc6a7d10))
+* book endpoint 및 서비스 로직 초안 ([2ecd90e](https://github.com/SamikBeach/backend/commit/2ecd90ec2959bde7642ca56e62df6f23ed1bb459))
+* review module 개선 ([a7e8082](https://github.com/SamikBeach/backend/commit/a7e80824228b4720123f7e6739c4eebb51be448f))
+* review module 초안 ([8aaaf38](https://github.com/SamikBeach/backend/commit/8aaaf38f2cae2a1d82e6ef7b9526fae55ced56b4))
+* 외부 노출 필드 제한 ([6e0c68e](https://github.com/SamikBeach/backend/commit/6e0c68ef6662e876685047ac99f3526377d0c913))
+
 # [1.8.0](https://github.com/SamikBeach/backend/compare/1.7.0...1.8.0) (2025-01-07)
 
 
