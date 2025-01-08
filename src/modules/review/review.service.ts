@@ -290,8 +290,6 @@ export class ReviewService {
         await queryRunner.manager.save(UserReviewLike, {
           userId,
           reviewId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
         });
         await queryRunner.commitTransaction();
         return { liked: true };
@@ -333,8 +331,6 @@ export class ReviewService {
         await queryRunner.manager.save(UserCommentLike, {
           userId,
           commentId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
         });
         await queryRunner.commitTransaction();
         return { liked: true };

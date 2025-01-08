@@ -95,8 +95,6 @@ export class BookService {
         await queryRunner.manager.save(UserBookLike, {
           userId,
           bookId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
         });
         await queryRunner.commitTransaction();
         return { liked: true };

@@ -87,8 +87,6 @@ export class AuthorService {
         await queryRunner.manager.save(UserAuthorLike, {
           userId,
           authorId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
         });
         await queryRunner.commitTransaction();
         return { liked: true };
