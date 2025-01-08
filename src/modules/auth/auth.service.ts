@@ -128,7 +128,11 @@ export class AuthService {
       let user = await this.userRepository.findOne({
         where: { email: payload.email },
         select: {
+          id: true,
+          email: true,
           password: true,
+          nickname: true,
+          verified: true,
         },
       });
 
@@ -145,12 +149,31 @@ export class AuthService {
       }
 
       // 가입되지 않은 회원인 경우 회원가입 후 로그인
-      user = await this.userRepository.save({
-        email: payload.email,
-        nickname: payload.name,
-        password: null,
-        verified: true,
-      } as Partial<User>);
+      if (!user) {
+        user = await this.userRepository.save({
+          email: payload.email,
+          nickname: payload.name || payload.email.split('@')[0], // name이 없는 경우 이메일 앞부분을 닉네임으로 사용
+          password: null,
+          verified: true,
+        } as Partial<User>);
+
+        // 저장된 사용자 정보 다시 조회
+        const savedUser = await this.userRepository.findOne({
+          where: { id: user.id },
+          select: {
+            id: true,
+            email: true,
+            nickname: true,
+            verified: true,
+          },
+        });
+
+        if (!savedUser) {
+          throw new InternalServerErrorException('회원가입에 실패했습니다.');
+        }
+
+        user = savedUser;
+      }
 
       return this.generateTokens(user);
     } catch (error) {
