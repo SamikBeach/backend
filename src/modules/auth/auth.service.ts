@@ -118,6 +118,9 @@ export class AuthService {
       // 사용자 조회
       let user = await this.userRepository.findOne({
         where: { email: payload.email },
+        select: {
+          password: true,
+        },
       });
 
       // 이미 가입된 회원이고 구글 계정으로 가입한 경우
@@ -126,7 +129,6 @@ export class AuthService {
       }
 
       // 이미 가입된 회원이지만 이메일/비밀번호로 가입한 경우
-      console.log({ user });
       if (user && user.password !== null) {
         throw new UnauthorizedException(
           '이미 이메일/비밀번호로 가입된 계정입니다.',

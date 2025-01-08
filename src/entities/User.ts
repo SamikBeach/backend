@@ -29,6 +29,7 @@ export class User {
     name: 'password',
     length: 200,
     nullable: true,
+    select: false,
   })
   password: string | null;
 
