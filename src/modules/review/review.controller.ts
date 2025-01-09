@@ -12,6 +12,7 @@ import {
 import { ReviewService } from './review.service';
 import { CreateReviewDto, UpdateReviewDto } from './dto/review.dto';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '@guards/optional-jwt-auth.guard';
 import { CurrentUser } from '@decorators/current-user.decorator';
 import { User } from '@entities/User';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
@@ -26,16 +27,24 @@ export class ReviewController {
    * 페이지네이션, 정렬, 검색, 필터링을 지원합니다.
    */
   @Get('search')
-  async searchReviews(@Paginate() query: PaginateQuery) {
-    return this.reviewService.searchReviews(query);
+  @UseGuards(OptionalJwtAuthGuard)
+  async searchReviews(
+    @Paginate() query: PaginateQuery,
+    @CurrentUser() user?: User,
+  ) {
+    return this.reviewService.searchReviews(query, user?.id);
   }
 
   /**
    * 리뷰 상세 정보를 조회합니다.
    */
   @Get(':id')
-  async getReview(@Param('id', ParseIntPipe) id: number) {
-    return this.reviewService.findById(id);
+  @UseGuards(OptionalJwtAuthGuard)
+  async getReview(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user?: User,
+  ) {
+    return this.reviewService.findById(id, user?.id);
   }
 
   /**

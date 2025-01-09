@@ -32,10 +32,10 @@ export class UserService {
   /**
    * ID로 사용자를 찾습니다.
    */
-  async findById(id: number): Promise<Omit<User, 'password'>> {
+  async findById(id: number): Promise<Pick<User, 'id' | 'email' | 'nickname'>> {
     const user = await this.userRepository.findOne({
       where: { id },
-      select: ['id', 'email', 'nickname', 'verified', 'createdAt', 'updatedAt'],
+      select: ['id', 'email', 'nickname'],
     });
 
     if (!user) {
@@ -51,7 +51,7 @@ export class UserService {
   async updateUser(
     userId: number,
     updateUserDto: UpdateUserDto,
-  ): Promise<Omit<User, 'password'>> {
+  ): Promise<Pick<User, 'id' | 'email' | 'nickname'>> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
