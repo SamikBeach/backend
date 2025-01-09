@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { Review } from '@entities/Review';
 import { Comment } from '@entities/Comment';
 import { Book } from '@entities/Book';
@@ -34,11 +34,11 @@ export class ReviewService {
   /**
    * 리뷰 목록을 조회합니다.
    */
-  async searchReviews(query: PaginateQuery) {
-    return paginate(query, this.reviewRepository, {
+  async searchReviews(query: PaginateQuery, userId?: number) {
+    const reviews = await paginate(query, this.reviewRepository, {
       sortableColumns: ['id', 'createdAt', 'updatedAt'],
       searchableColumns: ['title', 'content'],
-      defaultSortBy: [['id', 'ASC']],
+      defaultSortBy: [['id', 'DESC']],
       relations: [
         'user',
         'book',
@@ -51,6 +51,24 @@ export class ReviewService {
       },
       maxLimit: 100,
     });
+
+    if (userId) {
+      const userLikes = await this.userReviewLikeRepository.find({
+        where: {
+          userId,
+          reviewId: In(reviews.data.map((review) => review.id)),
+        },
+      });
+
+      const likedReviewIds = new Set(userLikes.map((like) => like.reviewId));
+
+      reviews.data = reviews.data.map((review) => ({
+        ...review,
+        isLiked: likedReviewIds.has(review.id),
+      }));
+    }
+
+    return reviews;
   }
 
   /**
@@ -123,7 +141,7 @@ export class ReviewService {
   /**
    * ID로 리뷰를 찾습니다.
    */
-  async findById(id: number) {
+  async findById(id: number, userId?: number) {
     const review = await this.reviewRepository.findOne({
       where: { id },
       relations: [
@@ -136,6 +154,17 @@ export class ReviewService {
 
     if (!review) {
       throw new NotFoundException('리뷰를 찾을 수 없습니다.');
+    }
+
+    if (userId) {
+      const userLike = await this.userReviewLikeRepository.findOne({
+        where: { userId, reviewId: id },
+      });
+
+      return {
+        ...review,
+        isLiked: !!userLike,
+      };
     }
 
     return review;
@@ -165,7 +194,7 @@ export class ReviewService {
       ...updateReviewDto,
     });
 
-    return this.findById(id);
+    return this.findById(id, userId);
   }
 
   /**

@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,7 +8,7 @@ import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '@decorators/public.decorator';
 
 @Injectable()
-export class JwtAuthGuard implements CanActivate {
+export class OptionalJwtAuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -23,13 +18,11 @@ export class JwtAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // Public 데코레이터가 있는지 확인
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
 
-    // Public 데코레이터가 있으면 인증 검사 스킵
     if (isPublic) {
       return true;
     }
@@ -37,8 +30,9 @@ export class JwtAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
 
+    // 토큰이 없어도 계속 진행
     if (!token) {
-      throw new UnauthorizedException('토큰이 제공되지 않았습니다.');
+      return true;
     }
 
     try {
@@ -58,28 +52,20 @@ export class JwtAuthGuard implements CanActivate {
         ],
       });
 
-      if (!user) {
-        throw new UnauthorizedException('유효하지 않은 토큰입니다.');
+      // 유저가 있고 인증된 경우에만 request.user에 추가
+      if (user && user.verified) {
+        request.user = user;
       }
 
-      if (!user.verified) {
-        throw new UnauthorizedException('이메일 인증이 필요합니다.');
-      }
-
-      // request에 user 정보 추가
-      request.user = user;
       return true;
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-      throw new UnauthorizedException('유효하지 않은 토큰입니다.');
+      // 토큰이 유효하지 않아도 계속 진행
+      return true;
     }
   }
 
   private extractTokenFromHeader(request: any): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
-
     return type === 'Bearer' ? token : undefined;
   }
 }
