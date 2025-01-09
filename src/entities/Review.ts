@@ -35,6 +35,12 @@ export class Review {
   @Column('int', { name: 'book_id' })
   bookId: number;
 
+  @Column('int', { name: 'like_count', default: () => "'0'" })
+  likeCount: number;
+
+  @Column('int', { name: 'comment_count', default: () => "'0'" })
+  commentCount: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

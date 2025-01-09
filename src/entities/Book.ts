@@ -23,11 +23,11 @@ export class Book {
   @Column('text', { name: 'publication_date', nullable: true })
   publicationDate: string | null;
 
-  @Column('int', { name: 'isbn', nullable: true })
-  isbn: number | null;
+  @Column('varchar', { name: 'isbn', nullable: true, length: 100 })
+  isbn: string | null;
 
-  @Column('int', { name: 'isbn13', nullable: true })
-  isbn13: number | null;
+  @Column('varchar', { name: 'isbn13', nullable: true, length: 100 })
+  isbn13: string | null;
 
   @Column('int', { name: 'like_count', default: () => "'0'" })
   likeCount: number;

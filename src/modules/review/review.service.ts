@@ -61,34 +61,63 @@ export class ReviewService {
     bookId: number,
     createReviewDto: CreateReviewDto,
   ) {
-    const book = await this.bookRepository.findOne({
-      where: { id: bookId },
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    if (!book) {
-      throw new NotFoundException('책을 찾을 수 없습니다.');
+    try {
+      const book = await queryRunner.manager.findOne(Book, {
+        where: { id: bookId },
+        relations: ['authorBooks', 'authorBooks.author'],
+      });
+
+      if (!book) {
+        throw new NotFoundException('책을 찾을 수 없습니다.');
+      }
+
+      // 이미 리뷰를 작성했는지 확인
+      const existingReview = await queryRunner.manager.findOne(Review, {
+        where: { userId, bookId },
+      });
+
+      if (existingReview) {
+        throw new BadRequestException('이미 리뷰를 작성했습니다.');
+      }
+
+      const review = this.reviewRepository.create({
+        ...createReviewDto,
+        userId,
+        bookId,
+      });
+
+      await queryRunner.manager.save(review);
+
+      // 책의 reviewCount 증가
+      await queryRunner.manager.increment(
+        Book,
+        { id: bookId },
+        'reviewCount',
+        1,
+      );
+
+      // 저자들의 reviewCount 증가
+      for (const authorBook of book.authorBooks) {
+        await queryRunner.manager.increment(
+          'Author',
+          { id: authorBook.author.id },
+          'reviewCount',
+          1,
+        );
+      }
+
+      await queryRunner.commitTransaction();
+      return review;
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
-
-    // 이미 리뷰를 작성했는지 확인
-    const existingReview = await this.reviewRepository.findOne({
-      where: { userId, bookId },
-    });
-
-    if (existingReview) {
-      throw new BadRequestException('이미 리뷰를 작성했습니다.');
-    }
-
-    const review = this.reviewRepository.create({
-      ...createReviewDto,
-      userId,
-      bookId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    await this.reviewRepository.save(review);
-
-    return review;
   }
 
   /**
@@ -134,7 +163,6 @@ export class ReviewService {
 
     await this.reviewRepository.update(id, {
       ...updateReviewDto,
-      updatedAt: new Date(),
     });
 
     return this.findById(id);
@@ -144,21 +172,52 @@ export class ReviewService {
    * 리뷰를 삭제합니다.
    */
   async deleteReview(id: number, userId: number) {
-    const review = await this.reviewRepository.findOne({
-      where: { id },
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    if (!review) {
-      throw new NotFoundException('리뷰를 찾을 수 없습니다.');
+    try {
+      const review = await queryRunner.manager.findOne(Review, {
+        where: { id },
+        relations: ['book', 'book.authorBooks', 'book.authorBooks.author'],
+      });
+
+      if (!review) {
+        throw new NotFoundException('리뷰를 찾을 수 없습니다.');
+      }
+
+      if (review.userId !== userId) {
+        throw new UnauthorizedException('리뷰를 삭제할 권한이 없습니다.');
+      }
+
+      await queryRunner.manager.softDelete(Review, id);
+
+      // 책의 reviewCount 감소
+      await queryRunner.manager.decrement(
+        Book,
+        { id: review.book.id },
+        'reviewCount',
+        1,
+      );
+
+      // 저자들의 reviewCount 감소
+      for (const authorBook of review.book.authorBooks) {
+        await queryRunner.manager.decrement(
+          'Author',
+          { id: authorBook.author.id },
+          'reviewCount',
+          1,
+        );
+      }
+
+      await queryRunner.commitTransaction();
+      return { message: '리뷰가 삭제되었습니다.' };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
-
-    if (review.userId !== userId) {
-      throw new UnauthorizedException('리뷰를 삭제할 권한이 없습니다.');
-    }
-
-    await this.reviewRepository.softDelete(id);
-
-    return { message: '리뷰가 삭제되었습니다.' };
   }
 
   /**
@@ -189,23 +248,41 @@ export class ReviewService {
     userId: number,
     createCommentDto: CreateCommentDto,
   ) {
-    const review = await this.reviewRepository.findOne({
-      where: { id: reviewId },
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    if (!review) {
-      throw new NotFoundException('리뷰를 찾을 수 없습니다.');
+    try {
+      const review = await queryRunner.manager.findOne(Review, {
+        where: { id: reviewId },
+      });
+
+      if (!review) {
+        throw new NotFoundException('리뷰를 찾을 수 없습니다.');
+      }
+
+      const comment = this.commentRepository.create({
+        ...createCommentDto,
+        userId,
+        reviewId,
+      });
+
+      // commentCount 증가
+      await queryRunner.manager.increment(
+        Review,
+        { id: reviewId },
+        'commentCount',
+        1,
+      );
+
+      await queryRunner.commitTransaction();
+      return this.commentRepository.save(comment);
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
-
-    const comment = this.commentRepository.create({
-      ...createCommentDto,
-      userId,
-      reviewId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    return this.commentRepository.save(comment);
   }
 
   /**
@@ -231,7 +308,6 @@ export class ReviewService {
 
     await this.commentRepository.update(commentId, {
       ...updateCommentDto,
-      updatedAt: new Date(),
     });
 
     return this.commentRepository.findOne({
@@ -284,6 +360,13 @@ export class ReviewService {
 
       if (existingLike) {
         await queryRunner.manager.remove(UserReviewLike, existingLike);
+        // likeCount 감소
+        await queryRunner.manager.decrement(
+          Review,
+          { id: reviewId },
+          'likeCount',
+          1,
+        );
         await queryRunner.commitTransaction();
         return { liked: false };
       } else {
@@ -291,6 +374,13 @@ export class ReviewService {
           userId,
           reviewId,
         });
+        // likeCount 증가
+        await queryRunner.manager.increment(
+          Review,
+          { id: reviewId },
+          'likeCount',
+          1,
+        );
         await queryRunner.commitTransaction();
         return { liked: true };
       }
@@ -325,6 +415,13 @@ export class ReviewService {
 
       if (existingLike) {
         await queryRunner.manager.remove(UserCommentLike, existingLike);
+        // likeCount 감소
+        await queryRunner.manager.decrement(
+          Comment,
+          { id: commentId },
+          'likeCount',
+          1,
+        );
         await queryRunner.commitTransaction();
         return { liked: false };
       } else {
@@ -332,6 +429,13 @@ export class ReviewService {
           userId,
           commentId,
         });
+        // likeCount 증가
+        await queryRunner.manager.increment(
+          Comment,
+          { id: commentId },
+          'likeCount',
+          1,
+        );
         await queryRunner.commitTransaction();
         return { liked: true };
       }
