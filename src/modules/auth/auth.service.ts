@@ -452,6 +452,7 @@ export class AuthService {
 
       return {
         accessToken: this.generateAccessToken(user),
+        refreshToken: this.generateRefreshToken(user),
         user: {
           id: user.id,
           email: user.email,
