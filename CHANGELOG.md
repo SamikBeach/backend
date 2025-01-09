@@ -1,5 +1,18 @@
 # 🚦 CHANGELOG
 
+# [1.11.0](https://github.com/SamikBeach/backend/compare/1.10.0...1.11.0) (2025-01-09)
+
+
+### Bug Fixes
+
+* AuthResponse에 user 정보 포함 ([df95bb1](https://github.com/SamikBeach/backend/commit/df95bb180e31e9c0392c3bc7432896eaf32de6ea))
+* bornDateIsBc, diedDateIsBc를 nullable하게 수정 ([b9ba04e](https://github.com/SamikBeach/backend/commit/b9ba04eeb6e51eb09db150959284b510ce8ea401))
+
+
+### Features
+
+* 좋아요, 댓글, 코멘트 업데이트시 카운트 연동해서 올라가도록 ([7430e61](https://github.com/SamikBeach/backend/commit/7430e61d179d597156165449f711fb159abde70b))
+
 # [1.10.0](https://github.com/SamikBeach/backend/compare/1.9.0...1.10.0) (2025-01-08)
 
 
