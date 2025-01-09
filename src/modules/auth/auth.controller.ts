@@ -19,6 +19,7 @@ import {
 import { Response, Request } from 'express';
 import { User } from '@entities/User';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
+import { AuthResponse } from './types/auth.types';
 
 /**
  * 인증 관련 컨트롤러
@@ -97,7 +98,7 @@ export class AuthController {
   async login(
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) res: Response,
-  ) {
+  ): Promise<AuthResponse> {
     const userWithoutPassword = await this.authService.validateUser(
       loginDto.email,
       loginDto.password,
@@ -113,19 +114,17 @@ export class AuthController {
       password: '', // 비밀번호는 이미 검증되었으므로 빈 문자열로 설정
     };
 
-    const tokens = await this.authService.login(user);
+    const response = await this.authService.login(user);
 
     // 리프레시 토큰을 HTTP Only 쿠키로 설정
-    res.cookie('refreshToken', tokens.refreshToken, {
+    res.cookie('refreshToken', this.authService.generateRefreshToken(user), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
     });
 
-    return {
-      accessToken: tokens.accessToken,
-    };
+    return response;
   }
 
   /**
@@ -138,18 +137,23 @@ export class AuthController {
   async googleLogin(
     @Body() googleAuthDto: { code: string },
     @Res({ passthrough: true }) res: Response,
-  ) {
-    const tokens = await this.authService.googleLogin(googleAuthDto.code);
+  ): Promise<AuthResponse> {
+    const response = await this.authService.googleLogin(googleAuthDto.code);
+    const refreshToken = this.authService.generateRefreshToken({
+      id: response.user.id,
+      email: response.user.email,
+      nickname: response.user.nickname,
+    } as User);
 
     // 리프레시 토큰을 HTTP Only 쿠키로 설정
-    res.cookie('refreshToken', tokens.refreshToken, {
+    res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
     });
 
-    return { accessToken: tokens.accessToken };
+    return response;
   }
 
   /**
@@ -157,17 +161,14 @@ export class AuthController {
    * 리프레시 토큰은 쿠키에서 추출합니다.
    */
   @Post('refresh')
-  async refresh(@Req() req: Request) {
+  async refresh(@Req() req: Request): Promise<AuthResponse> {
     const refreshToken = req.cookies['refreshToken'];
 
     if (!refreshToken) {
       throw new UnauthorizedException('리프레시 토큰이 없습니다.');
     }
 
-    // 새로운 액세스 토큰만 발급
-    const { accessToken } = await this.authService.refreshTokens(refreshToken);
-
-    return { accessToken };
+    return this.authService.refreshTokens(refreshToken);
   }
 
   /**

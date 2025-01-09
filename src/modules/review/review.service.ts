@@ -38,7 +38,7 @@ export class ReviewService {
     return paginate(query, this.reviewRepository, {
       sortableColumns: ['id', 'createdAt', 'updatedAt'],
       searchableColumns: ['title', 'content'],
-      defaultSortBy: [['createdAt', 'DESC']],
+      defaultSortBy: [['id', 'ASC']],
       relations: [
         'user',
         'book',
