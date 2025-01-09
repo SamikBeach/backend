@@ -1,5 +1,18 @@
 # 🚦 CHANGELOG
 
+# [1.12.0](https://github.com/SamikBeach/backend/compare/1.11.0...1.12.0) (2025-01-09)
+
+
+### Bug Fixes
+
+* fix type errors ([37a879b](https://github.com/SamikBeach/backend/commit/37a879be876a77a9873fd26365385e85f47353e4))
+* 엑세스 토큰 갱신시 리프레시 토큰도 함께 갱신되도록 수정 ([73bd3af](https://github.com/SamikBeach/backend/commit/73bd3af56cb79afa3165db8575602913e90e2b0c))
+
+
+### Features
+
+* OptionalJwtAuthGuard 추가 ([263674a](https://github.com/SamikBeach/backend/commit/263674a1d29f81a1d2d8973a65ac557140990f5d))
+
 # [1.11.0](https://github.com/SamikBeach/backend/compare/1.10.0...1.11.0) (2025-01-09)
 
 
