@@ -8,6 +8,17 @@ export interface AuthTokens {
   refreshToken: string;
 }
 
+export interface UserResponse {
+  id: number;
+  email: string;
+  nickname: string;
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  user: UserResponse;
+}
+
 export interface EmailVerification {
   code: string;
   expires: Date;

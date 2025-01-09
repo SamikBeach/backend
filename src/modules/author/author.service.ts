@@ -57,7 +57,6 @@ export class AuthorService {
       maxLimit: 100,
     });
   }
-
   /**
    * 저자 좋아요를 토글합니다.
    */
@@ -81,6 +80,13 @@ export class AuthorService {
 
       if (existingLike) {
         await queryRunner.manager.remove(UserAuthorLike, existingLike);
+        // likeCount 감소
+        await queryRunner.manager.decrement(
+          Author,
+          { id: authorId },
+          'likeCount',
+          1,
+        );
         await queryRunner.commitTransaction();
         return { liked: false };
       } else {
@@ -88,6 +94,13 @@ export class AuthorService {
           userId,
           authorId,
         });
+        // likeCount 증가
+        await queryRunner.manager.increment(
+          Author,
+          { id: authorId },
+          'likeCount',
+          1,
+        );
         await queryRunner.commitTransaction();
         return { liked: true };
       }

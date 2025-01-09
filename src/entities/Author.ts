@@ -19,14 +19,14 @@ export class Author {
   @Column('text', { name: 'born_date', nullable: true })
   bornDate: string | null;
 
-  @Column('tinyint', { name: 'born_date_is_bc', width: 1 })
-  bornDateIsBc: boolean;
+  @Column('tinyint', { name: 'born_date_is_bc', width: 1, nullable: true })
+  bornDateIsBc: boolean | null;
 
   @Column('text', { name: 'died_date', nullable: true })
   diedDate: string | null;
 
-  @Column('tinyint', { name: 'died_date_is_bc', width: 1 })
-  diedDateIsBc: boolean;
+  @Column('tinyint', { name: 'died_date_is_bc', width: 1, nullable: true })
+  diedDateIsBc: boolean | null;
 
   @Column('int', { name: 'era_id', nullable: true })
   eraId: number | null;

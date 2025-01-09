@@ -20,6 +20,7 @@ import {
   TokenPayload,
   AuthTokens,
   EmailVerification,
+  AuthResponse,
 } from './types/auth.types';
 
 // 구글 로그인을 위한 User 타입 확장
@@ -77,34 +78,45 @@ export class AuthService {
   }
 
   /**
-   * JWT 토큰 생성
+   * 액세스 토큰 생성
    */
-  private generateTokens(user: User): AuthTokens {
+  private generateAccessToken(user: User): string {
     const payload: TokenPayload = { email: user.email, sub: user.id };
+    return this.jwtService.sign(payload, {
+      secret: this.configService.get('ACCESS_TOKEN_SECRET'),
+      expiresIn: this.ACCESS_TOKEN_EXPIRY,
+    });
+  }
 
-    return {
-      accessToken: this.jwtService.sign(payload, {
-        secret: this.configService.get('ACCESS_TOKEN_SECRET'),
-        expiresIn: this.ACCESS_TOKEN_EXPIRY,
-      }),
-      refreshToken: this.jwtService.sign(payload, {
-        secret: this.configService.get('REFRESH_TOKEN_SECRET'),
-        expiresIn: this.REFRESH_TOKEN_EXPIRY,
-      }),
-    };
+  /**
+   * 리프레시 토큰 생성
+   */
+  generateRefreshToken(user: User): string {
+    const payload: TokenPayload = { email: user.email, sub: user.id };
+    return this.jwtService.sign(payload, {
+      secret: this.configService.get('REFRESH_TOKEN_SECRET'),
+      expiresIn: this.REFRESH_TOKEN_EXPIRY,
+    });
   }
 
   /**
    * 일반 로그인
    */
-  async login(user: User): Promise<AuthTokens> {
-    return this.generateTokens(user);
+  async login(user: User): Promise<AuthResponse> {
+    return {
+      accessToken: this.generateAccessToken(user),
+      user: {
+        id: user.id,
+        email: user.email,
+        nickname: user.nickname,
+      },
+    };
   }
 
   /**
    * 구글 로그인
    */
-  async googleLogin(code: string): Promise<AuthTokens> {
+  async googleLogin(code: string): Promise<AuthResponse> {
     try {
       const googleClient = new OAuth2Client(
         process.env.GOOGLE_CLIENT_ID,
@@ -138,7 +150,14 @@ export class AuthService {
 
       // 이미 가입된 회원이고 구글 계정으로 가입한 경우
       if (user && user.password === null) {
-        return this.generateTokens(user);
+        return {
+          accessToken: this.generateAccessToken(user),
+          user: {
+            id: user.id,
+            email: user.email,
+            nickname: user.nickname,
+          },
+        };
       }
 
       // 이미 가입된 회원이지만 이메일/비밀번호로 가입한 경우
@@ -152,12 +171,11 @@ export class AuthService {
       if (!user) {
         user = await this.userRepository.save({
           email: payload.email,
-          nickname: payload.name || payload.email.split('@')[0], // name이 없는 경우 이메일 앞부분을 닉네임으로 사용
+          nickname: payload.name || payload.email.split('@')[0],
           password: null,
           verified: true,
         } as Partial<User>);
 
-        // 저장된 사용자 정보 다시 조회
         const savedUser = await this.userRepository.findOne({
           where: { id: user.id },
           select: {
@@ -175,7 +193,14 @@ export class AuthService {
         user = savedUser;
       }
 
-      return this.generateTokens(user);
+      return {
+        accessToken: this.generateAccessToken(user),
+        user: {
+          id: user.id,
+          email: user.email,
+          nickname: user.nickname,
+        },
+      };
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;
@@ -374,7 +399,10 @@ export class AuthService {
       });
 
       // 토큰 생성
-      const tokens = this.generateTokens(user);
+      const tokens = {
+        accessToken: this.generateAccessToken(result),
+        refreshToken: this.generateRefreshToken(result),
+      };
 
       await queryRunner.commitTransaction();
 
@@ -394,9 +422,9 @@ export class AuthService {
   }
 
   /**
-   * 리프레시 토큰을 검증하고 새로운 토큰 쌍을 발급합니다.
+   * 리프레시 토큰을 검증하고 새로운 토큰을 발급합니다.
    */
-  async refreshTokens(refreshToken: string): Promise<{ accessToken: string }> {
+  async refreshTokens(refreshToken: string): Promise<AuthResponse> {
     try {
       // 리프레시 토큰 검증
       const payload = await this.jwtService.verifyAsync(refreshToken, {
@@ -407,6 +435,9 @@ export class AuthService {
       const user = await this.userRepository.findOne({
         where: { id: payload.sub },
         select: {
+          id: true,
+          email: true,
+          nickname: true,
           verified: true,
         },
       });
@@ -419,14 +450,14 @@ export class AuthService {
         throw new UnauthorizedException('이메일 인증이 필요합니다.');
       }
 
-      // 새로운 액세스 토큰만 생성
-      const newPayload: TokenPayload = { email: user.email, sub: user.id };
-      const accessToken = this.jwtService.sign(newPayload, {
-        secret: this.configService.get('ACCESS_TOKEN_SECRET'),
-        expiresIn: this.ACCESS_TOKEN_EXPIRY,
-      });
-
-      return { accessToken };
+      return {
+        accessToken: this.generateAccessToken(user),
+        user: {
+          id: user.id,
+          email: user.email,
+          nickname: user.nickname,
+        },
+      };
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;
