@@ -31,7 +31,7 @@ export class AuthorController {
    */
   @Get('search')
   async searchAuthors(@Paginate() query: PaginateQuery) {
-    return this.authorService.search(query);
+    return this.authorService.searchAuthors(query);
   }
 
   /**
