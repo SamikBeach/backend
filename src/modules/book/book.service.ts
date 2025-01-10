@@ -61,7 +61,15 @@ export class BookService {
         publisher: [FilterOperator.ILIKE],
         isbn: [FilterOperator.EQ],
         isbn13: [FilterOperator.EQ],
+        'authorBooks.author.id': [FilterOperator.EQ],
       },
+      ...(query.filter?.authorId && {
+        where: {
+          authorBooks: {
+            authorId: Number(query.filter.authorId),
+          },
+        },
+      }),
       maxLimit: 100,
     });
   }
