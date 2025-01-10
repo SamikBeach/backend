@@ -142,4 +142,24 @@ export class AuthorService {
       maxLimit: 20,
     });
   }
+
+  /**
+   * 모든 저자 목록을 가져옵니다.
+   * 이름 오름차순으로 정렬됩니다.
+   */
+  async getAllAuthors() {
+    return this.authorRepository.find({
+      order: {
+        nameInKor: 'ASC',
+        name: 'ASC',
+      },
+      select: {
+        id: true,
+        name: true,
+        nameInKor: true,
+        likeCount: true,
+        reviewCount: true,
+      },
+    });
+  }
 }
