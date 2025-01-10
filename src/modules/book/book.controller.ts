@@ -21,7 +21,7 @@ export class BookController {
    */
   @Get('search')
   async searchBooks(@Paginate() query: PaginateQuery) {
-    return this.bookService.search(query);
+    return this.bookService.searchBooks(query);
   }
 
   /**

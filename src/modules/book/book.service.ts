@@ -37,7 +37,7 @@ export class BookService {
   /**
    * 책을 검색하고 페이지네이션된 결과를 반환합니다.
    */
-  async search(query: PaginateQuery) {
+  async searchBooks(query: PaginateQuery) {
     return paginate(query, this.bookRepository, {
       sortableColumns: [
         'id',
@@ -61,7 +61,15 @@ export class BookService {
         publisher: [FilterOperator.ILIKE],
         isbn: [FilterOperator.EQ],
         isbn13: [FilterOperator.EQ],
+        'authorBooks.author.id': [FilterOperator.EQ],
       },
+      ...(query.filter?.authorId && {
+        where: {
+          authorBooks: {
+            authorId: Number(query.filter.authorId),
+          },
+        },
+      }),
       maxLimit: 100,
     });
   }

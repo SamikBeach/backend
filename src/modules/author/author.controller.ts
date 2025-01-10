@@ -17,6 +17,15 @@ export class AuthorController {
   constructor(private readonly authorService: AuthorService) {}
 
   /**
+   * 모든 저자 목록을 가져옵니다.
+   * 이름 오름차순으로 정렬됩니다.
+   */
+  @Get()
+  async getAllAuthors() {
+    return this.authorService.getAllAuthors();
+  }
+
+  /**
    * 저자 목록을 조회하고 검색합니다.
    * 페이지네이션, 정렬, 검색, 필터링을 지원합니다.
    */
