@@ -1,5 +1,17 @@
 # 🚦 CHANGELOG
 
+# [1.13.0](https://github.com/SamikBeach/backend/compare/1.12.0...1.13.0) (2025-01-10)
+
+
+### Bug Fixes
+
+* searchBooks API 필터 로직 개선 ([5f96ef7](https://github.com/SamikBeach/backend/commit/5f96ef7199c4f9d8cc3014d7b4b035d80a5562ea))
+
+
+### Features
+
+* 전체 저자 목록 조회 API 추가 ([7f86b9c](https://github.com/SamikBeach/backend/commit/7f86b9c404e3074a9fa76eda2f14c3be42bb57a5))
+
 # [1.12.0](https://github.com/SamikBeach/backend/compare/1.11.0...1.12.0) (2025-01-09)
 
 
