@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, In } from 'typeorm';
+import { Repository, DataSource, In, Not } from 'typeorm';
 import { Book } from '@entities/Book';
 import { UserBookLike } from '@entities/UserBookLike';
 import { Review } from '@entities/Review';
@@ -160,7 +160,7 @@ export class BookService {
   /**
    * 연관된 책 목록(같은 저자의 다른 책들)을 조회합니다.
    */
-  async getRelatedBooks(bookId: number, query: PaginateQuery) {
+  async searchRelatedBooks(bookId: number, query: PaginateQuery) {
     const book = await this.bookRepository.findOne({
       where: { id: bookId },
       relations: ['authorBooks', 'authorBooks.author'],
@@ -202,6 +202,40 @@ export class BookService {
       ],
       defaultSortBy: [['publicationDate', 'DESC']],
       maxLimit: 20,
+    });
+  }
+
+  /**
+   * 연관된 모든 책 목록(같은 저자의 다른 책들)을 조회합니다.
+   * 페이지네이션 없이 전체 목록을 반환합니다.
+   */
+  async getAllRelatedBooks(bookId: number) {
+    const book = await this.bookRepository.findOne({
+      where: { id: bookId },
+      relations: ['authorBooks', 'authorBooks.author'],
+    });
+
+    if (!book) {
+      throw new NotFoundException('책을 찾을 수 없습니다.');
+    }
+
+    const authorIds = book.authorBooks.map((ab) => ab.author.id);
+
+    // 저자가 없는 경우 빈 배열 반환
+    if (authorIds.length === 0) {
+      return [];
+    }
+
+    return this.bookRepository.find({
+      where: {
+        id: Not(bookId),
+        authorBooks: {
+          author: {
+            id: In(authorIds),
+          },
+        },
+      },
+      relations: ['authorBooks', 'authorBooks.author'],
     });
   }
 
