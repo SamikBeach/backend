@@ -12,6 +12,22 @@ import { User } from '@entities/User';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '@decorators/public.decorator';
 
+/**
+ * JWT 인증 가드
+ *
+ * 이 가드는 보호된 라우트에 대한 접근을 제어합니다.
+ * 모든 요청에 대해 유효한 JWT 토큰을 요구합니다.
+ *
+ * 주요 기능:
+ * 1. 모든 요청에 대해 Authorization 헤더의 Bearer 토큰을 검증
+ * 2. 토큰이 없거나 유효하지 않은 경우 401 Unauthorized 응답
+ * 3. 토큰이 유효한 경우 사용자 정보를 request.user에 추가
+ *
+ * 사용 예시:
+ * @UseGuards(JwtAuthGuard)
+ * @Get('profile')
+ * getProfile() { ... }
+ */
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
@@ -22,14 +38,30 @@ export class JwtAuthGuard implements CanActivate {
     private reflector: Reflector,
   ) {}
 
+  /**
+   * 요청의 인증 상태를 확인하고 처리합니다.
+   *
+   * @param context 실행 컨텍스트 (요청 정보 포함)
+   * @returns 인증 성공 시 true, 실패 시 UnauthorizedException 발생
+   *
+   * 처리 과정:
+   * 1. @Public() 데코레이터 확인 (공개 라우트는 인증 건너뜀)
+   * 2. Authorization 헤더에서 Bearer 토큰 추출
+   * 3. 토큰 검증 및 사용자 정보 조회
+   * 4. 검증된 사용자 정보를 request.user에 저장
+   *
+   * 예외 처리:
+   * - 토큰 없음: UnauthorizedException
+   * - 토큰 만료: UnauthorizedException
+   * - 유효하지 않은 토큰: UnauthorizedException
+   * - 사용자 없음: UnauthorizedException
+   */
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // Public 데코레이터가 있는지 확인
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
 
-    // Public 데코레이터가 있으면 인증 검사 스킵
     if (isPublic) {
       return true;
     }
@@ -38,7 +70,7 @@ export class JwtAuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException('토큰이 제공되지 않았습니다.');
+      throw new UnauthorizedException('토큰이 없습니다.');
     }
 
     try {
@@ -66,20 +98,25 @@ export class JwtAuthGuard implements CanActivate {
         throw new UnauthorizedException('이메일 인증이 필요합니다.');
       }
 
-      // request에 user 정보 추가
       request.user = user;
       return true;
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
       throw new UnauthorizedException('유효하지 않은 토큰입니다.');
     }
   }
 
+  /**
+   * Authorization 헤더에서 Bearer 토큰을 추출합니다.
+   *
+   * @param request HTTP 요청 객체
+   * @returns Bearer 토큰 또는 undefined
+   *
+   * 예시:
+   * Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+   * => eyJhbGciOiJIUzI1NiIs...
+   */
   private extractTokenFromHeader(request: any): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
-
     return type === 'Bearer' ? token : undefined;
   }
 }
