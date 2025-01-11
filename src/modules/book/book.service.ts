@@ -49,6 +49,7 @@ export class BookService {
    * 책을 검색하고 페이지네이션된 결과를 반환합니다.
    */
   async searchBooks(query: PaginateQuery, userId?: number) {
+    console.log(query.sortBy);
     const books = await paginate(query, this.bookRepository, {
       sortableColumns: [
         'id',
