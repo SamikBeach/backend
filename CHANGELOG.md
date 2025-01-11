@@ -1,5 +1,14 @@
 # 🚦 CHANGELOG
 
+# [1.14.0](https://github.com/SamikBeach/backend/compare/1.13.0...1.14.0) (2025-01-11)
+
+
+### Features
+
+* searchBooks, getBookDetail에 엔드포인트에 OptionalJwtAuthGuard 적용 ([d89afae](https://github.com/SamikBeach/backend/commit/d89afaec2e085814ef414cd02d0aa0feeb6200b6))
+* 리뷰 조회 시 연관 엔티티 추가 ([f5bf0e0](https://github.com/SamikBeach/backend/commit/f5bf0e00c159c1a080d1f6912f8741ad34b3e3de))
+* 전체 관련 책 목록 조회 API 추가 ([3482196](https://github.com/SamikBeach/backend/commit/34821966578da86a260f9d12fa2af6dacce145d7))
+
 # [1.13.0](https://github.com/SamikBeach/backend/compare/1.12.0...1.13.0) (2025-01-10)
 
 
