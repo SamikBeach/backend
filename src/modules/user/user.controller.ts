@@ -4,15 +4,15 @@ import {
   Delete,
   Body,
   UseGuards,
-  UnauthorizedException,
   Patch,
   BadRequestException,
   Res,
   Param,
   ParseIntPipe,
+  Post,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UpdateUserDto } from './dto/user.dto';
+import { UpdateUserDto, ChangePasswordDto } from './dto/user.dto';
 import { User } from '@entities/User';
 import { CurrentUser } from '@decorators/current-user.decorator';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
@@ -33,7 +33,7 @@ export class UserController {
   }
 
   /**
-   * 사용자의 닉네임이나 비밀번호를 변경합니다.
+   * 사용자의 닉네임을 변경합니다.
    */
   @UseGuards(JwtAuthGuard)
   @Patch('me')
@@ -41,26 +41,9 @@ export class UserController {
     @CurrentUser() user: User,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    // 닉네임과 비밀번호 동시 변경 방지
-    if (updateUserDto.nickname && updateUserDto.newPassword) {
-      throw new BadRequestException(
-        '닉네임과 비밀번호는 동시에 변경할 수 없습니다.',
-      );
-    }
-
-    // 닉네임 변경 시 닉네임 필드 확인
+    // 닉네임 필드 확인
     if (!updateUserDto.nickname && updateUserDto.nickname !== undefined) {
       throw new BadRequestException('닉네임을 입력해주세요.');
-    }
-
-    // 비밀번호 변경 시 현재 비밀번호 확인
-    if (updateUserDto.newPassword && !updateUserDto.currentPassword) {
-      throw new UnauthorizedException('현재 비밀번호를 입력해주세요.');
-    }
-
-    // 비밀번호 변경 시 새 비밀번호 확인
-    if (!updateUserDto.newPassword && updateUserDto.currentPassword) {
-      throw new BadRequestException('새 비밀번호를 입력해주세요.');
     }
 
     return this.userService.updateUser(user.id, updateUserDto);
@@ -203,5 +186,17 @@ export class UserController {
     @Paginate() query: PaginateQuery,
   ) {
     return this.userService.getReviews(user.id, query);
+  }
+
+  /**
+   * 비밀번호를 변경합니다.
+   */
+  @UseGuards(JwtAuthGuard)
+  @Post('me/password')
+  async changePassword(
+    @CurrentUser() user: User,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    return this.userService.changePassword(user.id, changePasswordDto);
   }
 }

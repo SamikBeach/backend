@@ -29,12 +29,16 @@ export class UpdatePasswordDto {
 
 // 통합 수정 DTO
 export class UpdateUserDto {
+  @IsString()
   @IsOptional()
   nickname?: string;
+}
 
-  @IsOptional()
-  newPassword?: string;
+export class ChangePasswordDto {
+  @IsString()
+  currentPassword: string;
 
-  @IsOptional()
-  currentPassword?: string;
+  @IsString()
+  @MinLength(8)
+  newPassword: string;
 }
