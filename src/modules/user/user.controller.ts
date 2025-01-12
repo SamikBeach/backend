@@ -8,6 +8,8 @@ import {
   Patch,
   BadRequestException,
   Res,
+  Param,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/user.dto';
@@ -112,7 +114,55 @@ export class UserController {
   }
 
   /**
-   * 사용자가 좋아하는 책 목록을 조회합니다.
+   * ID로 사용자의 기본 정보를 조회합니다.
+   * @param id 사용자 ID
+   */
+  @Get(':id')
+  async getUserById(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.findById(id);
+  }
+
+  /**
+   * 특정 사용자가 좋아하는 책 목록을 조회합니다.
+   * @param id 사용자 ID
+   * @param query 페이지네이션 쿼리
+   */
+  @Get(':id/books')
+  async getUserLikedBooks(
+    @Param('id', ParseIntPipe) id: number,
+    @Paginate() query: PaginateQuery,
+  ) {
+    return this.userService.getLikedBooks(id, query);
+  }
+
+  /**
+   * 특정 사용자가 좋아하는 저자 목록을 조회합니다.
+   * @param id 사용자 ID
+   * @param query 페이지네이션 쿼리
+   */
+  @Get(':id/authors')
+  async getUserLikedAuthors(
+    @Param('id', ParseIntPipe) id: number,
+    @Paginate() query: PaginateQuery,
+  ) {
+    return this.userService.getLikedAuthors(id, query);
+  }
+
+  /**
+   * 특정 사용자가 작성한 리뷰 목록을 조회합니다.
+   * @param id 사용자 ID
+   * @param query 페이지네이션 쿼리
+   */
+  @Get(':id/reviews')
+  async getUserReviews(
+    @Param('id', ParseIntPipe) id: number,
+    @Paginate() query: PaginateQuery,
+  ) {
+    return this.userService.getReviews(id, query);
+  }
+
+  /**
+   * 현재 로그인한 사용자가 좋아하는 책 목록을 조회합니다.
    * @param user 현재 로그인한 사용자
    * @param query 페이지네이션 쿼리
    */
@@ -125,12 +175,12 @@ export class UserController {
   }
 
   /**
-   * 사용자가 좋아하는 저자 목록을 조회합니다.
+   * 현재 로그인한 사용자가 좋아하는 저자 목록을 조회합니다.
    * @param user 현재 로그인한 사용자
    * @param query 페이지네이션 쿼리
    */
   @Get('me/authors')
-  async getLikedAuthors(
+  async getMyLikedAuthors(
     @CurrentUser() user: User,
     @Paginate() query: PaginateQuery,
   ) {
@@ -138,12 +188,12 @@ export class UserController {
   }
 
   /**
-   * 사용자가 작성한 리뷰 목록을 조회합니다.
+   * 현재 로그인한 사용자가 작성한 리뷰 목록을 조회합니다.
    * @param user 현재 로그인한 사용자
    * @param query 페이지네이션 쿼리
    */
   @Get('me/reviews')
-  async getReviews(
+  async getMyReviews(
     @CurrentUser() user: User,
     @Paginate() query: PaginateQuery,
   ) {
