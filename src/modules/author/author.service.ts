@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { Author } from '@entities/Author';
 import { UserAuthorLike } from '@entities/UserAuthorLike';
 import { Book } from '@entities/Book';
@@ -24,7 +24,7 @@ export class AuthorService {
   /**
    * ID로 저자를 찾습니다.
    */
-  async findById(id: number) {
+  async findById(id: number, userId?: number) {
     const author = await this.authorRepository.findOne({
       where: { id },
       relations: ['authorBooks.book'],
@@ -34,14 +34,25 @@ export class AuthorService {
       throw new NotFoundException('저자를 찾을 수 없습니다.');
     }
 
+    if (userId) {
+      const userLike = await this.userAuthorLikeRepository.findOne({
+        where: { userId, authorId: id },
+      });
+
+      return {
+        ...author,
+        isLiked: !!userLike,
+      };
+    }
+
     return author;
   }
 
   /**
    * 저자를 검색하고 페이지네이션된 결과를 반환합니다.
    */
-  async searchAuthors(query: PaginateQuery) {
-    return paginate(query, this.authorRepository, {
+  async searchAuthors(query: PaginateQuery, userId?: number) {
+    const authors = await paginate(query, this.authorRepository, {
       sortableColumns: [
         'id',
         'name',
@@ -59,6 +70,24 @@ export class AuthorService {
       },
       maxLimit: 100,
     });
+
+    if (userId) {
+      const userLikes = await this.userAuthorLikeRepository.find({
+        where: {
+          userId,
+          authorId: In(authors.data.map((author) => author.id)),
+        },
+      });
+
+      const likedAuthorIds = new Set(userLikes.map((like) => like.authorId));
+
+      authors.data = authors.data.map((author) => ({
+        ...author,
+        isLiked: likedAuthorIds.has(author.id),
+      }));
+    }
+
+    return authors;
   }
   /**
    * 저자 좋아요를 토글합니다.

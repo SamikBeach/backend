@@ -11,6 +11,7 @@ import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { CurrentUser } from '@decorators/current-user.decorator';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { User } from '@entities/User';
+import { OptionalJwtAuthGuard } from '@guards/optional-jwt-auth.guard';
 
 @Controller('author')
 export class AuthorController {
@@ -30,16 +31,24 @@ export class AuthorController {
    * 페이지네이션, 정렬, 검색, 필터링을 지원합니다.
    */
   @Get('search')
-  async searchAuthors(@Paginate() query: PaginateQuery) {
-    return this.authorService.searchAuthors(query);
+  @UseGuards(OptionalJwtAuthGuard)
+  async searchAuthors(
+    @Paginate() query: PaginateQuery,
+    @CurrentUser() user?: User,
+  ) {
+    return this.authorService.searchAuthors(query, user?.id);
   }
 
   /**
    * 저자 상세 정보를 조회합니다.
    */
   @Get(':id')
-  async getAuthorDetail(@Param('id', ParseIntPipe) id: number) {
-    return this.authorService.findById(id);
+  @UseGuards(OptionalJwtAuthGuard)
+  async getAuthorDetail(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user?: User,
+  ) {
+    return this.authorService.findById(id, user?.id);
   }
 
   /**
