@@ -35,7 +35,6 @@ export class ReviewService {
    * 리뷰 목록을 조회합니다.
    */
   async searchReviews(query: PaginateQuery, userId?: number) {
-    console.log(query.sortBy);
     const reviews = await paginate(query, this.reviewRepository, {
       sortableColumns: ['id', 'likeCount', 'createdAt', 'updatedAt'],
       searchableColumns: ['title', 'content'],
@@ -49,11 +48,6 @@ export class ReviewService {
       filterableColumns: {
         title: [FilterOperator.ILIKE],
         content: [FilterOperator.ILIKE],
-      },
-      where: {
-        user: {
-          deletedAt: null,
-        },
       },
       maxLimit: 100,
     });
