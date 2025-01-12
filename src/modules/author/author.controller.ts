@@ -11,6 +11,7 @@ import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { CurrentUser } from '@decorators/current-user.decorator';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { User } from '@entities/User';
+import { OptionalJwtAuthGuard } from '@guards/optional-jwt-auth.guard';
 
 @Controller('author')
 export class AuthorController {
@@ -30,16 +31,24 @@ export class AuthorController {
    * 페이지네이션, 정렬, 검색, 필터링을 지원합니다.
    */
   @Get('search')
-  async searchAuthors(@Paginate() query: PaginateQuery) {
-    return this.authorService.searchAuthors(query);
+  @UseGuards(OptionalJwtAuthGuard)
+  async searchAuthors(
+    @Paginate() query: PaginateQuery,
+    @CurrentUser() user?: User,
+  ) {
+    return this.authorService.searchAuthors(query, user?.id);
   }
 
   /**
    * 저자 상세 정보를 조회합니다.
    */
   @Get(':id')
-  async getAuthorDetail(@Param('id', ParseIntPipe) id: number) {
-    return this.authorService.findById(id);
+  @UseGuards(OptionalJwtAuthGuard)
+  async getAuthorDetail(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user?: User,
+  ) {
+    return this.authorService.findById(id, user?.id);
   }
 
   /**
@@ -56,14 +65,22 @@ export class AuthorController {
   }
 
   /**
-   * 저자가 쓴 책 목록을 조회합니다.
-   * 페이지네이션을 지원합니다.
+   * 저자가 쓴 모든 책 목록을 조회합니다.
    */
   @Get(':id/books')
-  async getAuthorBooks(
+  async getAllAuthorBooks(@Param('id', ParseIntPipe) id: number) {
+    return this.authorService.getAllAuthorBooks(id);
+  }
+
+  /**
+   * 저자의 리뷰 목록을 조회합니다.
+   * 페이지네이션을 지원합니다.
+   */
+  @Get(':id/reviews')
+  async getAuthorReviews(
     @Param('id', ParseIntPipe) id: number,
     @Paginate() query: PaginateQuery,
   ) {
-    return this.authorService.getAuthorBooks(id, query);
+    return this.authorService.getAuthorReviews(id, query);
   }
 }

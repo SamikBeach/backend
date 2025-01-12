@@ -4,20 +4,21 @@ import {
   Delete,
   Body,
   UseGuards,
-  UnauthorizedException,
   Patch,
   BadRequestException,
   Res,
+  Param,
+  ParseIntPipe,
+  Post,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UpdateUserDto } from './dto/user.dto';
+import { UpdateUserDto, ChangePasswordDto } from './dto/user.dto';
 import { User } from '@entities/User';
 import { CurrentUser } from '@decorators/current-user.decorator';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { Response } from 'express';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 
-@UseGuards(JwtAuthGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -25,39 +26,24 @@ export class UserController {
   /**
    * 현재 로그인한 사용자의 정보를 조회합니다.
    */
+  @UseGuards(JwtAuthGuard)
   @Get('me')
   async getMyProfile(@CurrentUser() user: User) {
     return this.userService.findById(user.id);
   }
 
   /**
-   * 사용자의 닉네임이나 비밀번호를 변경합니다.
+   * 사용자의 닉네임을 변경합니다.
    */
+  @UseGuards(JwtAuthGuard)
   @Patch('me')
   async updateMyProfile(
     @CurrentUser() user: User,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    // 닉네임과 비밀번호 동시 변경 방지
-    if (updateUserDto.nickname && updateUserDto.newPassword) {
-      throw new BadRequestException(
-        '닉네임과 비밀번호는 동시에 변경할 수 없습니다.',
-      );
-    }
-
-    // 닉네임 변경 시 닉네임 필드 확인
+    // 닉네임 필드 확인
     if (!updateUserDto.nickname && updateUserDto.nickname !== undefined) {
       throw new BadRequestException('닉네임을 입력해주세요.');
-    }
-
-    // 비밀번호 변경 시 현재 비밀번호 확인
-    if (updateUserDto.newPassword && !updateUserDto.currentPassword) {
-      throw new UnauthorizedException('현재 비밀번호를 입력해주세요.');
-    }
-
-    // 비밀번호 변경 시 새 비밀번호 확인
-    if (!updateUserDto.newPassword && updateUserDto.currentPassword) {
-      throw new BadRequestException('새 비밀번호를 입력해주세요.');
     }
 
     return this.userService.updateUser(user.id, updateUserDto);
@@ -66,6 +52,7 @@ export class UserController {
   /**
    * 회원 탈퇴를 처리합니다.
    */
+  @UseGuards(JwtAuthGuard)
   @Delete('me')
   async deleteMyAccount(
     @CurrentUser() user: User,
@@ -112,41 +99,104 @@ export class UserController {
   }
 
   /**
-   * 사용자가 좋아하는 책 목록을 조회합니다.
+   * ID로 사용자의 기본 정보를 조회합니다.
+   * @param id 사용자 ID
+   */
+  @Get(':id')
+  async getUserById(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.findById(id);
+  }
+
+  /**
+   * 특정 사용자가 좋아하는 책 목록을 조회합니다.
+   * @param id 사용자 ID
+   * @param query 페이지네이션 쿼리
+   */
+  @Get(':id/books')
+  async getUserLikedBooks(
+    @Param('id', ParseIntPipe) id: number,
+    @Paginate() query: PaginateQuery,
+  ) {
+    return this.userService.getLikedBooks(id, query);
+  }
+
+  /**
+   * 특정 사용자가 좋아하는 저자 목록을 조회합니다.
+   * @param id 사용자 ID
+   * @param query 페이지네이션 쿼리
+   */
+  @Get(':id/authors')
+  async getUserLikedAuthors(
+    @Param('id', ParseIntPipe) id: number,
+    @Paginate() query: PaginateQuery,
+  ) {
+    return this.userService.getLikedAuthors(id, query);
+  }
+
+  /**
+   * 특정 사용자가 작성한 리뷰 목록을 조회합니다.
+   * @param id 사용자 ID
+   * @param query 페이지네이션 쿼리
+   */
+  @Get(':id/reviews')
+  async getUserReviews(
+    @Param('id', ParseIntPipe) id: number,
+    @Paginate() query: PaginateQuery,
+  ) {
+    return this.userService.getReviews(id, query);
+  }
+
+  /**
+   * 현재 로그인한 사용자가 좋아하는 책 목록을 조회합니다.
    * @param user 현재 로그인한 사용자
    * @param query 페이지네이션 쿼리
    */
+  @UseGuards(JwtAuthGuard)
   @Get('me/books')
-  async getMyFavoriteBooks(
+  async getMyLikedBooks(
     @CurrentUser() user: User,
     @Paginate() query: PaginateQuery,
   ) {
-    return this.userService.getFavoriteBooks(user.id, query);
+    return this.userService.getLikedBooks(user.id, query);
   }
 
   /**
-   * 사용자가 좋아하는 저자 목록을 조회합니다.
+   * 현재 로그인한 사용자가 좋아하는 저자 목록을 조회합니다.
    * @param user 현재 로그인한 사용자
    * @param query 페이지네이션 쿼리
    */
+  @UseGuards(JwtAuthGuard)
   @Get('me/authors')
-  async getMyFavoriteAuthors(
+  async getMyLikedAuthors(
     @CurrentUser() user: User,
     @Paginate() query: PaginateQuery,
   ) {
-    return this.userService.getFavoriteAuthors(user.id, query);
+    return this.userService.getLikedAuthors(user.id, query);
   }
 
   /**
-   * 사용자가 작성한 리뷰 목록을 조회합니다.
+   * 현재 로그인한 사용자가 작성한 리뷰 목록을 조회합니다.
    * @param user 현재 로그인한 사용자
    * @param query 페이지네이션 쿼리
    */
+  @UseGuards(JwtAuthGuard)
   @Get('me/reviews')
   async getMyReviews(
     @CurrentUser() user: User,
     @Paginate() query: PaginateQuery,
   ) {
     return this.userService.getReviews(user.id, query);
+  }
+
+  /**
+   * 비밀번호를 변경합니다.
+   */
+  @UseGuards(JwtAuthGuard)
+  @Post('me/password')
+  async changePassword(
+    @CurrentUser() user: User,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    return this.userService.changePassword(user.id, changePasswordDto);
   }
 }

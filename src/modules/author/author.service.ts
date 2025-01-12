@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { Author } from '@entities/Author';
 import { UserAuthorLike } from '@entities/UserAuthorLike';
 import { Book } from '@entities/Book';
 import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
+import { Review } from '@entities/Review';
 
 @Injectable()
 export class AuthorService {
@@ -16,12 +17,14 @@ export class AuthorService {
     @InjectRepository(UserAuthorLike)
     private readonly userAuthorLikeRepository: Repository<UserAuthorLike>,
     private readonly dataSource: DataSource,
+    @InjectRepository(Review)
+    private readonly reviewRepository: Repository<Review>,
   ) {}
 
   /**
    * ID로 저자를 찾습니다.
    */
-  async findById(id: number) {
+  async findById(id: number, userId?: number) {
     const author = await this.authorRepository.findOne({
       where: { id },
       relations: ['authorBooks.book'],
@@ -31,14 +34,25 @@ export class AuthorService {
       throw new NotFoundException('저자를 찾을 수 없습니다.');
     }
 
+    if (userId) {
+      const userLike = await this.userAuthorLikeRepository.findOne({
+        where: { userId, authorId: id },
+      });
+
+      return {
+        ...author,
+        isLiked: !!userLike,
+      };
+    }
+
     return author;
   }
 
   /**
    * 저자를 검색하고 페이지네이션된 결과를 반환합니다.
    */
-  async searchAuthors(query: PaginateQuery) {
-    return paginate(query, this.authorRepository, {
+  async searchAuthors(query: PaginateQuery, userId?: number) {
+    const authors = await paginate(query, this.authorRepository, {
       sortableColumns: [
         'id',
         'name',
@@ -56,6 +70,24 @@ export class AuthorService {
       },
       maxLimit: 100,
     });
+
+    if (userId) {
+      const userLikes = await this.userAuthorLikeRepository.find({
+        where: {
+          userId,
+          authorId: In(authors.data.map((author) => author.id)),
+        },
+      });
+
+      const likedAuthorIds = new Set(userLikes.map((like) => like.authorId));
+
+      authors.data = authors.data.map((author) => ({
+        ...author,
+        isLiked: likedAuthorIds.has(author.id),
+      }));
+    }
+
+    return authors;
   }
   /**
    * 저자 좋아요를 토글합니다.
@@ -113,9 +145,9 @@ export class AuthorService {
   }
 
   /**
-   * 저자가 쓴 책 목록을 조회합니다.
+   * 저자가 쓴 모든 책 목록을 조회합니다.
    */
-  async getAuthorBooks(authorId: number, query: PaginateQuery) {
+  async getAllAuthorBooks(authorId: number) {
     const author = await this.authorRepository.findOne({
       where: { id: authorId },
     });
@@ -124,22 +156,15 @@ export class AuthorService {
       throw new NotFoundException('저자를 찾을 수 없습니다.');
     }
 
-    const queryBuilder = this.bookRepository
-      .createQueryBuilder('book')
-      .innerJoinAndSelect('book.authorBooks', 'ab')
-      .innerJoinAndSelect('ab.author', 'author')
-      .where('author.id = :authorId', { authorId });
-
-    return paginate(query, queryBuilder, {
-      sortableColumns: [
-        'id',
-        'title',
-        'publicationDate',
-        'likeCount',
-        'reviewCount',
-      ],
-      defaultSortBy: [['publicationDate', 'DESC']],
-      maxLimit: 20,
+    return this.bookRepository.find({
+      where: {
+        authorBooks: {
+          author: {
+            id: authorId,
+          },
+        },
+      },
+      relations: ['authorBooks', 'authorBooks.author'],
     });
   }
 
@@ -160,6 +185,40 @@ export class AuthorService {
         likeCount: true,
         reviewCount: true,
       },
+    });
+  }
+
+  /**
+   * 저자의 책들에 대한 리뷰 목록을 조회합니다.
+   */
+  async getAuthorReviews(authorId: number, query: PaginateQuery) {
+    const author = await this.authorRepository.findOne({
+      where: { id: authorId },
+    });
+
+    if (!author) {
+      throw new NotFoundException('저자를 찾을 수 없습니다.');
+    }
+
+    return paginate(query, this.reviewRepository, {
+      sortableColumns: ['id', 'createdAt', 'updatedAt', 'likeCount'],
+      defaultSortBy: [['createdAt', 'DESC']],
+      relations: [
+        'book',
+        'book.authorBooks',
+        'book.authorBooks.author',
+        'user',
+      ],
+      where: {
+        book: {
+          authorBooks: {
+            author: {
+              id: authorId,
+            },
+          },
+        },
+      },
+      maxLimit: 100,
     });
   }
 }

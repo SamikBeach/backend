@@ -7,7 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '@entities/User';
-import { UpdateUserDto } from './dto/user.dto';
+import { UpdateUserDto, ChangePasswordDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
@@ -54,6 +54,7 @@ export class UserService {
   ): Promise<Pick<User, 'id' | 'email' | 'nickname'>> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
+      select: ['id', 'email', 'nickname'],
     });
 
     if (!user) {
@@ -72,27 +73,6 @@ export class UserService {
 
       await this.userRepository.update(userId, {
         nickname: updateUserDto.nickname,
-      });
-    }
-
-    // 비밀번호 변경
-    if (updateUserDto.newPassword) {
-      const isPasswordValid = await bcrypt.compare(
-        updateUserDto.currentPassword,
-        user.password,
-      );
-
-      if (!isPasswordValid) {
-        throw new UnauthorizedException('현재 비밀번호가 일치하지 않습니다.');
-      }
-
-      const hashedPassword = await bcrypt.hash(
-        updateUserDto.newPassword,
-        Number(this.configService.get('HASH_ROUNDS')),
-      );
-
-      await this.userRepository.update(userId, {
-        password: hashedPassword,
       });
     }
 
@@ -163,15 +143,14 @@ export class UserService {
       maxLimit: 100,
     });
   }
-
   /**
    * 사용자가 좋아하는 책 목록을 조회합니다.
    */
-  async getFavoriteBooks(userId: number, query: PaginateQuery) {
+  async getLikedBooks(userId: number, query: PaginateQuery) {
     return paginate(query, this.userBookLikeRepository, {
       sortableColumns: ['id'],
       defaultSortBy: [['id', 'DESC']],
-      relations: ['book', 'book.authorBooks', 'book.authorBooks.author'],
+      relations: ['book'],
       where: { userId },
     });
   }
@@ -179,7 +158,7 @@ export class UserService {
   /**
    * 사용자가 좋아하는 저자 목록을 조회합니다.
    */
-  async getFavoriteAuthors(userId: number, query: PaginateQuery) {
+  async getLikedAuthors(userId: number, query: PaginateQuery) {
     return paginate(query, this.userAuthorLikeRepository, {
       sortableColumns: ['id'],
       defaultSortBy: [['id', 'DESC']],
@@ -195,8 +174,54 @@ export class UserService {
     return paginate(query, this.reviewRepository, {
       sortableColumns: ['id', 'createdAt', 'updatedAt'],
       defaultSortBy: [['createdAt', 'DESC']],
-      relations: ['book', 'book.authorBooks', 'book.authorBooks.author'],
+      relations: [
+        'book',
+        'book.authorBooks',
+        'book.authorBooks.author',
+        'user',
+      ],
       where: { userId },
     });
+  }
+
+  /**
+   * 비밀번호를 변경합니다.
+   */
+  async changePassword(
+    userId: number,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'password'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    if (!user.password) {
+      throw new UnauthorizedException('비밀번호가 설정되지 않은 계정입니다.');
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      changePasswordDto.currentPassword,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('현재 비밀번호가 일치하지 않습니다.');
+    }
+
+    const hashedPassword = await bcrypt.hash(
+      changePasswordDto.newPassword,
+      Number(this.configService.get('HASH_ROUNDS')),
+    );
+
+    await this.userRepository.update(userId, {
+      password: hashedPassword,
+    });
+
+    return { message: '비밀번호가 변경되었습니다.' };
   }
 }
