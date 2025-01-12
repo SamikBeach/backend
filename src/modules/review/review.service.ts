@@ -50,6 +50,11 @@ export class ReviewService {
         title: [FilterOperator.ILIKE],
         content: [FilterOperator.ILIKE],
       },
+      where: {
+        user: {
+          deletedAt: null,
+        },
+      },
       maxLimit: 100,
     });
 
