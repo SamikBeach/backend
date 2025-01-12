@@ -5,6 +5,7 @@ import { Author } from '@entities/Author';
 import { UserAuthorLike } from '@entities/UserAuthorLike';
 import { Book } from '@entities/Book';
 import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
+import { Review } from '@entities/Review';
 
 @Injectable()
 export class AuthorService {
@@ -16,6 +17,8 @@ export class AuthorService {
     @InjectRepository(UserAuthorLike)
     private readonly userAuthorLikeRepository: Repository<UserAuthorLike>,
     private readonly dataSource: DataSource,
+    @InjectRepository(Review)
+    private readonly reviewRepository: Repository<Review>,
   ) {}
 
   /**
@@ -160,6 +163,40 @@ export class AuthorService {
         likeCount: true,
         reviewCount: true,
       },
+    });
+  }
+
+  /**
+   * 저자의 책들에 대한 리뷰 목록을 조회합니다.
+   */
+  async getAuthorReviews(authorId: number, query: PaginateQuery) {
+    const author = await this.authorRepository.findOne({
+      where: { id: authorId },
+    });
+
+    if (!author) {
+      throw new NotFoundException('저자를 찾을 수 없습니다.');
+    }
+
+    return paginate(query, this.reviewRepository, {
+      sortableColumns: ['id', 'createdAt', 'updatedAt', 'likeCount'],
+      defaultSortBy: [['createdAt', 'DESC']],
+      relations: [
+        'book',
+        'book.authorBooks',
+        'book.authorBooks.author',
+        'user',
+      ],
+      where: {
+        book: {
+          authorBooks: {
+            author: {
+              id: authorId,
+            },
+          },
+        },
+      },
+      maxLimit: 100,
     });
   }
 }

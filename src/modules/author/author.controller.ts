@@ -66,4 +66,16 @@ export class AuthorController {
   ) {
     return this.authorService.getAuthorBooks(id, query);
   }
+
+  /**
+   * 저자의 리뷰 목록을 조회합니다.
+   * 페이지네이션을 지원합니다.
+   */
+  @Get(':id/reviews')
+  async getAuthorReviews(
+    @Param('id', ParseIntPipe) id: number,
+    @Paginate() query: PaginateQuery,
+  ) {
+    return this.authorService.getAuthorReviews(id, query);
+  }
 }
