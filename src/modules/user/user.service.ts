@@ -54,6 +54,7 @@ export class UserService {
   ): Promise<Pick<User, 'id' | 'email' | 'nickname'>> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
+      select: ['id', 'email', 'nickname', 'password'],
     });
 
     if (!user) {
@@ -163,7 +164,6 @@ export class UserService {
       maxLimit: 100,
     });
   }
-
   /**
    * 사용자가 좋아하는 책 목록을 조회합니다.
    */
@@ -171,7 +171,7 @@ export class UserService {
     return paginate(query, this.userBookLikeRepository, {
       sortableColumns: ['id'],
       defaultSortBy: [['id', 'DESC']],
-      relations: ['book', 'book.authorBooks', 'book.authorBooks.author'],
+      relations: ['book'],
       where: { userId },
     });
   }

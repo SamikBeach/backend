@@ -61,12 +61,17 @@ export class AuthService {
         verified: true,
       },
     });
+
     if (!user) {
       throw new UnauthorizedException('존재하지 않는 이메일입니다.');
     }
 
     if (!user.verified) {
       throw new UnauthorizedException('이메일 인증이 필요합니다.');
+    }
+
+    if (!user.password) {
+      throw new UnauthorizedException('비밀번호가 설정되지 않은 계정입니다.');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);

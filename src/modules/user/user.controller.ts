@@ -19,7 +19,6 @@ import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { Response } from 'express';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 
-@UseGuards(JwtAuthGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -27,6 +26,7 @@ export class UserController {
   /**
    * 현재 로그인한 사용자의 정보를 조회합니다.
    */
+  @UseGuards(JwtAuthGuard)
   @Get('me')
   async getMyProfile(@CurrentUser() user: User) {
     return this.userService.findById(user.id);
@@ -35,6 +35,7 @@ export class UserController {
   /**
    * 사용자의 닉네임이나 비밀번호를 변경합니다.
    */
+  @UseGuards(JwtAuthGuard)
   @Patch('me')
   async updateMyProfile(
     @CurrentUser() user: User,
@@ -68,6 +69,7 @@ export class UserController {
   /**
    * 회원 탈퇴를 처리합니다.
    */
+  @UseGuards(JwtAuthGuard)
   @Delete('me')
   async deleteMyAccount(
     @CurrentUser() user: User,
@@ -166,6 +168,7 @@ export class UserController {
    * @param user 현재 로그인한 사용자
    * @param query 페이지네이션 쿼리
    */
+  @UseGuards(JwtAuthGuard)
   @Get('me/books')
   async getMyLikedBooks(
     @CurrentUser() user: User,
@@ -179,6 +182,7 @@ export class UserController {
    * @param user 현재 로그인한 사용자
    * @param query 페이지네이션 쿼리
    */
+  @UseGuards(JwtAuthGuard)
   @Get('me/authors')
   async getMyLikedAuthors(
     @CurrentUser() user: User,
@@ -192,6 +196,7 @@ export class UserController {
    * @param user 현재 로그인한 사용자
    * @param query 페이지네이션 쿼리
    */
+  @UseGuards(JwtAuthGuard)
   @Get('me/reviews')
   async getMyReviews(
     @CurrentUser() user: User,
