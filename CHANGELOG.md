@@ -1,5 +1,22 @@
 # 🚦 CHANGELOG
 
+# [1.15.0](https://github.com/SamikBeach/backend/compare/1.14.0...1.15.0) (2025-01-12)
+
+
+### Bug Fixes
+
+* fix lint ([bd6577f](https://github.com/SamikBeach/backend/commit/bd6577f56685cc7c6d9393aace2667a582b9cea0))
+* 누락된 OptionalJwtAuthGuard 추가 ([dc88dcd](https://github.com/SamikBeach/backend/commit/dc88dcd463ded7f7cb0eaf8d42e23c7892525d7e))
+* 누락된 relations 추가 ([7830e4f](https://github.com/SamikBeach/backend/commit/7830e4f1dbbbb0ae0148fa138fbe82fcab4ef3f4))
+* 삭제된 사용자의 리뷰 제외 ([bbd2cc5](https://github.com/SamikBeach/backend/commit/bbd2cc5e4dbe0ef63f7985f797b472418e479afd))
+* 삭제된 사용자의 리뷰 제외 ([1e678e3](https://github.com/SamikBeach/backend/commit/1e678e32396e9c81cd3862ee315ee442b080bef4))
+
+
+### Features
+
+* 저자의 리뷰 목록 조회 API 추가 ([4d2e5f5](https://github.com/SamikBeach/backend/commit/4d2e5f5e93470f4a585c9e9abffbffa61312bbf1))
+* 특정 사용자의 정보 조회 API 추가 ([8da230d](https://github.com/SamikBeach/backend/commit/8da230d3aba0fed3dad0ab593b1b47dc8520c3a8))
+
 # [1.14.0](https://github.com/SamikBeach/backend/compare/1.13.0...1.14.0) (2025-01-11)
 
 
