@@ -117,11 +117,11 @@ export class UserController {
    * @param query 페이지네이션 쿼리
    */
   @Get('me/books')
-  async getMyFavoriteBooks(
+  async getMyLikedBooks(
     @CurrentUser() user: User,
     @Paginate() query: PaginateQuery,
   ) {
-    return this.userService.getFavoriteBooks(user.id, query);
+    return this.userService.getLikedBooks(user.id, query);
   }
 
   /**
@@ -130,11 +130,11 @@ export class UserController {
    * @param query 페이지네이션 쿼리
    */
   @Get('me/authors')
-  async getMyFavoriteAuthors(
+  async getLikedAuthors(
     @CurrentUser() user: User,
     @Paginate() query: PaginateQuery,
   ) {
-    return this.userService.getFavoriteAuthors(user.id, query);
+    return this.userService.getLikedAuthors(user.id, query);
   }
 
   /**
@@ -143,7 +143,7 @@ export class UserController {
    * @param query 페이지네이션 쿼리
    */
   @Get('me/reviews')
-  async getMyReviews(
+  async getReviews(
     @CurrentUser() user: User,
     @Paginate() query: PaginateQuery,
   ) {

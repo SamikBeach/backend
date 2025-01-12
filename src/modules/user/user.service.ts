@@ -167,7 +167,7 @@ export class UserService {
   /**
    * 사용자가 좋아하는 책 목록을 조회합니다.
    */
-  async getFavoriteBooks(userId: number, query: PaginateQuery) {
+  async getLikedBooks(userId: number, query: PaginateQuery) {
     return paginate(query, this.userBookLikeRepository, {
       sortableColumns: ['id'],
       defaultSortBy: [['id', 'DESC']],
@@ -179,7 +179,7 @@ export class UserService {
   /**
    * 사용자가 좋아하는 저자 목록을 조회합니다.
    */
-  async getFavoriteAuthors(userId: number, query: PaginateQuery) {
+  async getLikedAuthors(userId: number, query: PaginateQuery) {
     return paginate(query, this.userAuthorLikeRepository, {
       sortableColumns: ['id'],
       defaultSortBy: [['id', 'DESC']],
