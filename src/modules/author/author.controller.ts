@@ -56,15 +56,11 @@ export class AuthorController {
   }
 
   /**
-   * 저자가 쓴 책 목록을 조회합니다.
-   * 페이지네이션을 지원합니다.
+   * 저자가 쓴 모든 책 목록을 조회합니다.
    */
   @Get(':id/books')
-  async getAuthorBooks(
-    @Param('id', ParseIntPipe) id: number,
-    @Paginate() query: PaginateQuery,
-  ) {
-    return this.authorService.getAuthorBooks(id, query);
+  async getAllAuthorBooks(@Param('id', ParseIntPipe) id: number) {
+    return this.authorService.getAllAuthorBooks(id);
   }
 
   /**

@@ -116,9 +116,9 @@ export class AuthorService {
   }
 
   /**
-   * 저자가 쓴 책 목록을 조회합니다.
+   * 저자가 쓴 모든 책 목록을 조회합니다.
    */
-  async getAuthorBooks(authorId: number, query: PaginateQuery) {
+  async getAllAuthorBooks(authorId: number) {
     const author = await this.authorRepository.findOne({
       where: { id: authorId },
     });
@@ -127,22 +127,15 @@ export class AuthorService {
       throw new NotFoundException('저자를 찾을 수 없습니다.');
     }
 
-    const queryBuilder = this.bookRepository
-      .createQueryBuilder('book')
-      .innerJoinAndSelect('book.authorBooks', 'ab')
-      .innerJoinAndSelect('ab.author', 'author')
-      .where('author.id = :authorId', { authorId });
-
-    return paginate(query, queryBuilder, {
-      sortableColumns: [
-        'id',
-        'title',
-        'publicationDate',
-        'likeCount',
-        'reviewCount',
-      ],
-      defaultSortBy: [['publicationDate', 'DESC']],
-      maxLimit: 20,
+    return this.bookRepository.find({
+      where: {
+        authorBooks: {
+          author: {
+            id: authorId,
+          },
+        },
+      },
+      relations: ['authorBooks', 'authorBooks.author'],
     });
   }
 
