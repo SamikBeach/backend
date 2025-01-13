@@ -70,7 +70,11 @@ export class JwtAuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException('토큰이 없습니다.');
+      throw new UnauthorizedException({
+        error: 'No-Token',
+        message: '토큰이 없습니다.',
+        statusCode: 401,
+      });
     }
 
     try {
@@ -101,7 +105,11 @@ export class JwtAuthGuard implements CanActivate {
       request.user = user;
       return true;
     } catch (error) {
-      throw new UnauthorizedException('유효하지 않은 토큰입니다.');
+      throw new UnauthorizedException({
+        message: '유효하지 않은 토큰입니다.',
+        error: 'Invalid Token',
+        statusCode: 401,
+      });
     }
   }
 
