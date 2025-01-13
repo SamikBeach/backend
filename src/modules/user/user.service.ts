@@ -174,12 +174,7 @@ export class UserService {
     return paginate(query, this.reviewRepository, {
       sortableColumns: ['id', 'createdAt', 'updatedAt'],
       defaultSortBy: [['createdAt', 'DESC']],
-      relations: [
-        'book',
-        'book.authorBooks',
-        'book.authorBooks.author',
-        'user',
-      ],
+      relations: ['book', 'user'],
       where: { userId },
     });
   }
