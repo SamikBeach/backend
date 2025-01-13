@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+# [1.16.0](https://github.com/SamikBeach/backend/compare/1.15.0...1.16.0) (2025-01-13)
+
+
+### Features
+
+* 토큰 관련 에러 메시지 포맷 통일 ([8284568](https://github.com/SamikBeach/backend/commit/8284568b577bbbdcb712ef08435441d7706e6aa7))
+
 # [1.15.0](https://github.com/SamikBeach/backend/compare/1.14.0...1.15.0) (2025-01-12)
 
 
