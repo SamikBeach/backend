@@ -18,6 +18,7 @@ import { AuthorModule } from './author/author.module';
 import { ReviewModule } from './review/review.module';
 import { UserCommentLike } from '@entities/UserCommentLike';
 import { UserReviewLike } from '@entities/UserReviewLike';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { UserReviewLike } from '@entities/UserReviewLike';
     BookModule,
     AuthorModule,
     ReviewModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [AppService],
