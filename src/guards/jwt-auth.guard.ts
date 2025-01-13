@@ -11,6 +11,7 @@ import { Repository } from 'typeorm';
 import { User } from '@entities/User';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '@decorators/public.decorator';
+import { TOKEN_ERROR } from '@constants/error-codes';
 
 /**
  * JWT 인증 가드
@@ -69,9 +70,11 @@ export class JwtAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
 
+    // 프론트엔드와 약속된 에러 코드: No-Token
+    // 토큰이 없는 경우 'No-Token' 에러 코드를 반환하여 프론트엔드에서 토큰 재발급 요청하도록 함
     if (!token) {
       throw new UnauthorizedException({
-        error: 'No-Token',
+        error: TOKEN_ERROR.NO_TOKEN,
         message: '토큰이 없습니다.',
         statusCode: 401,
       });
