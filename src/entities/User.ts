@@ -44,6 +44,9 @@ export class User {
   })
   verified: boolean;
 
+  @Column('text', { name: 'image_url', nullable: true })
+  imageUrl: string | null;
+
   @CreateDateColumn({ name: 'created_at', select: false })
   createdAt: Date;
 

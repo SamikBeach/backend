@@ -9,6 +9,7 @@ import { Review } from '@entities/Review';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserSearch } from '@entities/UserSearch';
+import { FileModule } from '../file/file.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UserSearch } from '@entities/UserSearch';
       Review,
       UserSearch,
     ]),
+    FileModule,
   ],
   controllers: [UserController],
   providers: [UserService, JwtService, ConfigService],
