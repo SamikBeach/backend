@@ -1,5 +1,23 @@
 # 🚦 CHANGELOG
 
+# [1.18.0](https://github.com/SamikBeach/backend/compare/1.17.0...1.18.0) (2025-01-14)
+
+
+### Bug Fixes
+
+* .gitignore 수정 ([4554d01](https://github.com/SamikBeach/backend/commit/4554d0178a4d4268e2348a054d62ed678c6d2f94))
+* .gitignore 수정 ([26f72e6](https://github.com/SamikBeach/backend/commit/26f72e676221570431c09d70e25d47a744abfdf1))
+* cors origin 환경변수 사용 ([534150b](https://github.com/SamikBeach/backend/commit/534150bd3e850e0c657d037edfcbfa1a4669ef57))
+* 에러 코드 수정 ([f91994a](https://github.com/SamikBeach/backend/commit/f91994aebd030fd1f4010cedf70dc6cf1fd9ac18))
+
+
+### Features
+
+* winston 로거 및 HTTP 요청 로깅 구현 ([c507e02](https://github.com/SamikBeach/backend/commit/c507e0283ec82bc7f5abe3ae1bdae37633e4a85c))
+* 로컬 스토리지를 이용한 프로필 이미지 업로드 기능 구현 ([a8f75a7](https://github.com/SamikBeach/backend/commit/a8f75a71acd719fe42fff9c4a407b02c2340ef4a))
+* 비밀번호 재설정 기능 구현 ([d676ba7](https://github.com/SamikBeach/backend/commit/d676ba76a041fb6378b84668ed63b8e458fc512a))
+* 프로필 이미지 업로드/삭제 기능 구현 ([68b5e45](https://github.com/SamikBeach/backend/commit/68b5e451ef967b5ec82d031875e80cf622919960))
+
 # [1.17.0](https://github.com/SamikBeach/backend/compare/1.16.0...1.17.0) (2025-01-14)
 
 
