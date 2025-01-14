@@ -35,6 +35,13 @@ export class AuthService {
   private readonly VERIFICATION_CODE_EXPIRY = 10 * 60 * 1000; // 10분
   private readonly REFRESH_TOKEN_EXPIRY = '7d';
   private readonly ACCESS_TOKEN_EXPIRY = '1h';
+  private readonly PASSWORD_RESET_TOKEN_EXPIRY = 30 * 60 * 1000; // 30분
+
+  // 비밀번호 리셋 토큰 저장소
+  private readonly passwordResetTokens: Map<
+    string,
+    { token: string; expires: Date }
+  > = new Map();
 
   constructor(
     @InjectRepository(User)
@@ -481,5 +488,115 @@ export class AuthService {
       message: '로그아웃되었습니다.',
       action: 'CLEAR_AUTH',
     };
+  }
+
+  /**
+   * 비밀번호 리셋 이메일 발송
+   */
+  async sendPasswordResetEmail(email: string): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('존재하지 않는 이메일입니다.');
+    }
+
+    if (user.password === null) {
+      throw new UnauthorizedException(
+        '구글 로그인으로 가입된 계정입니다. 구글 로그인을 이용해주세요.',
+      );
+    }
+
+    // 리셋 토큰 생성
+    const resetToken =
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15);
+    const expires = new Date(Date.now() + this.PASSWORD_RESET_TOKEN_EXPIRY);
+
+    // 토큰 저장
+    this.passwordResetTokens.set(email, { token: resetToken, expires });
+    // 클라이언트 도메인 주소
+    const serviceUrl = this.configService.get('SERVICE_URL');
+    const resetUrl = `${serviceUrl}?dialog=reset-password&token=${resetToken}&email=${email}`;
+
+    try {
+      await this.mailerService.sendMail({
+        to: email,
+        from: this.configService.get<string>('MAIL_USER'),
+        subject: '[삼익비치] 비밀번호 재설정 안내',
+        html: `
+          <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px; font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; line-height: 1.6; color: #333333; background: #ffffff;">
+            <div style="text-align: center; margin-bottom: 40px;">
+              <h1 style="font-size: 24px; font-weight: 700; color: #1a1a1a; margin: 0;">비밀번호 재설정 안내</h1>
+            </div>
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 30px; margin-bottom: 30px;">
+              <p style="font-size: 16px; margin: 0 0 20px 0;">안녕하세요.<br/>삼익비치 서비스를 이용해 주셔서 감사합니다.</p>
+              <p style="font-size: 16px; margin: 0 0 15px 0;">아래 버튼을 클릭하여 비밀번호를 재설정해 주세요.</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${resetUrl}" style="display: inline-block; background: #4A90E2; color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600;">비밀번호 재설정</a>
+              </div>
+              <p style="font-size: 14px; color: #666666; margin: 0;">본 링크는 발급 시점으로부터 30분간 유효합니다.</p>
+            </div>
+          </div>
+        `,
+      });
+
+      return { message: '비밀번호 재설정 이메일이 전송되었습니다.' };
+    } catch (error) {
+      throw new InternalServerErrorException('이메일 전송에 실패했습니다.');
+    }
+  }
+
+  /**
+   * 비밀번호 리셋 토큰 검증
+   */
+  async verifyPasswordResetToken(
+    email: string,
+    token: string,
+  ): Promise<{ valid: boolean }> {
+    const resetData = this.passwordResetTokens.get(email);
+
+    if (!resetData || resetData.token !== token) {
+      throw new UnauthorizedException('유효하지 않은 리셋 토큰입니다.');
+    }
+
+    if (resetData.expires < new Date()) {
+      this.passwordResetTokens.delete(email);
+      throw new UnauthorizedException('만료된 리셋 토큰입니다.');
+    }
+
+    return { valid: true };
+  }
+
+  /**
+   * 새로운 비밀번호로 업데이트
+   */
+  async resetPassword(
+    email: string,
+    token: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    // 토큰 검증
+    await this.verifyPasswordResetToken(email, token);
+
+    // 비밀번호 해시화
+    const hashedPassword = await bcrypt.hash(
+      newPassword,
+      Number(this.configService.get('HASH_ROUNDS')),
+    );
+
+    // 비밀번호 업데이트
+    await this.userRepository.update({ email }, { password: hashedPassword });
+
+    // 토큰 삭제
+    this.passwordResetTokens.delete(email);
+
+    return { message: '비밀번호가 성공적으로 변경되었습니다.' };
   }
 }

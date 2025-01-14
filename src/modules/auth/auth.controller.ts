@@ -6,6 +6,8 @@ import {
   UnauthorizedException,
   Req,
   UseGuards,
+  Get,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
@@ -200,5 +202,51 @@ export class AuthController {
     });
 
     return result;
+  }
+
+  /**
+   * 비밀번호 재설정 이메일 발송 API
+   * @summary 비밀번호 재설정을 위한 이메일을 발송합니다.
+   * @param email 사용자 이메일
+   * @returns 이메일 발송 결과 메시지
+   */
+  @Post('password/reset-request')
+  async sendPasswordResetEmail(
+    @Body('email') email: string,
+  ): Promise<{ message: string }> {
+    return this.authService.sendPasswordResetEmail(email);
+  }
+
+  /**
+   * 비밀번호 재설정 토큰 검증 API
+   * @summary 비밀번호 재설정 토큰의 유효성을 검증합니다.
+   * @param email 사용자 이메일
+   * @param token 재설정 토큰
+   * @returns 토큰 유효성 검증 결과
+   */
+  @Get('password/verify-token')
+  async verifyPasswordResetToken(
+    @Query('email') email: string,
+
+    @Query('token') token: string,
+  ): Promise<{ valid: boolean }> {
+    return this.authService.verifyPasswordResetToken(email, token);
+  }
+
+  /**
+   * 비밀번호 재설정 API
+   * @summary 새로운 비밀번호로 재설정합니다.
+   * @param email 사용자 이메일
+   * @param token 재설정 토큰
+   * @param newPassword 새로운 비밀번호
+   * @returns 비밀번호 재설정 결과 메시지
+   */
+  @Post('password/reset')
+  async resetPassword(
+    @Body('email') email: string,
+    @Body('token') token: string,
+    @Body('newPassword') newPassword: string,
+  ): Promise<{ message: string }> {
+    return this.authService.resetPassword(email, token, newPassword);
   }
 }

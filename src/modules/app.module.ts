@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -20,6 +20,11 @@ import { UserCommentLike } from '@entities/UserCommentLike';
 import { UserReviewLike } from '@entities/UserReviewLike';
 import { SearchModule } from './search/search.module';
 import { UserSearch } from '@entities/UserSearch';
+import { WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
+import * as DailyRotateFile from 'winston-daily-rotate-file';
+import * as path from 'path';
+import { LoggerMiddleware } from '../middleware/logger.middleware';
 
 @Module({
   imports: [
@@ -29,6 +34,56 @@ import { UserSearch } from '@entities/UserSearch';
           ? '.env.production'
           : '.env.development',
       isGlobal: true,
+    }),
+    WinstonModule.forRoot({
+      transports: [
+        new winston.transports.Console({
+          level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+          format: winston.format.combine(
+            winston.format.timestamp({
+              format: 'YYYY-MM-DD HH:mm:ss',
+            }),
+            winston.format.colorize({
+              colors: {
+                info: 'cyan',
+                error: 'red',
+                warn: 'yellow',
+              },
+            }),
+            winston.format.printf(({ level, message, timestamp }) => {
+              return `[${timestamp}] ${level} » ${message}`;
+            }),
+          ),
+        }),
+        // info 레벨 로그 파일
+        new DailyRotateFile({
+          level: 'info',
+          dirname: path.join(__dirname, '../..', 'logs', 'info'),
+          filename: 'application-%DATE%.log',
+          datePattern: 'YYYY-MM-DD',
+          zippedArchive: true,
+          maxSize: '20m',
+          maxFiles: '14d',
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.json(),
+          ),
+        }) as winston.transport,
+        // error 레벨 로그 파일
+        new DailyRotateFile({
+          level: 'error',
+          dirname: path.join(__dirname, '../..', 'logs', 'error'),
+          filename: 'error-%DATE%.log',
+          datePattern: 'YYYY-MM-DD',
+          zippedArchive: true,
+          maxSize: '20m',
+          maxFiles: '14d',
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.json(),
+          ),
+        }) as winston.transport,
+      ],
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -62,4 +117,8 @@ import { UserSearch } from '@entities/UserSearch';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

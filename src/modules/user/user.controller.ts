@@ -10,6 +10,8 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto, ChangePasswordDto } from './dto/user.dto';
@@ -18,6 +20,7 @@ import { CurrentUser } from '@decorators/current-user.decorator';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { Response } from 'express';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 import { ApiTags } from '@nestjs/swagger';
 
@@ -245,5 +248,36 @@ export class UserController {
   ) {
     await this.userService.deleteSearch(user.id, searchId);
     return { message: '검색 기록이 삭제되었습니다.' };
+  }
+
+  /**
+   * 프로필 이미지를 업로드합니다.
+   */
+  @Post('me/profile-image')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('image'))
+  async uploadProfileImage(
+    @CurrentUser() user: User,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('이미지 파일을 업로드해주세요.');
+    }
+
+    // 이미지 파일 형식 검증
+    if (!file.mimetype.startsWith('image/')) {
+      throw new BadRequestException('이미지 파일만 업로드 가능합니다.');
+    }
+
+    return this.userService.uploadProfileImage(user.id, file);
+  }
+
+  /**
+   * 프로필 이미지를 삭제합니다.
+   */
+  @Delete('me/profile-image')
+  @UseGuards(JwtAuthGuard)
+  async deleteProfileImage(@CurrentUser() user: User) {
+    return this.userService.deleteProfileImage(user.id);
   }
 }

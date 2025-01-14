@@ -3,6 +3,7 @@ import {
   NotFoundException,
   UnauthorizedException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -15,6 +16,7 @@ import { UserBookLike } from '@entities/UserBookLike';
 import { UserAuthorLike } from '@entities/UserAuthorLike';
 import { Review } from '@entities/Review';
 import { UserSearch } from '@entities/UserSearch';
+import { FileService } from '../file/file.service';
 
 @Injectable()
 export class UserService {
@@ -30,6 +32,7 @@ export class UserService {
     private readonly configService: ConfigService,
     @InjectRepository(UserSearch)
     private readonly userSearchRepository: Repository<UserSearch>,
+    private readonly fileService: FileService,
   ) {}
 
   /**
@@ -38,7 +41,7 @@ export class UserService {
   async findById(id: number): Promise<Pick<User, 'id' | 'email' | 'nickname'>> {
     const user = await this.userRepository.findOne({
       where: { id },
-      select: ['id', 'email', 'nickname'],
+      select: ['id', 'email', 'nickname', 'imageUrl'],
     });
 
     if (!user) {
@@ -57,7 +60,7 @@ export class UserService {
   ): Promise<Pick<User, 'id' | 'email' | 'nickname'>> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      select: ['id', 'email', 'nickname'],
+      select: ['id', 'email', 'nickname', 'imageUrl'],
     });
 
     if (!user) {
@@ -269,5 +272,63 @@ export class UserService {
     }
 
     await this.userSearchRepository.remove(search);
+  }
+
+  /**
+   * 프로필 이미지를 업로드합니다.
+   */
+  async uploadProfileImage(
+    userId: number,
+    file: Express.Multer.File,
+  ): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'imageUrl'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    // 기존 이미지가 있다면 삭제
+    if (user.imageUrl) {
+      await this.fileService.deleteFile(user.imageUrl);
+    }
+
+    // 새 이미지 업로드
+    const imageUrl = await this.fileService.uploadProfileImage(file, userId);
+
+    // 이미지 URL 업데이트
+    user.imageUrl = imageUrl;
+    await this.userRepository.save(user);
+
+    return user;
+  }
+
+  /**
+   * 프로필 이미지를 삭제합니다.
+   */
+  async deleteProfileImage(userId: number): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'imageUrl'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    if (!user.imageUrl) {
+      throw new BadRequestException('프로필 이미지가 없습니다.');
+    }
+
+    // 파일 삭제
+    await this.fileService.deleteFile(user.imageUrl);
+
+    // DB에서 이미지 URL 제거
+    user.imageUrl = null;
+    await this.userRepository.save(user);
+
+    return user;
   }
 }
