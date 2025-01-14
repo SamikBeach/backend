@@ -19,6 +19,7 @@ import { ReviewModule } from './review/review.module';
 import { UserCommentLike } from '@entities/UserCommentLike';
 import { UserReviewLike } from '@entities/UserReviewLike';
 import { SearchModule } from './search/search.module';
+import { UserSearch } from '@entities/UserSearch';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { SearchModule } from './search/search.module';
         Review,
         UserCommentLike,
         UserReviewLike,
+        UserSearch,
       ],
       synchronize: process.env.NODE_ENV !== 'production',
     }),

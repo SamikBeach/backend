@@ -18,7 +18,9 @@ import { CurrentUser } from '@decorators/current-user.decorator';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { Response } from 'express';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('User')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -26,8 +28,8 @@ export class UserController {
   /**
    * 현재 로그인한 사용자의 정보를 조회합니다.
    */
-  @UseGuards(JwtAuthGuard)
   @Get('me')
+  @UseGuards(JwtAuthGuard)
   async getMyProfile(@CurrentUser() user: User) {
     return this.userService.findById(user.id);
   }
@@ -35,8 +37,8 @@ export class UserController {
   /**
    * 사용자의 닉네임을 변경합니다.
    */
-  @UseGuards(JwtAuthGuard)
   @Patch('me')
+  @UseGuards(JwtAuthGuard)
   async updateMyProfile(
     @CurrentUser() user: User,
     @Body() updateUserDto: UpdateUserDto,
@@ -52,8 +54,8 @@ export class UserController {
   /**
    * 회원 탈퇴를 처리합니다.
    */
-  @UseGuards(JwtAuthGuard)
   @Delete('me')
+  @UseGuards(JwtAuthGuard)
   async deleteMyAccount(
     @CurrentUser() user: User,
     @Res({ passthrough: true }) res: Response,
@@ -151,8 +153,8 @@ export class UserController {
    * @param user 현재 로그인한 사용자
    * @param query 페이지네이션 쿼리
    */
-  @UseGuards(JwtAuthGuard)
   @Get('me/books')
+  @UseGuards(JwtAuthGuard)
   async getMyLikedBooks(
     @CurrentUser() user: User,
     @Paginate() query: PaginateQuery,
@@ -165,8 +167,8 @@ export class UserController {
    * @param user 현재 로그인한 사용자
    * @param query 페이지네이션 쿼리
    */
-  @UseGuards(JwtAuthGuard)
   @Get('me/authors')
+  @UseGuards(JwtAuthGuard)
   async getMyLikedAuthors(
     @CurrentUser() user: User,
     @Paginate() query: PaginateQuery,
@@ -179,8 +181,8 @@ export class UserController {
    * @param user 현재 로그인한 사용자
    * @param query 페이지네이션 쿼리
    */
-  @UseGuards(JwtAuthGuard)
   @Get('me/reviews')
+  @UseGuards(JwtAuthGuard)
   async getMyReviews(
     @CurrentUser() user: User,
     @Paginate() query: PaginateQuery,
@@ -191,12 +193,43 @@ export class UserController {
   /**
    * 비밀번호를 변경합니다.
    */
-  @UseGuards(JwtAuthGuard)
   @Post('me/password')
+  @UseGuards(JwtAuthGuard)
   async changePassword(
     @CurrentUser() user: User,
     @Body() changePasswordDto: ChangePasswordDto,
   ) {
     return this.userService.changePassword(user.id, changePasswordDto);
+  }
+
+  /**
+   * 내 최근 검색 목록을 조회합니다.
+   * @param user 현재 로그인한 사용자
+   */
+  @Get('me/search')
+  @UseGuards(JwtAuthGuard)
+  async getRecentSearches(@CurrentUser() user: User) {
+    return this.userService.getRecentSearches(user.id);
+  }
+
+  /**
+   * 검색 기록을 저장합니다.
+   * @param user 현재 로그인한 사용자
+   * @param bookId 책 ID
+   * @param authorId 작가 ID
+   */
+  @Post('me/save-search')
+  @UseGuards(JwtAuthGuard)
+  async saveSearch(
+    @CurrentUser() user: User,
+    @Body('bookId') bookId?: number,
+    @Body('authorId') authorId?: number,
+  ) {
+    if (!bookId && !authorId) {
+      throw new BadRequestException('책 ID나 작가 ID 중 하나는 필수입니다.');
+    }
+    await this.userService.saveSearch(user.id, bookId, authorId);
+
+    return { message: '검색 기록이 저장되었습니다.' };
   }
 }
