@@ -4,9 +4,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: { credentials: true, origin: 'http://localhost:3000' },
     logger: ['verbose'],
   });
@@ -47,6 +49,10 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads',
+  });
 
   const configService = app.get(ConfigService);
   const port = configService.get('PORT') || 3001;

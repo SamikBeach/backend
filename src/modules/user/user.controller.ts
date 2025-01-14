@@ -271,4 +271,13 @@ export class UserController {
 
     return this.userService.uploadProfileImage(user.id, file);
   }
+
+  /**
+   * 프로필 이미지를 삭제합니다.
+   */
+  @Delete('me/profile-image')
+  @UseGuards(JwtAuthGuard)
+  async deleteProfileImage(@CurrentUser() user: User) {
+    return this.userService.deleteProfileImage(user.id);
+  }
 }
