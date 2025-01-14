@@ -1,5 +1,19 @@
 # 🚦 CHANGELOG
 
+# [1.17.0](https://github.com/SamikBeach/backend/compare/1.16.0...1.17.0) (2025-01-14)
+
+
+### Bug Fixes
+
+* fix relations ([594b908](https://github.com/SamikBeach/backend/commit/594b9085244dabb0b2bde5ee6d7f99df3de5514e))
+
+
+### Features
+
+* 최근 검색 기록 삭제 API 추가 ([3996c73](https://github.com/SamikBeach/backend/commit/3996c7369351e0a1c319e18acdf4129a97591830))
+* 최근 검색 기록 중복 처리 로직 추가 ([4e90049](https://github.com/SamikBeach/backend/commit/4e900498e97427b32d52915e162d7763825e65ce))
+* 통합 검색 API 구현 ([41323d8](https://github.com/SamikBeach/backend/commit/41323d8b3a35aa3e83adf6186d3eba4e8b58baa1))
+
 # [1.16.0](https://github.com/SamikBeach/backend/compare/1.15.0...1.16.0) (2025-01-13)
 
 
