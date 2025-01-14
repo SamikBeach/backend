@@ -110,7 +110,7 @@ export class JwtAuthGuard implements CanActivate {
     } catch (error) {
       throw new UnauthorizedException({
         message: '유효하지 않은 토큰입니다.',
-        error: 'Invalid Token',
+        error: TOKEN_ERROR.NO_TOKEN,
         statusCode: 401,
       });
     }

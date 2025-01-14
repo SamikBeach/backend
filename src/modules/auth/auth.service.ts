@@ -34,7 +34,7 @@ export class AuthService {
   // 상수 정의
   private readonly VERIFICATION_CODE_EXPIRY = 10 * 60 * 1000; // 10분
   private readonly REFRESH_TOKEN_EXPIRY = '7d';
-  private readonly ACCESS_TOKEN_EXPIRY = '1h';
+  private readonly ACCESS_TOKEN_EXPIRY = '10s';
 
   constructor(
     @InjectRepository(User)
