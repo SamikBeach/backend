@@ -258,4 +258,16 @@ export class UserService {
 
     await this.userSearchRepository.save(search);
   }
+
+  async deleteSearch(userId: number, searchId: number) {
+    const search = await this.userSearchRepository.findOne({
+      where: { id: searchId, userId },
+    });
+
+    if (!search) {
+      throw new NotFoundException('검색 기록을 찾을 수 없습니다.');
+    }
+
+    await this.userSearchRepository.remove(search);
+  }
 }

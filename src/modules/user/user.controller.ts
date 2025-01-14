@@ -18,6 +18,7 @@ import { CurrentUser } from '@decorators/current-user.decorator';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { Response } from 'express';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
+
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('User')
@@ -231,5 +232,18 @@ export class UserController {
     await this.userService.saveSearch(user.id, bookId, authorId);
 
     return { message: '검색 기록이 저장되었습니다.' };
+  }
+
+  /**
+   * 검색 기록을 삭제합니다.
+   */
+  @Delete('me/search/:id')
+  @UseGuards(JwtAuthGuard)
+  async deleteSearch(
+    @CurrentUser() user: User,
+    @Param('id', ParseIntPipe) searchId: number,
+  ) {
+    await this.userService.deleteSearch(user.id, searchId);
+    return { message: '검색 기록이 삭제되었습니다.' };
   }
 }
