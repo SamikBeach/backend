@@ -18,6 +18,8 @@ import { AuthorModule } from './author/author.module';
 import { ReviewModule } from './review/review.module';
 import { UserCommentLike } from '@entities/UserCommentLike';
 import { UserReviewLike } from '@entities/UserReviewLike';
+import { SearchModule } from './search/search.module';
+import { UserSearch } from '@entities/UserSearch';
 
 @Module({
   imports: [
@@ -46,6 +48,7 @@ import { UserReviewLike } from '@entities/UserReviewLike';
         Review,
         UserCommentLike,
         UserReviewLike,
+        UserSearch,
       ],
       synchronize: process.env.NODE_ENV !== 'production',
     }),
@@ -54,6 +57,7 @@ import { UserReviewLike } from '@entities/UserReviewLike';
     BookModule,
     AuthorModule,
     ReviewModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [AppService],

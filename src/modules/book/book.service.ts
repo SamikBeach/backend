@@ -255,7 +255,7 @@ export class BookService {
       sortableColumns: ['id', 'createdAt', 'updatedAt'],
       defaultSortBy: [['createdAt', 'DESC']],
       where: { bookId },
-      relations: ['user'],
+      relations: ['user', 'book'],
     });
   }
 }

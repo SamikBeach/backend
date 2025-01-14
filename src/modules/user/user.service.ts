@@ -14,6 +14,7 @@ import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
 import { UserBookLike } from '@entities/UserBookLike';
 import { UserAuthorLike } from '@entities/UserAuthorLike';
 import { Review } from '@entities/Review';
+import { UserSearch } from '@entities/UserSearch';
 
 @Injectable()
 export class UserService {
@@ -27,6 +28,8 @@ export class UserService {
     @InjectRepository(Review)
     private readonly reviewRepository: Repository<Review>,
     private readonly configService: ConfigService,
+    @InjectRepository(UserSearch)
+    private readonly userSearchRepository: Repository<UserSearch>,
   ) {}
 
   /**
@@ -174,12 +177,7 @@ export class UserService {
     return paginate(query, this.reviewRepository, {
       sortableColumns: ['id', 'createdAt', 'updatedAt'],
       defaultSortBy: [['createdAt', 'DESC']],
-      relations: [
-        'book',
-        'book.authorBooks',
-        'book.authorBooks.author',
-        'user',
-      ],
+      relations: ['book', 'user'],
       where: { userId },
     });
   }
@@ -223,5 +221,53 @@ export class UserService {
     });
 
     return { message: '비밀번호가 변경되었습니다.' };
+  }
+
+  async getRecentSearches(userId: number) {
+    const searches = await this.userSearchRepository.find({
+      where: { userId },
+      relations: ['book', 'author', 'book.authorBooks.author'],
+      order: { createdAt: 'DESC' },
+      take: 6,
+    });
+
+    return searches;
+  }
+
+  async saveSearch(userId: number, bookId?: number, authorId?: number) {
+    // 이미 존재하는 검색 기록 삭제
+    if (bookId) {
+      await this.userSearchRepository.delete({
+        userId,
+        bookId,
+      });
+    }
+    if (authorId) {
+      await this.userSearchRepository.delete({
+        userId,
+        authorId,
+      });
+    }
+
+    // 새로운 검색 기록 저장
+    const search = this.userSearchRepository.create({
+      userId,
+      bookId: bookId || null,
+      authorId: authorId || null,
+    });
+
+    await this.userSearchRepository.save(search);
+  }
+
+  async deleteSearch(userId: number, searchId: number) {
+    const search = await this.userSearchRepository.findOne({
+      where: { id: searchId, userId },
+    });
+
+    if (!search) {
+      throw new NotFoundException('검색 기록을 찾을 수 없습니다.');
+    }
+
+    await this.userSearchRepository.remove(search);
   }
 }
