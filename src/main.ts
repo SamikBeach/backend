@@ -10,7 +10,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    cors: { credentials: true, origin: 'http://localhost:3000' },
+    cors: { credentials: true, origin: process.env.SERVICE_URL },
     logger: ['verbose'],
     bufferLogs: true,
   });
