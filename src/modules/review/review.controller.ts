@@ -87,13 +87,16 @@ export class ReviewController {
 
   /**
    * 리뷰에 달린 댓글 목록을 조회합니다.
+   * 현재 사용자의 댓글이 있다면 최상단에 표시됩니다.
    */
   @Get(':id/comments')
+  @UseGuards(OptionalJwtAuthGuard)
   async getComments(
     @Param('id', ParseIntPipe) reviewId: number,
     @Paginate() query: PaginateQuery,
+    @CurrentUser() user?: User,
   ) {
-    return this.reviewService.getComments(reviewId, query);
+    return this.reviewService.getComments(reviewId, query, user?.id);
   }
 
   /**

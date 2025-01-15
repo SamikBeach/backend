@@ -251,8 +251,13 @@ export class ReviewService {
 
   /**
    * 리뷰에 달린 댓글 목록을 조회합니다.
+   * 현재 사용자의 댓글이 있다면 최신순으로 최상단에 표시됩니다.
    */
-  async getComments(reviewId: number, query: PaginateQuery) {
+  async getComments(
+    reviewId: number,
+    query: PaginateQuery,
+    currentUserId?: number,
+  ) {
     const review = await this.reviewRepository.findOne({
       where: { id: reviewId },
     });
@@ -261,11 +266,26 @@ export class ReviewService {
       throw new NotFoundException('리뷰를 찾을 수 없습니다.');
     }
 
-    return paginate(query, this.commentRepository, {
+    const baseQuery = this.commentRepository
+      .createQueryBuilder('comment')
+      .leftJoinAndSelect('comment.user', 'user')
+      .where('comment.reviewId = :reviewId', { reviewId });
+
+    if (currentUserId) {
+      baseQuery
+        .addSelect(
+          `CASE WHEN comment.userId = :currentUserId THEN 1 ELSE 0 END`,
+          'isCurrentUser',
+        )
+        .setParameter('currentUserId', currentUserId)
+        .orderBy('isCurrentUser', 'DESC')
+        .addOrderBy('comment.createdAt', 'DESC');
+    } else {
+      baseQuery.orderBy('comment.createdAt', 'ASC');
+    }
+
+    return paginate(query, baseQuery, {
       sortableColumns: ['id', 'createdAt', 'updatedAt'],
-      defaultSortBy: [['createdAt', 'ASC']],
-      where: { reviewId },
-      relations: ['user'],
     });
   }
 
