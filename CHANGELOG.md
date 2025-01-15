@@ -1,5 +1,13 @@
 # 🚦 CHANGELOG
 
+## [1.18.1](https://github.com/SamikBeach/backend/compare/1.18.0...1.18.1) (2025-01-15)
+
+
+### Bug Fixes
+
+* Comment Entity 수정 ([602921b](https://github.com/SamikBeach/backend/commit/602921baf2e0a936f2af3780a51fc6096f1bcd9b))
+* 리뷰 댓글 정렬 로직 개선 ([22fe7a3](https://github.com/SamikBeach/backend/commit/22fe7a3b1f66c8b3135795623b405d663f593198))
+
 # [1.18.0](https://github.com/SamikBeach/backend/compare/1.17.0...1.18.0) (2025-01-14)
 
 
