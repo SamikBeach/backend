@@ -13,7 +13,6 @@ import {
 import { Comment } from './Comment';
 import { User } from './User';
 import { Book } from './Book';
-import { UserCommentLike } from './UserCommentLike';
 import { UserReviewLike } from './UserReviewLike';
 
 @Index('review_user_id_fk', ['userId'], {})
@@ -66,12 +65,6 @@ export class Review {
   })
   @JoinColumn([{ name: 'book_id', referencedColumnName: 'id' }])
   book: Book;
-
-  @OneToMany(
-    () => UserCommentLike,
-    (userCommentLike) => userCommentLike.comment,
-  )
-  userCommentLikes: UserCommentLike[];
 
   @OneToMany(() => UserReviewLike, (userReviewLike) => userReviewLike.review)
   userReviewLikes: UserReviewLike[];

@@ -100,6 +100,7 @@ export class UserController {
    * GET /user/search?page=1&limit=10&search=test&sortBy=createdAt:DESC&filter.verified=true
    */
   @Get('search')
+  @UseGuards(JwtAuthGuard)
   async search(@Paginate() query: PaginateQuery) {
     return this.userService.search(query);
   }
