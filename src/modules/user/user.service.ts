@@ -137,10 +137,10 @@ export class UserService {
    */
   async search(query: PaginateQuery) {
     return await paginate(query, this.userRepository, {
-      sortableColumns: ['id', 'email', 'nickname', 'createdAt', 'updatedAt'],
+      sortableColumns: ['id', 'email', 'nickname'],
       searchableColumns: ['email', 'nickname'],
       defaultSortBy: [['createdAt', 'DESC']],
-      select: ['id', 'email', 'nickname', 'verified', 'createdAt', 'updatedAt'],
+      select: ['id', 'email', 'nickname', 'imageUrl'],
       filterableColumns: {
         email: [FilterOperator.ILIKE],
         nickname: [FilterOperator.ILIKE],

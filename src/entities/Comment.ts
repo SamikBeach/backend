@@ -6,11 +6,13 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Review } from './Review';
 import { User } from './User';
+import { UserCommentLike } from './UserCommentLike';
 
 @Index('comment_user_id_fk', ['userId'], {})
 @Index('comment_review_id_fk', ['reviewId'], {})
@@ -53,4 +55,10 @@ export class Comment {
   })
   @JoinColumn([{ name: 'user_id', referencedColumnName: 'id' }])
   user: User;
+
+  @OneToMany(
+    () => UserCommentLike,
+    (userCommentLike) => userCommentLike.comment,
+  )
+  userCommentLikes: UserCommentLike[];
 }
