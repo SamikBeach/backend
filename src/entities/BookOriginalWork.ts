@@ -11,7 +11,7 @@ import { OriginalWork } from './OriginalWork';
 
 @Entity('book_original_work', { schema: 'samik_beach_v3' })
 export class BookOriginalWork {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
   id: number;
 
   @ManyToOne(() => Book, (book) => book.bookOriginalWorks)
@@ -25,9 +25,9 @@ export class BookOriginalWork {
   @JoinColumn({ name: 'original_work_id' })
   originalWork: OriginalWork;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }
