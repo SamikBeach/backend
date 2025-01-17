@@ -1,6 +1,15 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { AuthorBook } from './AuthorBook';
 import { UserAuthorLike } from './UserAuthorLike';
+import { Book } from './Book';
+import { AuthorOriginalWork } from './AuthorOriginalWork';
 
 @Entity('author', { schema: 'samik_beach_v3' })
 export class Author {
@@ -42,4 +51,19 @@ export class Author {
 
   @OneToMany(() => UserAuthorLike, (userAuthorLike) => userAuthorLike.author)
   userAuthorLikes: UserAuthorLike[];
+
+  @OneToMany(() => Book, (book) => book.author)
+  books: Book[];
+
+  @OneToMany(
+    () => AuthorOriginalWork,
+    (authorOriginalWork) => authorOriginalWork.author,
+  )
+  authorOriginalWorks: AuthorOriginalWork[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
