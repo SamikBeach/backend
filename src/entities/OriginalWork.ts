@@ -29,7 +29,7 @@ export class OriginalWork {
   @Column('tinyint', {
     name: 'publication_date_is_bc',
     width: 1,
-    nullable: true,
+    default: false,
   })
   publicationDateIsBc: boolean;
 
