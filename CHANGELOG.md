@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+## [1.18.3](https://github.com/SamikBeach/backend/compare/1.18.2...1.18.3) (2025-01-18)
+
+
+### Bug Fixes
+
+* 엔티티 수정 ([e38c66a](https://github.com/SamikBeach/backend/commit/e38c66aa035cb337a64f1e5cba7c663a62372521))
+
 ## [1.18.2](https://github.com/SamikBeach/backend/compare/1.18.1...1.18.2) (2025-01-18)
 
 
