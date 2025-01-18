@@ -58,7 +58,7 @@ export class OriginalWork {
   })
   century: boolean;
 
-  @Column('tinyint', { name: 's', width: 1, default: false })
+  @Column('tinyint', { name: 's', width: 1, default: false, nullable: true })
   s: boolean;
 
   @OneToMany(
