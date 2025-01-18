@@ -29,17 +29,33 @@ export class OriginalWork {
   @Column('tinyint', {
     name: 'publication_date_is_bc',
     width: 1,
+    nullable: true,
     default: false,
   })
   publicationDateIsBc: boolean;
 
-  @Column('tinyint', { name: 'posthumous', width: 1, default: false })
+  @Column('tinyint', {
+    name: 'posthumous',
+    width: 1,
+    default: false,
+    nullable: true,
+  })
   posthumous: boolean;
 
-  @Column('tinyint', { name: 'circa', width: 1, default: false })
+  @Column('tinyint', {
+    name: 'circa',
+    width: 1,
+    default: false,
+    nullable: true,
+  })
   circa: boolean;
 
-  @Column('tinyint', { name: 'century', width: 1, default: false })
+  @Column('tinyint', {
+    name: 'century',
+    width: 1,
+    default: false,
+    nullable: true,
+  })
   century: boolean;
 
   @Column('tinyint', { name: 's', width: 1, default: false })
