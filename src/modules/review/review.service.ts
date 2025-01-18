@@ -93,15 +93,6 @@ export class ReviewService {
         throw new NotFoundException('책을 찾을 수 없습니다.');
       }
 
-      // 이미 리뷰를 작성했는지 확인
-      const existingReview = await queryRunner.manager.findOne(Review, {
-        where: { userId, bookId },
-      });
-
-      if (existingReview) {
-        throw new BadRequestException('이미 리뷰를 작성했습니다.');
-      }
-
       const review = this.reviewRepository.create({
         ...createReviewDto,
         userId,

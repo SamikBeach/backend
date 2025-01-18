@@ -25,6 +25,9 @@ import * as winston from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
 import * as path from 'path';
 import { LoggerMiddleware } from '../middleware/logger.middleware';
+import { OriginalWork } from '@entities/OriginalWork';
+import { AuthorOriginalWork } from '@entities/AuthorOriginalWork';
+import { BookOriginalWork } from '@entities/BookOriginalWork';
 
 @Module({
   imports: [
@@ -104,6 +107,9 @@ import { LoggerMiddleware } from '../middleware/logger.middleware';
         UserCommentLike,
         UserReviewLike,
         UserSearch,
+        OriginalWork,
+        AuthorOriginalWork,
+        BookOriginalWork,
       ],
       synchronize: process.env.NODE_ENV !== 'production',
     }),
