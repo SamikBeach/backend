@@ -21,9 +21,6 @@ export class Book {
   @Column('varchar', { name: 'title', length: 200 })
   title: string;
 
-  @Column('text', { name: 'description', nullable: true })
-  description: string | null;
-
   @Column('text', { name: 'image_url', nullable: true })
   imageUrl: string | null;
 

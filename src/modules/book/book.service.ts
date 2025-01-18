@@ -58,13 +58,7 @@ export class BookService {
         'likeCount',
         'reviewCount',
       ],
-      searchableColumns: [
-        'title',
-        'description',
-        'publisher',
-        'isbn',
-        'isbn13',
-      ],
+      searchableColumns: ['title', 'publisher', 'isbn', 'isbn13'],
       defaultSortBy: [['id', 'DESC']],
       relations: ['authorBooks', 'authorBooks.author'],
       filterableColumns: {
