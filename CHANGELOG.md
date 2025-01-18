@@ -1,5 +1,14 @@
 # 🚦 CHANGELOG
 
+## [1.18.2](https://github.com/SamikBeach/backend/compare/1.18.1...1.18.2) (2025-01-18)
+
+
+### Bug Fixes
+
+* original_work 엔티티 수정 ([965bf1b](https://github.com/SamikBeach/backend/commit/965bf1b145cef72b5313cdfd7e28b5df12a6b097))
+* OriginalWork 엔티티 수정 ([0cab490](https://github.com/SamikBeach/backend/commit/0cab4902b26ad2ec1525900bb3933d02af1d64eb))
+* 동일 책에 중복 리뷰 작성 허용 ([e618547](https://github.com/SamikBeach/backend/commit/e618547b106b06f2c301e18c5c35dfea27a7b9a2))
+
 ## [1.18.1](https://github.com/SamikBeach/backend/compare/1.18.0...1.18.1) (2025-01-15)
 
 
