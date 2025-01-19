@@ -1,5 +1,18 @@
 # 🚦 CHANGELOG
 
+# [1.19.0](https://github.com/SamikBeach/backend/compare/1.18.3...1.19.0) (2025-01-19)
+
+
+### Bug Fixes
+
+* searchAPI filterableColumns 추가 ([0ce41fc](https://github.com/SamikBeach/backend/commit/0ce41fc4aed657375a12f4fb2a4fc3991c4a43bf))
+
+
+### Features
+
+* Book과 Author 검색 결과 응답 개선 ([2af304d](https://github.com/SamikBeach/backend/commit/2af304d9a925e620a5418b03f8b5bcb40b8c64a4))
+* 연관 책 검색 기능을 같은 원전의 번역서 검색으로 변경 ([ed9dc77](https://github.com/SamikBeach/backend/commit/ed9dc77575b257728eb844bd32420562ea193bf8))
+
 ## [1.18.3](https://github.com/SamikBeach/backend/compare/1.18.2...1.18.3) (2025-01-18)
 
 
