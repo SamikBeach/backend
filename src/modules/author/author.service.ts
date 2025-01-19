@@ -67,6 +67,7 @@ export class AuthorService {
       filterableColumns: {
         name: [FilterOperator.ILIKE],
         nameInKor: [FilterOperator.ILIKE],
+        genre_id: [FilterOperator.EQ],
       },
       maxLimit: 100,
     });

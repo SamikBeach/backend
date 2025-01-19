@@ -67,6 +67,7 @@ export class BookService {
         isbn: [FilterOperator.EQ],
         isbn13: [FilterOperator.EQ],
         'authorBooks.author.id': [FilterOperator.EQ],
+        genre_id: [FilterOperator.EQ],
       },
       ...(query.filter?.authorId && {
         where: {
