@@ -24,12 +24,32 @@ export class BookService {
   async findById(id: number, userId?: number) {
     const book = await this.bookRepository.findOne({
       where: { id },
-      relations: ['authorBooks.author'],
+      relations: [
+        'authorBooks.author',
+        'bookOriginalWorks.originalWork',
+        'bookOriginalWorks.originalWork.bookOriginalWorks.book',
+      ],
     });
 
     if (!book) {
       throw new NotFoundException('책을 찾을 수 없습니다.');
     }
+
+    // 같은 원전을 가진 다른 번역서들을 찾습니다
+    const otherTranslations = book.bookOriginalWorks
+      .flatMap((bow) =>
+        bow.originalWork.bookOriginalWorks
+          .map((obow) => obow.book)
+          .filter((b) => b.id !== book.id),
+      )
+      .filter(
+        (b, index, self) => index === self.findIndex((t) => t.id === b.id),
+      );
+
+    const response = {
+      ...book,
+      otherTranslations,
+    };
 
     if (userId) {
       const userLike = await this.userBookLikeRepository.findOne({
@@ -37,12 +57,12 @@ export class BookService {
       });
 
       return {
-        ...book,
+        ...response,
         isLiked: !!userLike,
       };
     }
 
-    return book;
+    return response;
   }
 
   /**
@@ -60,7 +80,12 @@ export class BookService {
       ],
       searchableColumns: ['title', 'publisher', 'isbn', 'isbn13'],
       defaultSortBy: [['id', 'DESC']],
-      relations: ['authorBooks', 'authorBooks.author'],
+      relations: [
+        'authorBooks',
+        'authorBooks.author',
+        'bookOriginalWorks.originalWork',
+        'bookOriginalWorks.originalWork.bookOriginalWorks.book',
+      ],
       filterableColumns: {
         title: [FilterOperator.ILIKE],
         publisher: [FilterOperator.ILIKE],
@@ -77,6 +102,24 @@ export class BookService {
         },
       }),
       maxLimit: 100,
+    });
+
+    // 각 책에 대해 다른 번역서 정보 추가
+    books.data = books.data.map((book) => {
+      const otherTranslations = book.bookOriginalWorks
+        .flatMap((bow) =>
+          bow.originalWork.bookOriginalWorks
+            .map((obow) => obow.book)
+            .filter((b) => b.id !== book.id),
+        )
+        .filter(
+          (b, index, self) => index === self.findIndex((t) => t.id === b.id),
+        );
+
+      return {
+        ...book,
+        otherTranslations,
+      };
     });
 
     if (userId) {
