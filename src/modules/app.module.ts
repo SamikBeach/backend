@@ -29,6 +29,7 @@ import { OriginalWork } from '@entities/OriginalWork';
 import { AuthorOriginalWork } from '@entities/AuthorOriginalWork';
 import { BookOriginalWork } from '@entities/BookOriginalWork';
 import { Era } from '@entities/Era';
+import { Genre } from '@entities/Genre';
 
 @Module({
   imports: [
@@ -112,6 +113,7 @@ import { Era } from '@entities/Era';
         AuthorOriginalWork,
         BookOriginalWork,
         Era,
+        Genre,
       ],
       synchronize: process.env.NODE_ENV !== 'production',
     }),
