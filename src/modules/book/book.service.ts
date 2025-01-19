@@ -24,12 +24,28 @@ export class BookService {
   async findById(id: number, userId?: number) {
     const book = await this.bookRepository.findOne({
       where: { id },
-      relations: ['authorBooks.author'],
+      relations: [
+        'authorBooks.author',
+        'bookOriginalWorks.originalWork',
+        'bookOriginalWorks.originalWork.bookOriginalWorks.book',
+      ],
     });
 
     if (!book) {
       throw new NotFoundException('책을 찾을 수 없습니다.');
     }
+
+    // 자신을 포함한 모든 번역서 개수를 계산합니다
+    const totalTranslationCount = new Set(
+      book.bookOriginalWorks.flatMap((bow) =>
+        bow.originalWork.bookOriginalWorks.map((obow) => obow.book.id),
+      ),
+    ).size;
+
+    const response = {
+      ...book,
+      totalTranslationCount,
+    };
 
     if (userId) {
       const userLike = await this.userBookLikeRepository.findOne({
@@ -37,12 +53,12 @@ export class BookService {
       });
 
       return {
-        ...book,
+        ...response,
         isLiked: !!userLike,
       };
     }
 
-    return book;
+    return response;
   }
 
   /**
@@ -60,13 +76,19 @@ export class BookService {
       ],
       searchableColumns: ['title', 'publisher', 'isbn', 'isbn13'],
       defaultSortBy: [['id', 'DESC']],
-      relations: ['authorBooks', 'authorBooks.author'],
+      relations: [
+        'authorBooks',
+        'authorBooks.author',
+        'bookOriginalWorks.originalWork',
+        'bookOriginalWorks.originalWork.bookOriginalWorks.book',
+      ],
       filterableColumns: {
         title: [FilterOperator.ILIKE],
         publisher: [FilterOperator.ILIKE],
         isbn: [FilterOperator.EQ],
         isbn13: [FilterOperator.EQ],
         'authorBooks.author.id': [FilterOperator.EQ],
+        genre_id: [FilterOperator.EQ],
       },
       ...(query.filter?.authorId && {
         where: {
@@ -76,6 +98,20 @@ export class BookService {
         },
       }),
       maxLimit: 100,
+    });
+
+    // 각 책에 대해 전체 번역서 개수 추가
+    books.data = books.data.map((book) => {
+      const totalTranslationCount = new Set(
+        book.bookOriginalWorks.flatMap((bow) =>
+          bow.originalWork.bookOriginalWorks.map((obow) => obow.book.id),
+        ),
+      ).size;
+
+      return {
+        ...book,
+        totalTranslationCount,
+      };
     });
 
     if (userId) {
@@ -152,22 +188,24 @@ export class BookService {
   }
 
   /**
-   * 연관된 책 목록(같은 저자의 다른 책들)을 조회합니다.
+   * 연관된 책 목록(같은 원전의 다른 번역서들)을 조회합니다.
    */
   async searchRelatedBooks(bookId: number, query: PaginateQuery) {
     const book = await this.bookRepository.findOne({
       where: { id: bookId },
-      relations: ['authorBooks', 'authorBooks.author'],
+      relations: ['bookOriginalWorks.originalWork'],
     });
 
     if (!book) {
       throw new NotFoundException('책을 찾을 수 없습니다.');
     }
 
-    const authorIds = book.authorBooks.map((ab) => ab.author.id);
+    const originalWorkIds = book.bookOriginalWorks.map(
+      (bow) => bow.originalWork.id,
+    );
 
-    // 저자가 없는 경우 빈 결과 반환
-    if (authorIds.length === 0) {
+    // 원전이 없는 경우 빈 결과 반환
+    if (originalWorkIds.length === 0) {
       return {
         data: [],
         meta: {
@@ -181,9 +219,11 @@ export class BookService {
 
     const queryBuilder = this.bookRepository
       .createQueryBuilder('book')
+      .innerJoinAndSelect('book.bookOriginalWorks', 'bow')
+      .innerJoinAndSelect('bow.originalWork', 'originalWork')
       .innerJoinAndSelect('book.authorBooks', 'ab')
       .innerJoinAndSelect('ab.author', 'author')
-      .where('author.id IN (:...authorIds)', { authorIds })
+      .where('originalWork.id IN (:...originalWorkIds)', { originalWorkIds })
       .andWhere('book.id != :bookId', { bookId });
 
     return paginate(query, queryBuilder, {
@@ -200,36 +240,38 @@ export class BookService {
   }
 
   /**
-   * 연관된 모든 책 목록(같은 저자의 다른 책들)을 조회합니다.
+   * 연관된 모든 책 목록(같은 원전의 다른 번역서들)을 조회합니다.
    * 페이지네이션 없이 전체 목록을 반환합니다.
    */
   async getAllRelatedBooks(bookId: number) {
     const book = await this.bookRepository.findOne({
       where: { id: bookId },
-      relations: ['authorBooks', 'authorBooks.author'],
+      relations: ['bookOriginalWorks.originalWork'],
     });
 
     if (!book) {
       throw new NotFoundException('책을 찾을 수 없습니다.');
     }
 
-    const authorIds = book.authorBooks.map((ab) => ab.author.id);
+    const originalWorkIds = book.bookOriginalWorks.map(
+      (bow) => bow.originalWork.id,
+    );
 
-    // 저자가 없는 경우 빈 배열 반환
-    if (authorIds.length === 0) {
+    // 원전이 없는 경우 빈 배열 반환
+    if (originalWorkIds.length === 0) {
       return [];
     }
 
     return this.bookRepository.find({
       where: {
         id: Not(bookId),
-        authorBooks: {
-          author: {
-            id: In(authorIds),
+        bookOriginalWorks: {
+          originalWork: {
+            id: In(originalWorkIds),
           },
         },
       },
-      relations: ['authorBooks', 'authorBooks.author'],
+      relations: ['authorBooks.author', 'bookOriginalWorks.originalWork'],
     });
   }
 

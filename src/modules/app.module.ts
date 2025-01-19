@@ -28,6 +28,8 @@ import { LoggerMiddleware } from '../middleware/logger.middleware';
 import { OriginalWork } from '@entities/OriginalWork';
 import { AuthorOriginalWork } from '@entities/AuthorOriginalWork';
 import { BookOriginalWork } from '@entities/BookOriginalWork';
+import { Era } from '@entities/Era';
+import { Genre } from '@entities/Genre';
 
 @Module({
   imports: [
@@ -110,6 +112,8 @@ import { BookOriginalWork } from '@entities/BookOriginalWork';
         OriginalWork,
         AuthorOriginalWork,
         BookOriginalWork,
+        Era,
+        Genre,
       ],
       synchronize: process.env.NODE_ENV !== 'production',
     }),

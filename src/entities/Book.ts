@@ -6,12 +6,13 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { AuthorBook } from './AuthorBook';
 import { Review } from './Review';
 import { UserBookLike } from './UserBookLike';
-import { Author } from './Author';
 import { BookOriginalWork } from './BookOriginalWork';
+import { Genre } from './Genre';
 
 @Entity('book', { schema: 'samik_beach_v3' })
 export class Book {
@@ -51,18 +52,19 @@ export class Book {
   @OneToMany(() => UserBookLike, (userBookLike) => userBookLike.book)
   userBookLikes: UserBookLike[];
 
-  @ManyToOne(() => Author, (author) => author.books)
-  author: Author;
-
   @OneToMany(
     () => BookOriginalWork,
     (bookOriginalWork) => bookOriginalWork.book,
   )
   bookOriginalWorks: BookOriginalWork[];
 
-  @CreateDateColumn()
+  @ManyToOne(() => Genre, (genre) => genre.books)
+  @JoinColumn({ name: 'genre_id' })
+  genre: Genre;
+
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }

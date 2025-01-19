@@ -34,18 +34,25 @@ export class AuthorService {
       throw new NotFoundException('저자를 찾을 수 없습니다.');
     }
 
+    const bookCount = author.authorBooks.length;
+
+    const response = {
+      ...author,
+      bookCount,
+    };
+
     if (userId) {
       const userLike = await this.userAuthorLikeRepository.findOne({
         where: { userId, authorId: id },
       });
 
       return {
-        ...author,
+        ...response,
         isLiked: !!userLike,
       };
     }
 
-    return author;
+    return response;
   }
 
   /**
@@ -67,9 +74,17 @@ export class AuthorService {
       filterableColumns: {
         name: [FilterOperator.ILIKE],
         nameInKor: [FilterOperator.ILIKE],
+        genre_id: [FilterOperator.EQ],
       },
+      relations: ['authorBooks'],
       maxLimit: 100,
     });
+
+    // 각 저자에 대해 책 개수 추가
+    authors.data = authors.data.map((author) => ({
+      ...author,
+      bookCount: author.authorBooks.length,
+    }));
 
     if (userId) {
       const userLikes = await this.userAuthorLikeRepository.find({

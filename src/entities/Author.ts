@@ -5,11 +5,13 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { AuthorBook } from './AuthorBook';
 import { UserAuthorLike } from './UserAuthorLike';
-import { Book } from './Book';
 import { AuthorOriginalWork } from './AuthorOriginalWork';
+import { Genre } from './Genre';
 
 @Entity('author', { schema: 'samik_beach_v3' })
 export class Author {
@@ -46,14 +48,15 @@ export class Author {
   @Column('int', { name: 'review_count', default: () => "'0'" })
   reviewCount: number;
 
+  @ManyToOne(() => Genre, (genre) => genre.authors)
+  @JoinColumn({ name: 'genre_id' })
+  genre: Genre;
+
   @OneToMany(() => AuthorBook, (authorBook) => authorBook.author)
   authorBooks: AuthorBook[];
 
   @OneToMany(() => UserAuthorLike, (userAuthorLike) => userAuthorLike.author)
   userAuthorLikes: UserAuthorLike[];
-
-  @OneToMany(() => Book, (book) => book.author)
-  books: Book[];
 
   @OneToMany(
     () => AuthorOriginalWork,
@@ -61,9 +64,9 @@ export class Author {
   )
   authorOriginalWorks: AuthorOriginalWork[];
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }
