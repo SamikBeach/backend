@@ -171,7 +171,7 @@ export class AuthorService {
       throw new NotFoundException('저자를 찾을 수 없습니다.');
     }
 
-    return this.bookRepository.find({
+    const books = await this.bookRepository.find({
       where: {
         authorBooks: {
           author: {
@@ -179,7 +179,26 @@ export class AuthorService {
           },
         },
       },
-      relations: ['authorBooks', 'authorBooks.author'],
+      relations: [
+        'authorBooks',
+        'authorBooks.author',
+        'bookOriginalWorks.originalWork',
+        'bookOriginalWorks.originalWork.bookOriginalWorks.book',
+      ],
+    });
+
+    // 각 책에 대해 전체 번역서 개수 추가
+    return books.map((book) => {
+      const totalTranslationCount = new Set(
+        book.bookOriginalWorks.flatMap((bow) =>
+          bow.originalWork.bookOriginalWorks.map((obow) => obow.book.id),
+        ),
+      ).size;
+
+      return {
+        ...book,
+        totalTranslationCount,
+      };
     });
   }
 
