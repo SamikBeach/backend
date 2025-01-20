@@ -1,5 +1,13 @@
 # 🚦 CHANGELOG
 
+# [1.20.0](https://github.com/SamikBeach/backend/compare/1.19.2...1.20.0) (2025-01-20)
+
+
+### Features
+
+* 댓글 목록 조회 시 isLiked 필드 추가 및 쿼리빌더 제거 ([e8ef7df](https://github.com/SamikBeach/backend/commit/e8ef7df68016884f980b25db590c50b47e4ed246))
+* 저자의 리뷰 목록에 isLiked 필드 추가 ([6600364](https://github.com/SamikBeach/backend/commit/6600364048d228fdcc63cbd708af63677c94c0e2))
+
 ## [1.19.2](https://github.com/SamikBeach/backend/compare/1.19.1...1.19.2) (2025-01-20)
 
 ## [1.19.1](https://github.com/SamikBeach/backend/compare/1.19.0...1.19.1) (2025-01-20)
