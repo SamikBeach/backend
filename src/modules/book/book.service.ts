@@ -74,7 +74,13 @@ export class BookService {
         'likeCount',
         'reviewCount',
       ],
-      searchableColumns: ['title', 'publisher', 'isbn', 'isbn13'],
+      searchableColumns: [
+        'title',
+        'authorBooks.author.name',
+        'publisher',
+        'isbn',
+        'isbn13',
+      ],
       defaultSortBy: [['id', 'DESC']],
       relations: [
         'authorBooks',
@@ -217,16 +223,27 @@ export class BookService {
       };
     }
 
+    // 서브쿼리를 사용하여 같은 원전을 하나라도 공유하는 책들을 찾습니다
     const queryBuilder = this.bookRepository
       .createQueryBuilder('book')
       .innerJoinAndSelect('book.bookOriginalWorks', 'bow')
       .innerJoinAndSelect('bow.originalWork', 'originalWork')
       .innerJoinAndSelect('book.authorBooks', 'ab')
       .innerJoinAndSelect('ab.author', 'author')
-      .where('originalWork.id IN (:...originalWorkIds)', { originalWorkIds })
+      .where((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('DISTINCT bow2.book_id')
+          .from('book_original_work', 'bow2')
+          .where('bow2.original_work_id IN (:...originalWorkIds)', {
+            originalWorkIds,
+          })
+          .getQuery();
+        return 'book.id IN ' + subQuery;
+      })
       .andWhere('book.id != :bookId', { bookId });
 
-    return paginate(query, queryBuilder, {
+    const paginatedBooks = await paginate(query, queryBuilder, {
       sortableColumns: [
         'id',
         'title',
@@ -237,6 +254,32 @@ export class BookService {
       defaultSortBy: [['publicationDate', 'DESC']],
       maxLimit: 20,
     });
+
+    // 각 책에 대해 전체 번역서 개수 추가
+    paginatedBooks.data = await Promise.all(
+      paginatedBooks.data.map(async (book) => {
+        const bookWithRelations = await this.bookRepository.findOne({
+          where: { id: book.id },
+          relations: [
+            'bookOriginalWorks.originalWork',
+            'bookOriginalWorks.originalWork.bookOriginalWorks.book',
+          ],
+        });
+
+        const totalTranslationCount = new Set(
+          bookWithRelations.bookOriginalWorks.flatMap((bow) =>
+            bow.originalWork.bookOriginalWorks.map((obow) => obow.book.id),
+          ),
+        ).size;
+
+        return {
+          ...book,
+          totalTranslationCount,
+        };
+      }),
+    );
+
+    return paginatedBooks;
   }
 
   /**
@@ -262,7 +305,7 @@ export class BookService {
       return [];
     }
 
-    return this.bookRepository.find({
+    const relatedBooks = await this.bookRepository.find({
       where: {
         id: Not(bookId),
         bookOriginalWorks: {
@@ -271,7 +314,25 @@ export class BookService {
           },
         },
       },
-      relations: ['authorBooks.author', 'bookOriginalWorks.originalWork'],
+      relations: [
+        'authorBooks.author',
+        'bookOriginalWorks.originalWork',
+        'bookOriginalWorks.originalWork.bookOriginalWorks.book',
+      ],
+    });
+
+    // 각 책에 대해 전체 번역서 개수 추가
+    return relatedBooks.map((book) => {
+      const totalTranslationCount = new Set(
+        book.bookOriginalWorks.flatMap((bow) =>
+          bow.originalWork.bookOriginalWorks.map((obow) => obow.book.id),
+        ),
+      ).size;
+
+      return {
+        ...book,
+        totalTranslationCount,
+      };
     });
   }
 
