@@ -81,10 +81,12 @@ export class BookController {
    * 페이지네이션을 지원합니다.
    */
   @Get(':id/reviews')
+  @UseGuards(OptionalJwtAuthGuard)
   async getBookReviews(
     @Param('id', ParseIntPipe) id: number,
     @Paginate() query: PaginateQuery,
+    @CurrentUser() user?: User,
   ) {
-    return this.bookService.getBookReviews(id, query);
+    return this.bookService.getBookReviews(id, query, user?.id);
   }
 }

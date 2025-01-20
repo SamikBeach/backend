@@ -4,6 +4,7 @@ import { Repository, DataSource, In, Not } from 'typeorm';
 import { Book } from '@entities/Book';
 import { UserBookLike } from '@entities/UserBookLike';
 import { Review } from '@entities/Review';
+import { UserReviewLike } from '@entities/UserReviewLike';
 import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
 
 @Injectable()
@@ -15,6 +16,8 @@ export class BookService {
     private readonly userBookLikeRepository: Repository<UserBookLike>,
     @InjectRepository(Review)
     private readonly reviewRepository: Repository<Review>,
+    @InjectRepository(UserReviewLike)
+    private readonly userReviewLikeRepository: Repository<UserReviewLike>,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -339,7 +342,7 @@ export class BookService {
   /**
    * 책의 리뷰 목록을 조회합니다.
    */
-  async getBookReviews(bookId: number, query: PaginateQuery) {
+  async getBookReviews(bookId: number, query: PaginateQuery, userId?: number) {
     const book = await this.bookRepository.findOne({
       where: { id: bookId },
     });
@@ -348,11 +351,29 @@ export class BookService {
       throw new NotFoundException('책을 찾을 수 없습니다.');
     }
 
-    return paginate(query, this.reviewRepository, {
+    const reviews = await paginate(query, this.reviewRepository, {
       sortableColumns: ['id', 'createdAt', 'updatedAt'],
       defaultSortBy: [['createdAt', 'DESC']],
       where: { bookId },
       relations: ['user', 'book'],
     });
+
+    if (userId) {
+      const userLikes = await this.userReviewLikeRepository.find({
+        where: {
+          userId,
+          reviewId: In(reviews.data.map((review) => review.id)),
+        },
+      });
+
+      const likedReviewIds = new Set(userLikes.map((like) => like.reviewId));
+
+      reviews.data = reviews.data.map((review) => ({
+        ...review,
+        isLiked: likedReviewIds.has(review.id),
+      }));
+    }
+
+    return reviews;
   }
 }
