@@ -77,10 +77,12 @@ export class AuthorController {
    * 페이지네이션을 지원합니다.
    */
   @Get(':id/reviews')
+  @UseGuards(OptionalJwtAuthGuard)
   async getAuthorReviews(
     @Param('id', ParseIntPipe) id: number,
     @Paginate() query: PaginateQuery,
+    @CurrentUser() user?: User,
   ) {
-    return this.authorService.getAuthorReviews(id, query);
+    return this.authorService.getAuthorReviews(id, query, user?.id);
   }
 }

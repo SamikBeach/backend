@@ -6,6 +6,7 @@ import { UserAuthorLike } from '@entities/UserAuthorLike';
 import { Book } from '@entities/Book';
 import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
 import { Review } from '@entities/Review';
+import { UserReviewLike } from '@entities/UserReviewLike';
 
 @Injectable()
 export class AuthorService {
@@ -19,6 +20,8 @@ export class AuthorService {
     private readonly dataSource: DataSource,
     @InjectRepository(Review)
     private readonly reviewRepository: Repository<Review>,
+    @InjectRepository(UserReviewLike)
+    private readonly userReviewLikeRepository: Repository<UserReviewLike>,
   ) {}
 
   /**
@@ -171,7 +174,7 @@ export class AuthorService {
       throw new NotFoundException('저자를 찾을 수 없습니다.');
     }
 
-    return this.bookRepository.find({
+    const books = await this.bookRepository.find({
       where: {
         authorBooks: {
           author: {
@@ -179,7 +182,26 @@ export class AuthorService {
           },
         },
       },
-      relations: ['authorBooks', 'authorBooks.author'],
+      relations: [
+        'authorBooks',
+        'authorBooks.author',
+        'bookOriginalWorks.originalWork',
+        'bookOriginalWorks.originalWork.bookOriginalWorks.book',
+      ],
+    });
+
+    // 각 책에 대해 전체 번역서 개수 추가
+    return books.map((book) => {
+      const totalTranslationCount = new Set(
+        book.bookOriginalWorks.flatMap((bow) =>
+          bow.originalWork.bookOriginalWorks.map((obow) => obow.book.id),
+        ),
+      ).size;
+
+      return {
+        ...book,
+        totalTranslationCount,
+      };
     });
   }
 
@@ -206,7 +228,11 @@ export class AuthorService {
   /**
    * 저자의 책들에 대한 리뷰 목록을 조회합니다.
    */
-  async getAuthorReviews(authorId: number, query: PaginateQuery) {
+  async getAuthorReviews(
+    authorId: number,
+    query: PaginateQuery,
+    userId?: number,
+  ) {
     const author = await this.authorRepository.findOne({
       where: { id: authorId },
     });
@@ -215,7 +241,7 @@ export class AuthorService {
       throw new NotFoundException('저자를 찾을 수 없습니다.');
     }
 
-    return paginate(query, this.reviewRepository, {
+    const reviews = await paginate(query, this.reviewRepository, {
       sortableColumns: ['id', 'createdAt', 'updatedAt', 'likeCount'],
       defaultSortBy: [['createdAt', 'DESC']],
       relations: [
@@ -235,5 +261,23 @@ export class AuthorService {
       },
       maxLimit: 100,
     });
+
+    if (userId) {
+      const userLikes = await this.userReviewLikeRepository.find({
+        where: {
+          userId,
+          reviewId: In(reviews.data.map((review) => review.id)),
+        },
+      });
+
+      const likedReviewIds = new Set(userLikes.map((like) => like.reviewId));
+
+      reviews.data = reviews.data.map((review) => ({
+        ...review,
+        isLiked: likedReviewIds.has(review.id),
+      }));
+    }
+
+    return reviews;
   }
 }

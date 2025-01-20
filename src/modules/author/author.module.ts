@@ -8,10 +8,18 @@ import { Book } from '@entities/Book';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@entities/User';
 import { Review } from '@entities/Review';
+import { UserReviewLike } from '@entities/UserReviewLike';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Author, UserAuthorLike, Book, User, Review]),
+    TypeOrmModule.forFeature([
+      Author,
+      UserAuthorLike,
+      Book,
+      User,
+      Review,
+      UserReviewLike,
+    ]),
   ],
   controllers: [AuthorController],
   providers: [AuthorService, JwtService],
