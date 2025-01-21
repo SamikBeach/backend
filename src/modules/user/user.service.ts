@@ -188,12 +188,26 @@ export class UserService {
    * 사용자가 좋아하는 저자 목록을 조회합니다.
    */
   async getLikedAuthors(userId: number, query: PaginateQuery) {
-    return paginate(query, this.userAuthorLikeRepository, {
+    const likes = await paginate(query, this.userAuthorLikeRepository, {
       sortableColumns: ['id'],
       defaultSortBy: [['id', 'DESC']],
-      relations: ['author'],
+      relations: ['author', 'author.authorBooks'],
       where: { userId },
     });
+
+    likes.data = likes.data.map((like) => {
+      const bookCount = like.author.authorBooks.length;
+
+      return {
+        ...like,
+        author: {
+          ...like.author,
+          bookCount,
+        },
+      };
+    });
+
+    return likes;
   }
 
   /**
