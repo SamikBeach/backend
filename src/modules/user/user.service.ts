@@ -149,16 +149,38 @@ export class UserService {
       maxLimit: 100,
     });
   }
+
   /**
    * 사용자가 좋아하는 책 목록을 조회합니다.
    */
   async getLikedBooks(userId: number, query: PaginateQuery) {
-    return paginate(query, this.userBookLikeRepository, {
+    const likes = await paginate(query, this.userBookLikeRepository, {
       sortableColumns: ['id'],
       defaultSortBy: [['id', 'DESC']],
-      relations: ['book'],
+      relations: [
+        'book',
+        'book.bookOriginalWorks.originalWork.bookOriginalWorks.book',
+      ],
       where: { userId },
     });
+
+    likes.data = likes.data.map((like) => {
+      const totalTranslationCount = new Set(
+        like.book.bookOriginalWorks.flatMap((bow) =>
+          bow.originalWork.bookOriginalWorks.map((obow) => obow.book.id),
+        ),
+      ).size;
+
+      return {
+        ...like,
+        book: {
+          ...like.book,
+          totalTranslationCount,
+        },
+      };
+    });
+
+    return likes;
   }
 
   /**
