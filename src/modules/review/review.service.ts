@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
-  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
@@ -257,36 +256,27 @@ export class ReviewService {
       throw new NotFoundException('리뷰를 찾을 수 없습니다.');
     }
 
-    const comments = await paginate(query, this.commentRepository, {
-      sortableColumns: ['id', 'createdAt', 'updatedAt', 'likeCount'],
-      defaultSortBy: currentUserId
-        ? [
-            ['userId', 'DESC'],
-            ['createdAt', 'DESC'],
-          ]
-        : [['createdAt', 'ASC']],
-      where: { reviewId },
-      relations: ['user'],
-      maxLimit: 100,
-    });
+    const baseQuery = this.commentRepository
+      .createQueryBuilder('comment')
+      .leftJoinAndSelect('comment.user', 'user')
+      .where('comment.reviewId = :reviewId', { reviewId });
 
     if (currentUserId) {
-      const userLikes = await this.userCommentLikeRepository.find({
-        where: {
-          userId: currentUserId,
-          commentId: In(comments.data.map((comment) => comment.id)),
-        },
-      });
-
-      const likedCommentIds = new Set(userLikes.map((like) => like.commentId));
-
-      comments.data = comments.data.map((comment) => ({
-        ...comment,
-        isLiked: likedCommentIds.has(comment.id),
-      }));
+      baseQuery
+        .addSelect(
+          `CASE WHEN comment.userId = :currentUserId THEN 1 ELSE 0 END`,
+          'isCurrentUser',
+        )
+        .setParameter('currentUserId', currentUserId)
+        .orderBy('isCurrentUser', 'DESC')
+        .addOrderBy('comment.createdAt', 'DESC');
+    } else {
+      baseQuery.orderBy('comment.createdAt', 'ASC');
     }
 
-    return comments;
+    return paginate(query, baseQuery, {
+      sortableColumns: ['id', 'createdAt', 'updatedAt'],
+    });
   }
 
   /**
