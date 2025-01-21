@@ -159,6 +159,7 @@ export class UserService {
       defaultSortBy: [['id', 'DESC']],
       relations: [
         'book',
+        'book.authorBooks.author',
         'book.bookOriginalWorks.originalWork.bookOriginalWorks.book',
       ],
       where: { userId },
