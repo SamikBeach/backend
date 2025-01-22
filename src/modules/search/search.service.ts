@@ -20,7 +20,11 @@ export class SearchService {
           { title: Like(`%${keyword}%`) },
           //   { description: Like(`%${keyword}%`) },
         ],
-        relations: ['authorBooks.author'],
+        relations: [
+          'authorBooks.author',
+          'bookOriginalWorks.originalWork',
+          'bookOriginalWorks.originalWork.bookOriginalWorks.book',
+        ],
         take: 3,
       }),
       this.authorRepository.find({
@@ -28,13 +32,42 @@ export class SearchService {
           { name: Like(`%${keyword}%`) },
           { nameInKor: Like(`%${keyword}%`) },
         ],
+        relations: [
+          'authorBooks',
+          'authorBooks.book',
+          'authorBooks.book.bookOriginalWorks',
+          'authorBooks.book.bookOriginalWorks.originalWork',
+          'authorBooks.book.bookOriginalWorks.originalWork.bookOriginalWorks.book',
+        ],
         take: 3,
       }),
     ]);
 
+    const booksWithCount = books.map((book) => {
+      const totalTranslationCount = new Set(
+        book.bookOriginalWorks.flatMap((bow) =>
+          bow.originalWork.bookOriginalWorks.map((obow) => obow.book.id),
+        ),
+      ).size;
+
+      return {
+        ...book,
+        totalTranslationCount,
+      };
+    });
+
+    const authorsWithCount = authors.map((author) => {
+      const bookCount = author.authorBooks.length;
+
+      return {
+        ...author,
+        bookCount,
+      };
+    });
+
     return {
-      books,
-      authors,
+      books: booksWithCount,
+      authors: authorsWithCount,
     };
   }
 }

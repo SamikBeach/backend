@@ -271,12 +271,58 @@ export class UserService {
   async getRecentSearches(userId: number) {
     const searches = await this.userSearchRepository.find({
       where: { userId },
-      relations: ['book', 'author', 'book.authorBooks.author'],
+      relations: [
+        'book',
+        'author',
+        'book.authorBooks.author',
+        'book.bookOriginalWorks.originalWork.bookOriginalWorks.book',
+        'author.authorBooks',
+        'author.authorBooks.book',
+        'author.authorBooks.book.bookOriginalWorks.originalWork.bookOriginalWorks.book',
+      ],
       order: { createdAt: 'DESC' },
       take: 6,
     });
 
-    return searches;
+    return searches.map((search) => {
+      if (search.book) {
+        const totalTranslationCount = new Set(
+          search.book.bookOriginalWorks.flatMap((bow) =>
+            bow.originalWork.bookOriginalWorks.map((obow) => obow.book.id),
+          ),
+        ).size;
+
+        return {
+          ...search,
+          book: {
+            ...search.book,
+            totalTranslationCount,
+          },
+        };
+      }
+
+      if (search.author) {
+        const bookCount = search.author.authorBooks.length;
+        const translationsCount = new Set(
+          search.author.authorBooks.flatMap((ab) =>
+            ab.book.bookOriginalWorks.flatMap((bow) =>
+              bow.originalWork.bookOriginalWorks.map((obow) => obow.book.id),
+            ),
+          ),
+        ).size;
+
+        return {
+          ...search,
+          author: {
+            ...search.author,
+            bookCount,
+            translationsCount,
+          },
+        };
+      }
+
+      return search;
+    });
   }
 
   async saveSearch(userId: number, bookId?: number, authorId?: number) {
