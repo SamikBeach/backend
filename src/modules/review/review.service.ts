@@ -359,21 +359,41 @@ export class ReviewService {
    * 댓글을 삭제합니다.
    */
   async deleteComment(reviewId: number, commentId: number, userId: number) {
-    const comment = await this.commentRepository.findOne({
-      where: { id: commentId, reviewId },
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    if (!comment) {
-      throw new NotFoundException('댓글을 찾을 수 없습니다.');
+    try {
+      const comment = await queryRunner.manager.findOne(Comment, {
+        where: { id: commentId, reviewId },
+      });
+
+      if (!comment) {
+        throw new NotFoundException('댓글을 찾을 수 없습니다.');
+      }
+
+      if (comment.userId !== userId) {
+        throw new UnauthorizedException('댓글을 삭제할 권한이 없습니다.');
+      }
+
+      await queryRunner.manager.softDelete(Comment, commentId);
+
+      // commentCount 감소
+      await queryRunner.manager.decrement(
+        Review,
+        { id: reviewId },
+        'commentCount',
+        1,
+      );
+
+      await queryRunner.commitTransaction();
+      return { message: '댓글이 삭제되었습니다.' };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
-
-    if (comment.userId !== userId) {
-      throw new UnauthorizedException('댓글을 삭제할 권한이 없습니다.');
-    }
-
-    await this.commentRepository.softDelete(commentId);
-
-    return { message: '댓글이 삭제되었습니다.' };
   }
 
   /**
