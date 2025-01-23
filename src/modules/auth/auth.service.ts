@@ -121,6 +121,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         nickname: user.nickname,
+        imageUrl: user.imageUrl,
       },
     };
   }
@@ -168,6 +169,7 @@ export class AuthService {
             id: user.id,
             email: user.email,
             nickname: user.nickname,
+            imageUrl: user.imageUrl,
           },
         };
       }
@@ -211,6 +213,7 @@ export class AuthService {
           id: user.id,
           email: user.email,
           nickname: user.nickname,
+          imageUrl: user.imageUrl,
         },
       };
     } catch (error) {
@@ -469,6 +472,7 @@ export class AuthService {
           id: user.id,
           email: user.email,
           nickname: user.nickname,
+          imageUrl: user.imageUrl,
         },
       };
     } catch (error) {

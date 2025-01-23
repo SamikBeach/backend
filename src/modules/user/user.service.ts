@@ -38,7 +38,9 @@ export class UserService {
   /**
    * ID로 사용자를 찾습니다.
    */
-  async findById(id: number): Promise<Pick<User, 'id' | 'email' | 'nickname'>> {
+  async findById(
+    id: number,
+  ): Promise<Pick<User, 'id' | 'email' | 'nickname' | 'imageUrl'>> {
     const user = await this.userRepository.findOne({
       where: { id },
       select: ['id', 'email', 'nickname', 'imageUrl'],
@@ -57,7 +59,7 @@ export class UserService {
   async updateUser(
     userId: number,
     updateUserDto: UpdateUserDto,
-  ): Promise<Pick<User, 'id' | 'email' | 'nickname'>> {
+  ): Promise<Pick<User, 'id' | 'email' | 'nickname' | 'imageUrl'>> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
       select: ['id', 'email', 'nickname', 'imageUrl'],
@@ -137,7 +139,7 @@ export class UserService {
    */
   async search(query: PaginateQuery) {
     return await paginate(query, this.userRepository, {
-      sortableColumns: ['id', 'email', 'nickname'],
+      sortableColumns: ['id', 'email', 'nickname', 'imageUrl'],
       searchableColumns: ['email', 'nickname'],
       defaultSortBy: [['createdAt', 'DESC']],
       select: ['id', 'email', 'nickname', 'imageUrl'],

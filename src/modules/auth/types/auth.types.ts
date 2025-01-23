@@ -12,6 +12,7 @@ export interface UserResponse {
   id: number;
   email: string;
   nickname: string;
+  imageUrl: string;
 }
 
 export interface AuthResponse {
