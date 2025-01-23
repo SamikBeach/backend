@@ -65,6 +65,7 @@ export class AuthService {
         email: true,
         password: true,
         nickname: true,
+        imageUrl: true,
         verified: true,
       },
     });
@@ -157,6 +158,7 @@ export class AuthService {
           email: true,
           password: true,
           nickname: true,
+          imageUrl: true,
           verified: true,
         },
       });
@@ -196,6 +198,7 @@ export class AuthService {
             id: true,
             email: true,
             nickname: true,
+            imageUrl: true,
             verified: true,
           },
         });
@@ -407,6 +410,7 @@ export class AuthService {
           'id',
           'email',
           'nickname',
+          'imageUrl',
           'verified',
           'createdAt',
           'updatedAt',
@@ -454,6 +458,7 @@ export class AuthService {
           email: true,
           nickname: true,
           verified: true,
+          imageUrl: true,
         },
       });
 
