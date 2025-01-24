@@ -64,7 +64,7 @@ import { SentryGlobalFilter } from '@sentry/nestjs/setup';
             }),
           ),
         }),
-        // info 레벨 로그 파일
+        // info 레벨 로그 파일!
         new DailyRotateFile({
           level: 'info',
           dirname: path.join(__dirname, '../..', 'logs', 'info'),
