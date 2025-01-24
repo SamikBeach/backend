@@ -30,6 +30,9 @@ import { AuthorOriginalWork } from '@entities/AuthorOriginalWork';
 import { BookOriginalWork } from '@entities/BookOriginalWork';
 import { Era } from '@entities/Era';
 import { Genre } from '@entities/Genre';
+import { SentryModule } from '@sentry/nestjs/setup';
+import { APP_FILTER } from '@nestjs/core';
+import { SentryGlobalFilter } from '@sentry/nestjs/setup';
 
 @Module({
   imports: [
@@ -40,6 +43,7 @@ import { Genre } from '@entities/Genre';
           : '.env.development',
       isGlobal: true,
     }),
+    SentryModule.forRoot(),
     WinstonModule.forRoot({
       transports: [
         new winston.transports.Console({
@@ -125,7 +129,13 @@ import { Genre } from '@entities/Genre';
     SearchModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: SentryGlobalFilter,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
