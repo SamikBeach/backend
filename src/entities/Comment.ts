@@ -16,7 +16,7 @@ import { UserCommentLike } from './UserCommentLike';
 
 @Index('comment_user_id_fk', ['userId'], {})
 @Index('comment_review_id_fk', ['reviewId'], {})
-@Entity('comment', { schema: 'samik_beach_v3' })
+@Entity('comment', { schema: 'classicswalk' })
 export class Comment {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
   id: number;

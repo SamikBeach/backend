@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
-  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
@@ -257,36 +256,27 @@ export class ReviewService {
       throw new NotFoundException('리뷰를 찾을 수 없습니다.');
     }
 
-    const comments = await paginate(query, this.commentRepository, {
-      sortableColumns: ['id', 'createdAt', 'updatedAt', 'likeCount'],
-      defaultSortBy: currentUserId
-        ? [
-            ['userId', 'DESC'],
-            ['createdAt', 'DESC'],
-          ]
-        : [['createdAt', 'ASC']],
-      where: { reviewId },
-      relations: ['user'],
-      maxLimit: 100,
-    });
+    const baseQuery = this.commentRepository
+      .createQueryBuilder('comment')
+      .leftJoinAndSelect('comment.user', 'user')
+      .where('comment.reviewId = :reviewId', { reviewId });
 
     if (currentUserId) {
-      const userLikes = await this.userCommentLikeRepository.find({
-        where: {
-          userId: currentUserId,
-          commentId: In(comments.data.map((comment) => comment.id)),
-        },
-      });
-
-      const likedCommentIds = new Set(userLikes.map((like) => like.commentId));
-
-      comments.data = comments.data.map((comment) => ({
-        ...comment,
-        isLiked: likedCommentIds.has(comment.id),
-      }));
+      baseQuery
+        .addSelect(
+          `CASE WHEN comment.userId = :currentUserId THEN 1 ELSE 0 END`,
+          'isCurrentUser',
+        )
+        .setParameter('currentUserId', currentUserId)
+        .orderBy('isCurrentUser', 'DESC')
+        .addOrderBy('comment.createdAt', 'DESC');
+    } else {
+      baseQuery.orderBy('comment.createdAt', 'ASC');
     }
 
-    return comments;
+    return paginate(query, baseQuery, {
+      sortableColumns: ['id', 'createdAt', 'updatedAt'],
+    });
   }
 
   /**
@@ -369,21 +359,41 @@ export class ReviewService {
    * 댓글을 삭제합니다.
    */
   async deleteComment(reviewId: number, commentId: number, userId: number) {
-    const comment = await this.commentRepository.findOne({
-      where: { id: commentId, reviewId },
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    if (!comment) {
-      throw new NotFoundException('댓글을 찾을 수 없습니다.');
+    try {
+      const comment = await queryRunner.manager.findOne(Comment, {
+        where: { id: commentId, reviewId },
+      });
+
+      if (!comment) {
+        throw new NotFoundException('댓글을 찾을 수 없습니다.');
+      }
+
+      if (comment.userId !== userId) {
+        throw new UnauthorizedException('댓글을 삭제할 권한이 없습니다.');
+      }
+
+      await queryRunner.manager.softDelete(Comment, commentId);
+
+      // commentCount 감소
+      await queryRunner.manager.decrement(
+        Review,
+        { id: reviewId },
+        'commentCount',
+        1,
+      );
+
+      await queryRunner.commitTransaction();
+      return { message: '댓글이 삭제되었습니다.' };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
-
-    if (comment.userId !== userId) {
-      throw new UnauthorizedException('댓글을 삭제할 권한이 없습니다.');
-    }
-
-    await this.commentRepository.softDelete(commentId);
-
-    return { message: '댓글이 삭제되었습니다.' };
   }
 
   /**

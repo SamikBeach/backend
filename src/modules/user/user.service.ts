@@ -38,7 +38,9 @@ export class UserService {
   /**
    * ID로 사용자를 찾습니다.
    */
-  async findById(id: number): Promise<Pick<User, 'id' | 'email' | 'nickname'>> {
+  async findById(
+    id: number,
+  ): Promise<Pick<User, 'id' | 'email' | 'nickname' | 'imageUrl'>> {
     const user = await this.userRepository.findOne({
       where: { id },
       select: ['id', 'email', 'nickname', 'imageUrl'],
@@ -57,7 +59,7 @@ export class UserService {
   async updateUser(
     userId: number,
     updateUserDto: UpdateUserDto,
-  ): Promise<Pick<User, 'id' | 'email' | 'nickname'>> {
+  ): Promise<Pick<User, 'id' | 'email' | 'nickname' | 'imageUrl'>> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
       select: ['id', 'email', 'nickname', 'imageUrl'],
@@ -137,7 +139,7 @@ export class UserService {
    */
   async search(query: PaginateQuery) {
     return await paginate(query, this.userRepository, {
-      sortableColumns: ['id', 'email', 'nickname'],
+      sortableColumns: ['id', 'email', 'nickname', 'imageUrl'],
       searchableColumns: ['email', 'nickname'],
       defaultSortBy: [['createdAt', 'DESC']],
       select: ['id', 'email', 'nickname', 'imageUrl'],
@@ -149,28 +151,65 @@ export class UserService {
       maxLimit: 100,
     });
   }
+
   /**
    * 사용자가 좋아하는 책 목록을 조회합니다.
    */
   async getLikedBooks(userId: number, query: PaginateQuery) {
-    return paginate(query, this.userBookLikeRepository, {
+    const likes = await paginate(query, this.userBookLikeRepository, {
       sortableColumns: ['id'],
       defaultSortBy: [['id', 'DESC']],
-      relations: ['book'],
+      relations: [
+        'book',
+        'book.authorBooks.author',
+        'book.bookOriginalWorks.originalWork.bookOriginalWorks.book',
+      ],
       where: { userId },
     });
+
+    likes.data = likes.data.map((like) => {
+      const totalTranslationCount = new Set(
+        like.book.bookOriginalWorks.flatMap((bow) =>
+          bow.originalWork.bookOriginalWorks.map((obow) => obow.book.id),
+        ),
+      ).size;
+
+      return {
+        ...like,
+        book: {
+          ...like.book,
+          totalTranslationCount,
+        },
+      };
+    });
+
+    return likes;
   }
 
   /**
    * 사용자가 좋아하는 저자 목록을 조회합니다.
    */
   async getLikedAuthors(userId: number, query: PaginateQuery) {
-    return paginate(query, this.userAuthorLikeRepository, {
+    const likes = await paginate(query, this.userAuthorLikeRepository, {
       sortableColumns: ['id'],
       defaultSortBy: [['id', 'DESC']],
-      relations: ['author'],
+      relations: ['author', 'author.authorBooks'],
       where: { userId },
     });
+
+    likes.data = likes.data.map((like) => {
+      const bookCount = like.author.authorBooks.length;
+
+      return {
+        ...like,
+        author: {
+          ...like.author,
+          bookCount,
+        },
+      };
+    });
+
+    return likes;
   }
 
   /**
@@ -180,7 +219,12 @@ export class UserService {
     return paginate(query, this.reviewRepository, {
       sortableColumns: ['id', 'createdAt', 'updatedAt'],
       defaultSortBy: [['createdAt', 'DESC']],
-      relations: ['book', 'user'],
+      relations: [
+        'book',
+        'book.authorBooks',
+        'book.authorBooks.author',
+        'user',
+      ],
       where: { userId },
     });
   }
@@ -229,12 +273,58 @@ export class UserService {
   async getRecentSearches(userId: number) {
     const searches = await this.userSearchRepository.find({
       where: { userId },
-      relations: ['book', 'author', 'book.authorBooks.author'],
+      relations: [
+        'book',
+        'author',
+        'book.authorBooks.author',
+        'book.bookOriginalWorks.originalWork.bookOriginalWorks.book',
+        'author.authorBooks',
+        'author.authorBooks.book',
+        'author.authorBooks.book.bookOriginalWorks.originalWork.bookOriginalWorks.book',
+      ],
       order: { createdAt: 'DESC' },
       take: 6,
     });
 
-    return searches;
+    return searches.map((search) => {
+      if (search.book) {
+        const totalTranslationCount = new Set(
+          search.book.bookOriginalWorks.flatMap((bow) =>
+            bow.originalWork.bookOriginalWorks.map((obow) => obow.book.id),
+          ),
+        ).size;
+
+        return {
+          ...search,
+          book: {
+            ...search.book,
+            totalTranslationCount,
+          },
+        };
+      }
+
+      if (search.author) {
+        const bookCount = search.author.authorBooks.length;
+        const translationsCount = new Set(
+          search.author.authorBooks.flatMap((ab) =>
+            ab.book.bookOriginalWorks.flatMap((bow) =>
+              bow.originalWork.bookOriginalWorks.map((obow) => obow.book.id),
+            ),
+          ),
+        ).size;
+
+        return {
+          ...search,
+          author: {
+            ...search.author,
+            bookCount,
+            translationsCount,
+          },
+        };
+      }
+
+      return search;
+    });
   }
 
   async saveSearch(userId: number, bookId?: number, authorId?: number) {

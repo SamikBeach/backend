@@ -65,6 +65,7 @@ export class AuthService {
         email: true,
         password: true,
         nickname: true,
+        imageUrl: true,
         verified: true,
       },
     });
@@ -121,6 +122,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         nickname: user.nickname,
+        imageUrl: user.imageUrl,
       },
     };
   }
@@ -156,6 +158,7 @@ export class AuthService {
           email: true,
           password: true,
           nickname: true,
+          imageUrl: true,
           verified: true,
         },
       });
@@ -168,6 +171,7 @@ export class AuthService {
             id: user.id,
             email: user.email,
             nickname: user.nickname,
+            imageUrl: user.imageUrl,
           },
         };
       }
@@ -194,6 +198,7 @@ export class AuthService {
             id: true,
             email: true,
             nickname: true,
+            imageUrl: true,
             verified: true,
           },
         });
@@ -211,6 +216,7 @@ export class AuthService {
           id: user.id,
           email: user.email,
           nickname: user.nickname,
+          imageUrl: user.imageUrl,
         },
       };
     } catch (error) {
@@ -404,6 +410,7 @@ export class AuthService {
           'id',
           'email',
           'nickname',
+          'imageUrl',
           'verified',
           'createdAt',
           'updatedAt',
@@ -451,6 +458,7 @@ export class AuthService {
           email: true,
           nickname: true,
           verified: true,
+          imageUrl: true,
         },
       });
 
@@ -469,6 +477,7 @@ export class AuthService {
           id: user.id,
           email: user.email,
           nickname: user.nickname,
+          imageUrl: user.imageUrl,
         },
       };
     } catch (error) {

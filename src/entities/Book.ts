@@ -14,7 +14,7 @@ import { UserBookLike } from './UserBookLike';
 import { BookOriginalWork } from './BookOriginalWork';
 import { Genre } from './Genre';
 
-@Entity('book', { schema: 'samik_beach_v3' })
+@Entity('book', { schema: 'classicswalk' })
 export class Book {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
   id: number;

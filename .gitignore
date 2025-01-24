@@ -73,3 +73,5 @@ uploads/
 # Logs directory
 logs/
 !logs/.gitkeep
+# Sentry Config File
+.sentryclirc
