@@ -1,5 +1,27 @@
 # 🚦 CHANGELOG
 
+# [1.21.0](https://github.com/SamikBeach/backend/compare/1.20.0...1.21.0) (2025-01-24)
+
+
+### Bug Fixes
+
+* db schema 변경 ([3c3dd00](https://github.com/SamikBeach/backend/commit/3c3dd0039110b0d5d65d1171e5609a85e1d09438))
+* fix lint ([d3d1f18](https://github.com/SamikBeach/backend/commit/d3d1f18f483c49f106af08cd67a80ed6e92f835e))
+* Sentry 소스맵 관련 설정 제거 ([5479d41](https://github.com/SamikBeach/backend/commit/5479d417479f479104e14cc458703b33da288bdb))
+* user service relations 수정 ([ec641b1](https://github.com/SamikBeach/backend/commit/ec641b1d1e081c102d94a69923349bc1dbb11f7c))
+* user service relations 수정 ([8556944](https://github.com/SamikBeach/backend/commit/8556944fda51cdaf57206e40bd2bc96e81b82255))
+* 로그인시 이미지 정보도 함께 응답하도록 수정 ([3ecd2c8](https://github.com/SamikBeach/backend/commit/3ecd2c83cda7b59fdd343747d22412ebcde82003))
+* 로그인시 이미지 정보도 함께 응답하도록 수정 ([54e8144](https://github.com/SamikBeach/backend/commit/54e8144a268e1390e5b4c5f9d90f94d0c5851b69))
+* 사용자가 좋아요한 저자 목록 조회 시 bookCount 필드 추가 ([5754fcc](https://github.com/SamikBeach/backend/commit/5754fcc239f2ef3b2ad54099c5c0a72440b55cd4))
+
+
+### Features
+
+* Sentry 설정 오류 수정 및 소스맵 업로드 환경변수 구성 ([3c1ce22](https://github.com/SamikBeach/backend/commit/3c1ce223ff13fe77ef62c31d80ce786bad309ad8))
+* Sentry 설치 및 적용 ([d52864d](https://github.com/SamikBeach/backend/commit/d52864db424031dd768e53035a05d66bca602b03))
+* 댓글 삭제 시 트랜잭션 적용 및 commentCount 감소 로직 추가 ([b6939db](https://github.com/SamikBeach/backend/commit/b6939dbcf4ba38729a7821a60641d75b942f0a34))
+* 사용자가 좋아요한 책 목록 조회 시 totalTranslationCount 필드 추가 및 불필요한 relation 제거 ([f076270](https://github.com/SamikBeach/backend/commit/f0762708fd6171ae48cc53aee8358b28ee36fbb5))
+
 # [1.20.0](https://github.com/SamikBeach/backend/compare/1.19.2...1.20.0) (2025-01-20)
 
 
