@@ -11,7 +11,7 @@ import { Author } from './Author';
 
 @Index('author_book_book_id_fk', ['bookId'], {})
 @Index('author_book_author_id_fk', ['authorId'], {})
-@Entity('author_book', { schema: 'samik_beach_v3' })
+@Entity('author_book', { schema: 'classicswalk' })
 export class AuthorBook {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
   id: number;

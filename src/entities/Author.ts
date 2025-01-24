@@ -13,7 +13,7 @@ import { UserAuthorLike } from './UserAuthorLike';
 import { AuthorOriginalWork } from './AuthorOriginalWork';
 import { Genre } from './Genre';
 
-@Entity('author', { schema: 'samik_beach_v3' })
+@Entity('author', { schema: 'classicswalk' })
 export class Author {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
   id: number;
