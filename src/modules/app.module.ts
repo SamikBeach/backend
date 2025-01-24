@@ -30,6 +30,7 @@ import { AuthorOriginalWork } from '@entities/AuthorOriginalWork';
 import { BookOriginalWork } from '@entities/BookOriginalWork';
 import { Era } from '@entities/Era';
 import { Genre } from '@entities/Genre';
+import { LogstashTransport } from 'winston-logstash-ts';
 
 @Module({
   imports: [
@@ -88,6 +89,15 @@ import { Genre } from '@entities/Genre';
             winston.format.json(),
           ),
         }) as winston.transport,
+        // Logstash로 전송
+        new LogstashTransport({
+          host: 'localhost',
+          port: 5044,
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.json(),
+          ),
+        }),
       ],
     }),
     TypeOrmModule.forRoot({

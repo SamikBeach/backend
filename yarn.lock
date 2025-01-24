@@ -3309,6 +3309,7 @@ __metadata:
     typescript: "npm:^5.4.3"
     winston: "npm:^3.17.0"
     winston-daily-rotate-file: "npm:^5.0.0"
+    winston-logstash-ts: "npm:^0.2.3"
   languageName: unknown
   linkType: soft
 
@@ -8121,7 +8122,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"logform@npm:^2.7.0":
+"logform@npm:^2.1.2, logform@npm:^2.7.0":
   version: 2.7.0
   resolution: "logform@npm:2.7.0"
   dependencies:
@@ -12665,7 +12666,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"winston-transport@npm:^4.7.0, winston-transport@npm:^4.9.0":
+"winston-logstash-ts@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "winston-logstash-ts@npm:0.2.3"
+  dependencies:
+    debug: "npm:^4.1.1"
+    logform: "npm:^2.1.2"
+    winston: "npm:^3.2.1"
+    winston-transport: "npm:^4.3.0"
+  checksum: 10c0/f6cc4024487814cc2283465038b41e360bd2ae2caa4f04c1bab0625712cc15a1454a969da3c6ad6ba314958e25201b536fd891308bdfc038e6d5d01e155b0ac7
+  languageName: node
+  linkType: hard
+
+"winston-transport@npm:^4.3.0, winston-transport@npm:^4.7.0, winston-transport@npm:^4.9.0":
   version: 4.9.0
   resolution: "winston-transport@npm:4.9.0"
   dependencies:
@@ -12676,7 +12689,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"winston@npm:^3.17.0":
+"winston@npm:^3.17.0, winston@npm:^3.2.1":
   version: 3.17.0
   resolution: "winston@npm:3.17.0"
   dependencies:
