@@ -17,7 +17,7 @@ import { UserReviewLike } from './UserReviewLike';
 
 @Index('review_user_id_fk', ['userId'], {})
 @Index('review_book_id_fk', ['bookId'], {})
-@Entity('review', { schema: 'samik_beach_v3' })
+@Entity('review', { schema: 'classicswalk' })
 export class Review {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
   id: number;

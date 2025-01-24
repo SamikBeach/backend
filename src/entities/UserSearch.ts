@@ -10,7 +10,7 @@ import { User } from './User';
 import { Book } from './Book';
 import { Author } from './Author';
 
-@Entity('user_search', { schema: 'samik_beach_v3' })
+@Entity('user_search', { schema: 'classicswalk' })
 export class UserSearch {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
   id: number;

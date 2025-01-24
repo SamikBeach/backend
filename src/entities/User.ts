@@ -14,7 +14,7 @@ import { UserBookLike } from './UserBookLike';
 import { UserCommentLike } from './UserCommentLike';
 import { UserReviewLike } from './UserReviewLike';
 
-@Entity('user', { schema: 'samik_beach_v3' })
+@Entity('user', { schema: 'classicswalk' })
 export class User {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
   id: number;

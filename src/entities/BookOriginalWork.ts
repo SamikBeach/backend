@@ -9,7 +9,7 @@ import {
 import { Book } from './Book';
 import { OriginalWork } from './OriginalWork';
 
-@Entity('book_original_work', { schema: 'samik_beach_v3' })
+@Entity('book_original_work', { schema: 'classicswalk' })
 export class BookOriginalWork {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
   id: number;
