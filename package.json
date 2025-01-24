@@ -19,7 +19,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org classciswalk --project node-nestjs ./dist && sentry-cli sourcemaps upload --org classciswalk --project node-nestjs ./dist"
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org classciswalk --project backend ./dist && sentry-cli sourcemaps upload --org classciswalk --project node-nestjs ./dist"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",
