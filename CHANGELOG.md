@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+## [1.23.1](https://github.com/SamikBeach/backend/compare/1.23.0...1.23.1) (2025-01-25)
+
+
+### Bug Fixes
+
+* 도커파일 제거 ([11cfa64](https://github.com/SamikBeach/backend/commit/11cfa64ae77578e1166b4fcc6f2687db1d5bbd92))
+
 # [1.23.0](https://github.com/SamikBeach/backend/compare/1.22.0...1.23.0) (2025-01-25)
 
 
