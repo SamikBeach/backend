@@ -57,25 +57,20 @@ import { PrometheusModule } from './prometheus/prometheus.module';
             }),
             winston.format.printf(
               ({ level, message, timestamp, ...metadata }: any) => {
-                let output = `[${timestamp}] ${level}`;
+                const { request, response } = metadata;
+                if (request && response) {
+                  const method = `\x1b[36m${request.method}\x1b[0m`;
+                  const path = `\x1b[33m${request.path}\x1b[0m`;
+                  const query =
+                    Object.keys(request.query || {}).length > 0
+                      ? `\x1b[90m${JSON.stringify(request.query)}\x1b[0m`
+                      : '';
+                  const status = `\x1b[${response.statusCode < 400 ? '32' : '31'}m${response.statusCode}\x1b[0m`;
+                  const time = `\x1b[35m${response.responseTime}ms\x1b[0m`;
 
-                if (metadata.type === 'REQUEST') {
-                  output += ` \x1b[36m${metadata.method}\x1b[0m`;
-                  output += ` \x1b[33m${metadata.path}\x1b[0m`;
-                  if (Object.keys(metadata.query || {}).length > 0) {
-                    output += ` \x1b[90m${JSON.stringify(metadata.query)}\x1b[0m`;
-                  }
-                } else if (metadata.type === 'RESPONSE') {
-                  output += ` \x1b[36m${metadata.method}\x1b[0m`;
-                  output += ` \x1b[33m${metadata.path}\x1b[0m`;
-                  const statusCode = Number(metadata.statusCode);
-                  output += ` \x1b[${statusCode < 400 ? '32' : '31'}m${statusCode}\x1b[0m`;
-                  output += ` \x1b[35m${metadata.responseTime}ms\x1b[0m`;
-                } else {
-                  output += ` » ${message}`;
+                  return `[${timestamp}] ${level} » ${method} ${path}${query ? ' ' + query : ''} | ${status} ${time}`;
                 }
-
-                return output;
+                return `[${timestamp}] ${level} » ${message}`;
               },
             ),
           ),
