@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+# [1.27.0](https://github.com/SamikBeach/backend/compare/1.26.0...1.27.0) (2025-01-25)
+
+
+### Features
+
+* 로그 시스템 개선 ([0fffb9a](https://github.com/SamikBeach/backend/commit/0fffb9a1339830898da7f875194b040ffa505163))
+
 # [1.26.0](https://github.com/SamikBeach/backend/compare/1.25.0...1.26.0) (2025-01-25)
 
 
