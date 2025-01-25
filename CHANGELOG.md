@@ -1,5 +1,13 @@
 # 🚦 CHANGELOG
 
+# [1.23.0](https://github.com/SamikBeach/backend/compare/1.22.0...1.23.0) (2025-01-25)
+
+
+### Features
+
+* 프로덕션 환경 모니터링 보안 설정 추가 ([773e7b8](https://github.com/SamikBeach/backend/commit/773e7b8e8b60d12a088445fe8d815ba00e8a3962))
+* 프로덕션 환경 모니터링 설정 추가 ([d0fa223](https://github.com/SamikBeach/backend/commit/d0fa22396ca7eba84274fb2158387b93fc317b07))
+
 # [1.22.0](https://github.com/SamikBeach/backend/compare/1.21.0...1.22.0) (2025-01-25)
 
 
