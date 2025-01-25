@@ -23,7 +23,7 @@ export class FileService {
     // 전체 URL 반환
     const baseUrl =
       this.configService.get('BASE_URL') || 'http://localhost:3000';
-    return `${baseUrl}/uploads/${relativePath}`;
+    return `${baseUrl}/api/v2/uploads/${relativePath}`;
   }
 
   async deleteFile(fileUrl: string): Promise<void> {
@@ -31,7 +31,7 @@ export class FileService {
       // URL에서 파일 경로 추출
       const baseUrl =
         this.configService.get('BASE_URL') || 'http://localhost:3001';
-      const urlPath = fileUrl.replace(`${baseUrl}/uploads/`, '');
+      const urlPath = fileUrl.replace(`${baseUrl}/api/v2/uploads/`, '');
       const filePath = path.join(this.uploadDir, urlPath);
 
       await fs.unlink(filePath);
