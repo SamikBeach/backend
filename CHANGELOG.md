@@ -1,5 +1,14 @@
 # 🚦 CHANGELOG
 
+# [1.25.0](https://github.com/SamikBeach/backend/compare/1.24.0...1.25.0) (2025-01-25)
+
+
+### Features
+
+* HTTP 로깅 시스템 개선 ([7c0817b](https://github.com/SamikBeach/backend/commit/7c0817bdd10c5b72e346e33f54d1ece261f34e6f))
+* Winston Logger 통합 개선 ([7fb921d](https://github.com/SamikBeach/backend/commit/7fb921dd8ad16f6a9b7be3535476bab7906db30b))
+* 로그 시스템 개선 ([faf4c2d](https://github.com/SamikBeach/backend/commit/faf4c2dacbb30c411e6a2a72da36e737dd2517c1))
+
 # [1.24.0](https://github.com/SamikBeach/backend/compare/1.23.6...1.24.0) (2025-01-25)
 
 
