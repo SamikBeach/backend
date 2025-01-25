@@ -7,6 +7,13 @@
 
 * 정적 파일 제공 경로를 /api/v2/uploads로 수정 ([cfaba42](https://github.com/SamikBeach/backend/commit/cfaba42596ff4fd8a7f84484c8280786c7957afc))
 
+# [1.22.0](https://github.com/SamikBeach/backend/compare/1.21.0...1.22.0) (2025-01-25)
+
+
+### Features
+
+* 정적 파일 제공 경로를 /api/v2/uploads로 수정 ([cfaba42](https://github.com/SamikBeach/backend/commit/cfaba42596ff4fd8a7f84484c8280786c7957afc))
+
 # [1.21.0](https://github.com/SamikBeach/backend/compare/1.20.0...1.21.0) (2025-01-24)
 
 
