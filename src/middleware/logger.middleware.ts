@@ -14,46 +14,31 @@ export class LoggerMiddleware implements NestMiddleware {
     const { method, originalUrl, body, query, headers } = request;
     const startTime = Date.now();
 
-    // 요청 로깅
-    const requestLog = {
-      type: 'REQUEST',
-      method,
-      path: originalUrl,
-      query,
-      headers: this.filterSensitiveHeaders(headers),
-      body: this.filterSensitiveData(body),
-      timestamp: new Date().toISOString(),
-    };
-
-    this.logger.info('HTTP Request', {
-      ...requestLog,
-      context: 'HTTP',
-    });
-
     // 응답 로깅
     response.on('finish', () => {
       const { statusCode } = response;
       const responseTime = Date.now() - startTime;
 
-      const responseLog = {
-        type: 'RESPONSE',
-        method,
-        path: originalUrl,
-        statusCode,
-        responseTime,
+      const log = {
         timestamp: new Date().toISOString(),
+        context: 'HTTP',
+        request: {
+          method,
+          path: originalUrl,
+          query,
+          headers: this.filterSensitiveHeaders(headers),
+          body: this.filterSensitiveData(body),
+        },
+        response: {
+          statusCode,
+          responseTime,
+        },
       };
 
       if (statusCode >= 400) {
-        this.logger.error('HTTP Response Error', {
-          ...responseLog,
-          context: 'HTTP',
-        });
+        this.logger.error('HTTP Transaction Error', log);
       } else {
-        this.logger.info('HTTP Response Success', {
-          ...responseLog,
-          context: 'HTTP',
-        });
+        this.logger.info('HTTP Transaction Success', log);
       }
     });
 
