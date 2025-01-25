@@ -28,7 +28,6 @@ export class LoggerMiddleware implements NestMiddleware {
     this.logger.info('HTTP Request', {
       ...requestLog,
       context: 'HTTP',
-      service: 'API',
     });
 
     // 응답 로깅
@@ -49,13 +48,11 @@ export class LoggerMiddleware implements NestMiddleware {
         this.logger.error('HTTP Response Error', {
           ...responseLog,
           context: 'HTTP',
-          service: 'API',
         });
       } else {
         this.logger.info('HTTP Response Success', {
           ...responseLog,
           context: 'HTTP',
-          service: 'API',
         });
       }
     });

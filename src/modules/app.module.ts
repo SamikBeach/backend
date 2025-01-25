@@ -80,7 +80,7 @@ import { PrometheusModule } from './prometheus/prometheus.module';
             ),
           ),
         }),
-        // info 레벨 로그 파일!
+        // info 레벨 로그 파일
         new DailyRotateFile({
           level: 'info',
           dirname: path.join(__dirname, '../..', 'logs', 'info'),
