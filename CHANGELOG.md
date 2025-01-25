@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+# [1.24.0](https://github.com/SamikBeach/backend/compare/1.23.6...1.24.0) (2025-01-25)
+
+
+### Features
+
+* ELK 스택 설정 추가 ([803731a](https://github.com/SamikBeach/backend/commit/803731a5e624886a0a8664dc8a1efc9bec106461))
+
 ## [1.23.6](https://github.com/SamikBeach/backend/compare/1.23.5...1.23.6) (2025-01-25)
 
 
