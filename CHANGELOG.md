@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+## [1.23.6](https://github.com/SamikBeach/backend/compare/1.23.5...1.23.6) (2025-01-25)
+
+
+### Bug Fixes
+
+* docker-compose 파일 수정 ([224ee5d](https://github.com/SamikBeach/backend/commit/224ee5d467a812ec70b78876db58e1d4a026b10d))
+
 ## [1.23.5](https://github.com/SamikBeach/backend/compare/1.23.4...1.23.5) (2025-01-25)
 
 
