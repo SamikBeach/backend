@@ -1,7 +1,7 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { User } from '@entities/User';
@@ -30,20 +30,15 @@ import { AuthorOriginalWork } from '@entities/AuthorOriginalWork';
 import { BookOriginalWork } from '@entities/BookOriginalWork';
 import { Era } from '@entities/Era';
 import { Genre } from '@entities/Genre';
-import { SentryModule } from '@sentry/nestjs/setup';
 import { APP_FILTER } from '@nestjs/core';
-import { SentryGlobalFilter } from '@sentry/nestjs/setup';
+import { HttpExceptionFilter } from '../filters/http-exception.filter';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath:
-        process.env.NODE_ENV === 'production'
-          ? '.env.production'
-          : '.env.development',
+      envFilePath: `.env.${process.env.NODE_ENV}`,
       isGlobal: true,
     }),
-    SentryModule.forRoot(),
     WinstonModule.forRoot({
       transports: [
         new winston.transports.Console({
@@ -129,13 +124,7 @@ import { SentryGlobalFilter } from '@sentry/nestjs/setup';
     SearchModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: APP_FILTER,
-      useClass: SentryGlobalFilter,
-    },
-  ],
+  providers: [AppService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
