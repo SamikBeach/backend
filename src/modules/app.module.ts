@@ -30,6 +30,7 @@ import { AuthorOriginalWork } from '@entities/AuthorOriginalWork';
 import { BookOriginalWork } from '@entities/BookOriginalWork';
 import { Era } from '@entities/Era';
 import { Genre } from '@entities/Genre';
+import { PrometheusModule } from './prometheus/prometheus.module';
 
 @Module({
   imports: [
@@ -120,6 +121,7 @@ import { Genre } from '@entities/Genre';
     AuthorModule,
     ReviewModule,
     SearchModule,
+    PrometheusModule,
   ],
   controllers: [AppController],
   providers: [AppService],
