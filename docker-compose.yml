@@ -11,7 +11,7 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.retention.time=15d'
-      - '--web.external-url=https://monitoring.classicswalk.com/prometheus'
+      - '--web.external-url=https://classicswalk.com/prometheus'
       - '--web.route-prefix=/'
     user: 'nobody:nobody'
     networks:
@@ -29,7 +29,7 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=your_secure_password_here
       - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=https://monitoring.classicswalk.com/grafana
+      - GF_SERVER_ROOT_URL=https://classicswalk.com/grafana
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
     networks:
       - monitoring
