@@ -3,6 +3,19 @@
 # [1.22.0](https://github.com/SamikBeach/backend/compare/1.21.0...1.22.0) (2025-01-25)
 
 
+### Bug Fixes
+
+* fix lint ([2228923](https://github.com/SamikBeach/backend/commit/222892394e39f8e43dd6b0bd8cb76421350f4a22))
+
+
+### Features
+
+* Sentry 관련 코드 제거 ([6249aec](https://github.com/SamikBeach/backend/commit/6249aec6fa3cf781c725f5160ac58325073ae83f))
+* 정적 파일 제공 경로를 /api/v2/uploads로 수정 ([cfaba42](https://github.com/SamikBeach/backend/commit/cfaba42596ff4fd8a7f84484c8280786c7957afc))
+
+# [1.22.0](https://github.com/SamikBeach/backend/compare/1.21.0...1.22.0) (2025-01-25)
+
+
 ### Features
 
 * 정적 파일 제공 경로를 /api/v2/uploads로 수정 ([cfaba42](https://github.com/SamikBeach/backend/commit/cfaba42596ff4fd8a7f84484c8280786c7957afc))
