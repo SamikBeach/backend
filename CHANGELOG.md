@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+# [1.28.0](https://github.com/SamikBeach/backend/compare/1.27.0...1.28.0) (2025-01-25)
+
+
+### Features
+
+* 로깅 시스템 안정성 개선 ([c4486a3](https://github.com/SamikBeach/backend/commit/c4486a36bcf8902f6283e95e18f9048beaa58902))
+
 # [1.27.0](https://github.com/SamikBeach/backend/compare/1.26.0...1.27.0) (2025-01-25)
 
 
