@@ -1,46 +1,93 @@
-import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Inject } from '@nestjs/common';
+import { Logger } from 'winston';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
-  private readonly logger = new Logger('HTTP');
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {}
 
   use(request: Request, response: Response, next: NextFunction): void {
-    const { method, originalUrl } = request;
+    const { method, originalUrl, body, query, headers } = request;
+    const startTime = Date.now();
 
+    // 요청 로깅
+    const requestLog = {
+      type: 'REQUEST',
+      method,
+      path: originalUrl,
+      query,
+      headers: this.filterSensitiveHeaders(headers),
+      body: this.filterSensitiveData(body),
+      timestamp: new Date().toISOString(),
+    };
+
+    this.logger.info('HTTP Request', {
+      ...requestLog,
+      context: 'HTTP',
+      service: 'API',
+    });
+
+    // 응답 로깅
     response.on('finish', () => {
       const { statusCode } = response;
-      const coloredMethod = this.getMethodColor(method);
-      const coloredPath = `\x1b[35m${originalUrl}\x1b[0m`; // magenta for path
-      const coloredStatus = this.getStatusColor(statusCode);
+      const responseTime = Date.now() - startTime;
 
-      this.logger.log(`${coloredMethod} ${coloredPath} | ${coloredStatus}`);
+      const responseLog = {
+        type: 'RESPONSE',
+        method,
+        path: originalUrl,
+        statusCode,
+        responseTime,
+        timestamp: new Date().toISOString(),
+      };
+
+      if (statusCode >= 400) {
+        this.logger.error('HTTP Response Error', {
+          ...responseLog,
+          context: 'HTTP',
+          service: 'API',
+        });
+      } else {
+        this.logger.info('HTTP Response Success', {
+          ...responseLog,
+          context: 'HTTP',
+          service: 'API',
+        });
+      }
     });
 
     next();
   }
 
-  private getMethodColor(method: string): string {
-    const colors = {
-      GET: '\x1b[32m', // green
-      POST: '\x1b[33m', // yellow
-      PUT: '\x1b[34m', // blue
-      PATCH: '\x1b[36m', // cyan
-      DELETE: '\x1b[31m', // red
-    };
-    const reset = '\x1b[0m';
-    return `${colors[method] || '\x1b[37m'}${method}${reset}`;
+  private filterSensitiveHeaders(headers: any): any {
+    const sensitiveHeaders = ['authorization', 'cookie', 'set-cookie'];
+    const filteredHeaders = { ...headers };
+
+    sensitiveHeaders.forEach((header) => {
+      if (filteredHeaders[header]) {
+        filteredHeaders[header] = '[FILTERED]';
+      }
+    });
+
+    return filteredHeaders;
   }
 
-  private getStatusColor(status: number): string {
-    const colors = {
-      2: '\x1b[32m', // green for 2xx
-      3: '\x1b[36m', // cyan for 3xx
-      4: '\x1b[33m', // yellow for 4xx
-      5: '\x1b[31m', // red for 5xx
-    };
-    const reset = '\x1b[0m';
-    const colorCode = colors[Math.floor(status / 100)] || '\x1b[37m';
-    return `${colorCode}${status}${reset}`;
+  private filterSensitiveData(data: any): any {
+    if (!data) return data;
+
+    const sensitiveFields = ['password', 'token', 'secret', 'creditCard'];
+    const filteredData = { ...data };
+
+    Object.keys(filteredData).forEach((key) => {
+      if (sensitiveFields.some((field) => key.toLowerCase().includes(field))) {
+        filteredData[key] = '[FILTERED]';
+      }
+    });
+
+    return filteredData;
   }
 }
