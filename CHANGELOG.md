@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+# [1.26.0](https://github.com/SamikBeach/backend/compare/1.25.0...1.26.0) (2025-01-25)
+
+
+### Features
+
+* Logstash 로그 파싱 설정 개선 ([6366e31](https://github.com/SamikBeach/backend/commit/6366e31587e69f2c702d2c2f5cf7e498a64bf7ee))
+
 # [1.25.0](https://github.com/SamikBeach/backend/compare/1.24.0...1.25.0) (2025-01-25)
 
 
