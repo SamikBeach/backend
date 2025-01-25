@@ -1,9 +1,13 @@
-import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Inject, Logger } from '@nestjs/common';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
-  private readonly logger = new Logger('HTTP');
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {}
 
   use(request: Request, response: Response, next: NextFunction): void {
     const { method, originalUrl, body, query, headers } = request;
@@ -20,7 +24,11 @@ export class LoggerMiddleware implements NestMiddleware {
       timestamp: new Date().toISOString(),
     };
 
-    this.logger.log(requestLog);
+    this.logger.log({
+      level: 'info',
+      message: 'HTTP Request',
+      ...requestLog,
+    });
 
     // 응답 로깅
     response.on('finish', () => {
@@ -32,14 +40,22 @@ export class LoggerMiddleware implements NestMiddleware {
         method,
         path: originalUrl,
         statusCode,
-        responseTime: `${responseTime}ms`,
+        responseTime,
         timestamp: new Date().toISOString(),
       };
 
       if (statusCode >= 400) {
-        this.logger.error(responseLog);
+        this.logger.error({
+          level: 'error',
+          message: 'HTTP Response Error',
+          ...responseLog,
+        });
       } else {
-        this.logger.log(responseLog);
+        this.logger.log({
+          level: 'info',
+          message: 'HTTP Response Success',
+          ...responseLog,
+        });
       }
     });
 
