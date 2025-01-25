@@ -4,7 +4,7 @@ import { PrometheusModule as NestPrometheusModule } from '@willsoto/nestjs-prome
 @Module({
   imports: [
     NestPrometheusModule.register({
-      path: '/metrics',
+      path: '/monitoring/metrics',
       defaultMetrics: {
         enabled: true,
       },
