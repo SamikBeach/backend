@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+## [1.28.2](https://github.com/SamikBeach/backend/compare/1.28.1...1.28.2) (2025-01-25)
+
+
+### Bug Fixes
+
+* 로그 설정 변경(롤백) ([3011c23](https://github.com/SamikBeach/backend/commit/3011c232f271b64cdf92f679143a576792fe6520))
+
 ## [1.28.1](https://github.com/SamikBeach/backend/compare/1.28.0...1.28.1) (2025-01-25)
 
 # [1.28.0](https://github.com/SamikBeach/backend/compare/1.27.0...1.28.0) (2025-01-25)
