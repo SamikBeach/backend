@@ -44,6 +44,9 @@ lerna-debug.log*
 .env.development
 .env.production
 
+# Monitoring credentials
+.env.monitoring
+.htpasswd
 
 # temp directory
 .temp
