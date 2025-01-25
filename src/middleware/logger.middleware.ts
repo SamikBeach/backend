@@ -1,7 +1,8 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Inject, Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
+import { Logger } from 'winston';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
@@ -24,10 +25,10 @@ export class LoggerMiddleware implements NestMiddleware {
       timestamp: new Date().toISOString(),
     };
 
-    this.logger.log({
-      level: 'info',
-      message: 'HTTP Request',
+    this.logger.info('HTTP Request', {
       ...requestLog,
+      context: 'HTTP',
+      service: 'API',
     });
 
     // 응답 로깅
@@ -45,16 +46,16 @@ export class LoggerMiddleware implements NestMiddleware {
       };
 
       if (statusCode >= 400) {
-        this.logger.error({
-          level: 'error',
-          message: 'HTTP Response Error',
+        this.logger.error('HTTP Response Error', {
           ...responseLog,
+          context: 'HTTP',
+          service: 'API',
         });
       } else {
-        this.logger.log({
-          level: 'info',
-          message: 'HTTP Response Success',
+        this.logger.info('HTTP Response Success', {
           ...responseLog,
+          context: 'HTTP',
+          service: 'API',
         });
       }
     });

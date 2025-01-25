@@ -51,11 +51,33 @@ import { PrometheusModule } from './prometheus/prometheus.module';
                 info: 'cyan',
                 error: 'red',
                 warn: 'yellow',
+                http: 'magenta',
+                debug: 'green',
               },
             }),
-            winston.format.printf(({ level, message, timestamp }) => {
-              return `[${timestamp}] ${level} » ${message}`;
-            }),
+            winston.format.printf(
+              ({ level, message, timestamp, ...metadata }: any) => {
+                let output = `[${timestamp}] ${level}`;
+
+                if (metadata.type === 'REQUEST') {
+                  output += ` \x1b[36m${metadata.method}\x1b[0m`;
+                  output += ` \x1b[33m${metadata.path}\x1b[0m`;
+                  if (Object.keys(metadata.query || {}).length > 0) {
+                    output += ` \x1b[90m${JSON.stringify(metadata.query)}\x1b[0m`;
+                  }
+                } else if (metadata.type === 'RESPONSE') {
+                  output += ` \x1b[36m${metadata.method}\x1b[0m`;
+                  output += ` \x1b[33m${metadata.path}\x1b[0m`;
+                  const statusCode = Number(metadata.statusCode);
+                  output += ` \x1b[${statusCode < 400 ? '32' : '31'}m${statusCode}\x1b[0m`;
+                  output += ` \x1b[35m${metadata.responseTime}ms\x1b[0m`;
+                } else {
+                  output += ` » ${message}`;
+                }
+
+                return output;
+              },
+            ),
           ),
         }),
         // info 레벨 로그 파일!
