@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+# [1.29.0](https://github.com/SamikBeach/backend/compare/1.28.2...1.29.0) (2025-01-25)
+
+
+### Features
+
+* 로그 출력 형식 수정 ([a14fd29](https://github.com/SamikBeach/backend/commit/a14fd294fef30f7bd805aeea27ec32cde94a386f))
+
 ## [1.28.2](https://github.com/SamikBeach/backend/compare/1.28.1...1.28.2) (2025-01-25)
 
 
