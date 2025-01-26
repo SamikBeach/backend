@@ -31,6 +31,7 @@ import { BookOriginalWork } from '@entities/BookOriginalWork';
 import { Era } from '@entities/Era';
 import { Genre } from '@entities/Genre';
 import { PrometheusModule } from './prometheus/prometheus.module';
+import { EraModule } from './era/era.module';
 
 @Module({
   imports: [
@@ -139,6 +140,7 @@ import { PrometheusModule } from './prometheus/prometheus.module';
     ReviewModule,
     SearchModule,
     PrometheusModule,
+    EraModule,
   ],
   controllers: [AppController],
   providers: [AppService],
