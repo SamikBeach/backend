@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+# [1.31.0](https://github.com/SamikBeach/backend/compare/1.30.0...1.31.0) (2025-01-26)
+
+
+### Features
+
+* searchAuthors 수정 ([7cde1dd](https://github.com/SamikBeach/backend/commit/7cde1dda2c08ec1a26fa6817ccb8bf4363e0a673))
+
 # [1.30.0](https://github.com/SamikBeach/backend/compare/1.29.0...1.30.0) (2025-01-26)
 
 
