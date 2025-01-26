@@ -1,5 +1,13 @@
 # 🚦 CHANGELOG
 
+# [1.30.0](https://github.com/SamikBeach/backend/compare/1.29.0...1.30.0) (2025-01-26)
+
+
+### Features
+
+* HEIC 변환 결과를 Buffer 타입으로 변환하도록 수정 ([32c4ecb](https://github.com/SamikBeach/backend/commit/32c4ecb42adda5d8edf151f08f9d15a23edab0e7))
+* 시대(Era) 목록 조회 API 추가 ([3263e62](https://github.com/SamikBeach/backend/commit/3263e627b953a1fa13a30b2c28cfc38292c267fa))
+
 # [1.29.0](https://github.com/SamikBeach/backend/compare/1.28.2...1.29.0) (2025-01-25)
 
 
