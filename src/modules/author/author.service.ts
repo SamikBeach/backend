@@ -78,9 +78,15 @@ export class AuthorService {
         name: [FilterOperator.ILIKE],
         nameInKor: [FilterOperator.ILIKE],
         genre_id: [FilterOperator.EQ],
+        eraId: [FilterOperator.EQ],
       },
       relations: ['authorBooks'],
       maxLimit: 100,
+      ...(query.filter?.eraId && {
+        where: {
+          eraId: Number(query.filter.eraId),
+        },
+      }),
     });
 
     // 각 저자에 대해 책 개수 추가

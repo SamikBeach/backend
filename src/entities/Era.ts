@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Author } from './Author';
 
 @Entity('era', { schema: 'classicswalk' })
 export class Era {
@@ -10,4 +11,7 @@ export class Era {
 
   @Column('varchar', { name: 'era_in_kor', length: 200 })
   eraInKor: string;
+
+  @OneToMany(() => Author, (author) => author.era)
+  authors: Author[];
 }
