@@ -12,6 +12,7 @@ import { AuthorBook } from './AuthorBook';
 import { UserAuthorLike } from './UserAuthorLike';
 import { AuthorOriginalWork } from './AuthorOriginalWork';
 import { Genre } from './Genre';
+import { Era } from './Era';
 
 @Entity('author', { schema: 'classicswalk' })
 export class Author {
@@ -39,17 +40,30 @@ export class Author {
   @Column('tinyint', { name: 'died_date_is_bc', width: 1, nullable: true })
   diedDateIsBc: boolean | null;
 
-  @Column('int', { name: 'era_id', nullable: true })
-  eraId: number | null;
-
   @Column('int', { name: 'like_count', default: () => "'0'" })
   likeCount: number;
 
   @Column('int', { name: 'review_count', default: () => "'0'" })
   reviewCount: number;
 
-  @ManyToOne(() => Genre, (genre) => genre.authors)
-  @JoinColumn({ name: 'genre_id' })
+  @Column('int', { name: 'era_id', nullable: true })
+  eraId: number;
+
+  @ManyToOne(() => Era, (era) => era.authors, {
+    onDelete: 'NO ACTION',
+    onUpdate: 'NO ACTION',
+  })
+  @JoinColumn([{ name: 'era_id', referencedColumnName: 'id' }])
+  era: Era;
+
+  @Column('int', { name: 'genre_id', nullable: true })
+  genreId: number;
+
+  @ManyToOne(() => Genre, (genre) => genre.authors, {
+    onDelete: 'NO ACTION',
+    onUpdate: 'NO ACTION',
+  })
+  @JoinColumn([{ name: 'genre_id', referencedColumnName: 'id' }])
   genre: Genre;
 
   @OneToMany(() => AuthorBook, (authorBook) => authorBook.author)
