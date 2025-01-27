@@ -49,20 +49,14 @@ export class Author {
   @Column('int', { name: 'era_id', nullable: true })
   eraId: number;
 
-  @ManyToOne(() => Era, (era) => era.authors, {
-    onDelete: 'NO ACTION',
-    onUpdate: 'NO ACTION',
-  })
+  @ManyToOne(() => Era, (era) => era.authors)
   @JoinColumn([{ name: 'era_id', referencedColumnName: 'id' }])
   era: Era;
 
   @Column('int', { name: 'genre_id', nullable: true })
   genreId: number;
 
-  @ManyToOne(() => Genre, (genre) => genre.authors, {
-    onDelete: 'NO ACTION',
-    onUpdate: 'NO ACTION',
-  })
+  @ManyToOne(() => Genre, (genre) => genre.authors)
   @JoinColumn([{ name: 'genre_id', referencedColumnName: 'id' }])
   genre: Genre;
 

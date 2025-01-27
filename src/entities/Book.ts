@@ -43,6 +43,9 @@ export class Book {
   @Column('int', { name: 'review_count', default: () => "'0'" })
   reviewCount: number;
 
+  @Column('int', { name: 'genre_id', nullable: true })
+  genreId: number;
+
   @OneToMany(() => AuthorBook, (authorBook) => authorBook.book)
   authorBooks: AuthorBook[];
 
