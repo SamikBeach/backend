@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { AuthorBook } from './AuthorBook';
 import { UserAuthorLike } from './UserAuthorLike';
@@ -14,6 +15,8 @@ import { AuthorOriginalWork } from './AuthorOriginalWork';
 import { Genre } from './Genre';
 import { Era } from './Era';
 
+@Index('author_era_id_fk', ['eraId'], {})
+@Index('author_genre_id_fk', ['genreId'], {})
 @Entity('author', { schema: 'classicswalk' })
 export class Author {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
@@ -49,20 +52,14 @@ export class Author {
   @Column('int', { name: 'era_id', nullable: true })
   eraId: number;
 
-  @ManyToOne(() => Era, (era) => era.authors, {
-    onDelete: 'NO ACTION',
-    onUpdate: 'NO ACTION',
-  })
+  @ManyToOne(() => Era, (era) => era.authors)
   @JoinColumn([{ name: 'era_id', referencedColumnName: 'id' }])
   era: Era;
 
   @Column('int', { name: 'genre_id', nullable: true })
   genreId: number;
 
-  @ManyToOne(() => Genre, (genre) => genre.authors, {
-    onDelete: 'NO ACTION',
-    onUpdate: 'NO ACTION',
-  })
+  @ManyToOne(() => Genre, (genre) => genre.authors)
   @JoinColumn([{ name: 'genre_id', referencedColumnName: 'id' }])
   genre: Genre;
 

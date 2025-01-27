@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { AuthorBook } from './AuthorBook';
 import { Review } from './Review';
@@ -14,6 +15,7 @@ import { UserBookLike } from './UserBookLike';
 import { BookOriginalWork } from './BookOriginalWork';
 import { Genre } from './Genre';
 
+@Index('book_genre_id_fk', ['genreId'], {})
 @Entity('book', { schema: 'classicswalk' })
 export class Book {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
@@ -42,6 +44,9 @@ export class Book {
 
   @Column('int', { name: 'review_count', default: () => "'0'" })
   reviewCount: number;
+
+  @Column('int', { name: 'genre_id', nullable: true })
+  genreId: number;
 
   @OneToMany(() => AuthorBook, (authorBook) => authorBook.book)
   authorBooks: AuthorBook[];
