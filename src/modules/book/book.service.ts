@@ -110,8 +110,10 @@ export class BookService {
     // 각 책에 대해 전체 번역서 개수 추가
     books.data = books.data.map((book) => {
       const totalTranslationCount = new Set(
-        book.bookOriginalWorks.flatMap((bow) =>
-          bow.originalWork.bookOriginalWorks.map((obow) => obow.book.id),
+        (book.bookOriginalWorks || []).flatMap((bow) =>
+          (bow?.originalWork?.bookOriginalWorks || [])
+            .map((obow) => obow?.book?.id)
+            .filter(Boolean),
         ),
       ).size;
 
