@@ -1,5 +1,13 @@
 # 🚦 CHANGELOG
 
+# [1.32.0](https://github.com/SamikBeach/backend/compare/1.31.0...1.32.0) (2025-01-27)
+
+
+### Features
+
+* 엔티티 외래키 설정 보완 ([568c561](https://github.com/SamikBeach/backend/commit/568c561007a2acaccf282c340e7496a031ec9bb8))
+* 엔티티 외래키 인덱스 설정 추가 ([983d5a1](https://github.com/SamikBeach/backend/commit/983d5a1b91e6d8479c2e2e8ee65c11341aa74319))
+
 # [1.31.0](https://github.com/SamikBeach/backend/compare/1.30.0...1.31.0) (2025-01-26)
 
 
