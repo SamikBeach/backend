@@ -86,9 +86,7 @@ export class BookService {
       ],
       defaultSortBy: [['id', 'DESC']],
       relations: [
-        'authorBooks',
         'authorBooks.author',
-        'bookOriginalWorks.originalWork',
         'bookOriginalWorks.originalWork.bookOriginalWorks.book',
       ],
       filterableColumns: {
