@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { AuthorBook } from './AuthorBook';
 import { UserAuthorLike } from './UserAuthorLike';
@@ -14,6 +15,8 @@ import { AuthorOriginalWork } from './AuthorOriginalWork';
 import { Genre } from './Genre';
 import { Era } from './Era';
 
+@Index('author_era_id_fk', ['eraId'], {})
+@Index('author_genre_id_fk', ['genreId'], {})
 @Entity('author', { schema: 'classicswalk' })
 export class Author {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
