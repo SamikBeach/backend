@@ -1,5 +1,15 @@
 # 🚦 CHANGELOG
 
+## [1.32.1](https://github.com/SamikBeach/backend/compare/1.32.0...1.32.1) (2025-01-28)
+
+
+### Bug Fixes
+
+* Book 검색 시 null 참조 오류 수정 ([655004c](https://github.com/SamikBeach/backend/commit/655004c4518534002185e420667896f0f7a2d3d9))
+* BookOriginalWork 엔티티 NULL 값 처리 및 외래키 제약조건 강화 ([9c3cb9b](https://github.com/SamikBeach/backend/commit/9c3cb9bd5cb0e762e6d5cbe1008286797e053025))
+* searchBooks 수정 ([9750a55](https://github.com/SamikBeach/backend/commit/9750a5504809b0c8033d4a978aac212cff0ffc08))
+* 아이폰 HEIC 이미지 업로드 문제 해결 ([3c4e66c](https://github.com/SamikBeach/backend/commit/3c4e66c2ab44d1945ae3db896d70e8b30a606ec2))
+
 # [1.32.0](https://github.com/SamikBeach/backend/compare/1.31.0...1.32.0) (2025-01-27)
 
 
