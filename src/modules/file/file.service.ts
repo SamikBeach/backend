@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { ConfigService } from '@nestjs/config';
@@ -14,8 +14,11 @@ export class FileService {
 
   private async convertHeicToJpeg(buffer: Buffer): Promise<Buffer> {
     try {
-      // HEIC 파일인지 확인 (파일 시그니처 체크)
-      const isHeic = buffer.toString('hex', 8, 12).toLowerCase() === '68656963';
+      const signature = buffer.toString('hex', 4, 12).toLowerCase();
+      const isHeic =
+        signature.includes('66747970686569') || // ftyp + heic
+        signature.includes('66747970686569') || // ftyp + heif
+        signature.includes('667479706d696631'); // ftyp + mif1
 
       if (!isHeic) {
         return buffer;
@@ -29,8 +32,7 @@ export class FileService {
 
       return Buffer.from(jpegBuffer);
     } catch (error) {
-      console.error('HEIC 변환 실패:', error);
-      return buffer;
+      throw new BadRequestException('HEIC 이미지 변환에 실패했습니다.');
     }
   }
 
@@ -44,8 +46,7 @@ export class FileService {
         .jpeg({ quality: 85 })
         .toBuffer();
     } catch (error) {
-      console.error('이미지 최적화 실패:', error);
-      return buffer;
+      throw new BadRequestException('이미지 최적화에 실패했습니다.');
     }
   }
 
@@ -53,29 +54,36 @@ export class FileService {
     file: Express.Multer.File,
     userId: number,
   ): Promise<string> {
-    let processedBuffer = file.buffer;
+    if (!file.buffer) {
+      throw new BadRequestException('파일 데이터가 없습니다.');
+    }
 
-    // HEIC 이미지 변환 시도
-    processedBuffer = await this.convertHeicToJpeg(processedBuffer);
+    try {
+      let processedBuffer = file.buffer;
+      processedBuffer = await this.convertHeicToJpeg(processedBuffer);
+      processedBuffer = await this.optimizeImage(processedBuffer);
 
-    // 이미지 최적화
-    processedBuffer = await this.optimizeImage(processedBuffer);
+      const uploadPath = path.join(this.uploadDir, this.profileDir);
+      await fs.mkdir(uploadPath, { recursive: true });
 
-    const fileName = `${userId}-${Date.now()}.jpg`;
-    const relativePath = path.join(this.profileDir, fileName);
-    const absolutePath = path.join(this.uploadDir, relativePath);
+      const fileName = `${userId}-${Date.now()}.jpg`;
+      const relativePath = path.join(this.profileDir, fileName);
+      const absolutePath = path.join(this.uploadDir, relativePath);
 
-    await fs.writeFile(absolutePath, processedBuffer);
+      await fs.writeFile(absolutePath, processedBuffer);
 
-    // 전체 URL 반환
-    const baseUrl =
-      this.configService.get('BASE_URL') || 'http://localhost:3000';
-    return `${baseUrl}/api/v2/uploads/${relativePath}`;
+      const baseUrl =
+        this.configService.get('BASE_URL') || 'http://localhost:3000';
+      return `${baseUrl}/api/v2/uploads/${relativePath}`;
+    } catch (error) {
+      throw new BadRequestException(
+        `파일 업로드에 실패했습니다: ${error.message}`,
+      );
+    }
   }
 
   async deleteFile(fileUrl: string): Promise<void> {
     try {
-      // URL에서 파일 경로 추출
       const baseUrl =
         this.configService.get('BASE_URL') || 'http://localhost:3001';
       const urlPath = fileUrl.replace(`${baseUrl}/api/v2/uploads/`, '');
