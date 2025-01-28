@@ -79,7 +79,7 @@ export class BookService {
       ],
       searchableColumns: [
         'title',
-        'authorBooks.author.name',
+        'authorBooks.author.nameInKor',
         'publisher',
         'isbn',
         'isbn13',
