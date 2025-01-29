@@ -7,6 +7,15 @@
 
 * cors origin 수정 ([246e551](https://github.com/SamikBeach/backend/commit/246e55145a5f3cf65f083b0b5a71043819135cb7))
 * cors origin 추가 ([12e7aaf](https://github.com/SamikBeach/backend/commit/12e7aafb2e9611116c0b449c77f57100b8469f95))
+* 타입스크립트 버전 수정 ([0f7710e](https://github.com/SamikBeach/backend/commit/0f7710e74c219baa8263b8975a385426daac8e3f))
+
+## [1.32.2](https://github.com/SamikBeach/backend/compare/1.32.1...1.32.2) (2025-01-29)
+
+
+### Bug Fixes
+
+* cors origin 수정 ([246e551](https://github.com/SamikBeach/backend/commit/246e55145a5f3cf65f083b0b5a71043819135cb7))
+* cors origin 추가 ([12e7aaf](https://github.com/SamikBeach/backend/commit/12e7aafb2e9611116c0b449c77f57100b8469f95))
 
 ## [1.32.2](https://github.com/SamikBeach/backend/compare/1.32.1...1.32.2) (2025-01-29)
 
