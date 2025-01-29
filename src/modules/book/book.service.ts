@@ -342,19 +342,42 @@ export class BookService {
   /**
    * 책의 리뷰 목록을 조회합니다.
    */
-  async getBookReviews(bookId: number, query: PaginateQuery, userId?: number) {
+  async getBookReviews(
+    bookId: number,
+    query: PaginateQuery,
+    userId?: number,
+    includeOtherTranslations = false,
+  ) {
     const book = await this.bookRepository.findOne({
       where: { id: bookId },
+      relations: ['bookOriginalWorks', 'bookOriginalWorks.originalWork'],
     });
 
     if (!book) {
       throw new NotFoundException('책을 찾을 수 없습니다.');
     }
 
+    let whereCondition: any = { bookId };
+
+    if (includeOtherTranslations && book.bookOriginalWorks?.length > 0) {
+      const originalWorkId = book.bookOriginalWorks[0].originalWork.id;
+
+      const relatedBooks = await this.bookRepository
+        .createQueryBuilder('book')
+        .innerJoin('book.bookOriginalWorks', 'bow')
+        .where('bow.originalWorkId = :originalWorkId', { originalWorkId })
+        .select(['book.id'])
+        .getMany();
+
+      whereCondition = {
+        bookId: In(relatedBooks.map((book) => book.id)),
+      };
+    }
+
     const reviews = await paginate(query, this.reviewRepository, {
       sortableColumns: ['id', 'createdAt', 'updatedAt'],
       defaultSortBy: [['createdAt', 'DESC']],
-      where: { bookId },
+      where: whereCondition,
       relations: ['user', 'book'],
     });
 
