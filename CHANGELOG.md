@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+## [1.32.2](https://github.com/SamikBeach/backend/compare/1.32.1...1.32.2) (2025-01-29)
+
+
+### Bug Fixes
+
+* cors origin 추가 ([12e7aaf](https://github.com/SamikBeach/backend/commit/12e7aafb2e9611116c0b449c77f57100b8469f95))
+
 ## [1.32.1](https://github.com/SamikBeach/backend/compare/1.32.0...1.32.1) (2025-01-28)
 
 
