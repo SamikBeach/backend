@@ -5,6 +5,9 @@ import {
   Post,
   UseGuards,
   ParseIntPipe,
+  Query,
+  DefaultValuePipe,
+  ParseBoolPipe,
 } from '@nestjs/common';
 import { BookService } from './book.service';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
@@ -86,7 +89,18 @@ export class BookController {
     @Param('id', ParseIntPipe) id: number,
     @Paginate() query: PaginateQuery,
     @CurrentUser() user?: User,
+    @Query(
+      'includeOtherTranslations',
+      new DefaultValuePipe(false),
+      ParseBoolPipe,
+    )
+    includeOtherTranslations?: boolean,
   ) {
-    return this.bookService.getBookReviews(id, query, user?.id);
+    return this.bookService.getBookReviews(
+      id,
+      query,
+      user?.id,
+      includeOtherTranslations,
+    );
   }
 }
