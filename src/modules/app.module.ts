@@ -32,9 +32,12 @@ import { Era } from '@entities/Era';
 import { Genre } from '@entities/Genre';
 import { PrometheusModule } from './prometheus/prometheus.module';
 import { EraModule } from './era/era.module';
+import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
+import { APP_FILTER } from '@nestjs/core';
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       envFilePath: `.env.${process.env.NODE_ENV}`,
       isGlobal: true,
@@ -143,7 +146,13 @@ import { EraModule } from './era/era.module';
     EraModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: SentryGlobalFilter,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
