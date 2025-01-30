@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+## [1.33.1](https://github.com/SamikBeach/backend/compare/1.33.0...1.33.1) (2025-01-30)
+
+
+### Bug Fixes
+
+* nest-cli 수정 ([68d40b3](https://github.com/SamikBeach/backend/commit/68d40b35d6fff998abed86827c0a97bb60fb0007))
+
 # [1.33.0](https://github.com/SamikBeach/backend/compare/1.32.1...1.33.0) (2025-01-30)
 
 
