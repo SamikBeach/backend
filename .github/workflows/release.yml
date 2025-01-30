@@ -26,8 +26,8 @@ jobs:
       - name: Create Sentry release
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: your-org-name
-          SENTRY_PROJECT: your-project-name
+          SENTRY_ORG: classciswalk
+          SENTRY_PROJECT: node-nestjs
         run: |
           # Install Sentry CLI
           curl -sL https://sentry.io/get-cli/ | bash
