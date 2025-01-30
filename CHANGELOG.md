@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+## [1.33.3](https://github.com/SamikBeach/backend/compare/1.33.2...1.33.3) (2025-01-30)
+
+
+### Bug Fixes
+
+* setup Tracing 롤백 ([250a7e0](https://github.com/SamikBeach/backend/commit/250a7e0a177a3432cca0d7c5eef494dee7164b76))
+
 ## [1.33.2](https://github.com/SamikBeach/backend/compare/1.33.1...1.33.2) (2025-01-30)
 
 
