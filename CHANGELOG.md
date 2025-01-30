@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+## [1.33.2](https://github.com/SamikBeach/backend/compare/1.33.1...1.33.2) (2025-01-30)
+
+
+### Bug Fixes
+
+* setup Tracing ([eb73598](https://github.com/SamikBeach/backend/commit/eb735987186f19f2b322274e1696045167f17b61))
+
 ## [1.33.1](https://github.com/SamikBeach/backend/compare/1.33.0...1.33.1) (2025-01-30)
 
 
