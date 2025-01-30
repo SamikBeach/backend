@@ -7,10 +7,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: classciswalk
+      SENTRY_PROJECT: node-nestjs
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Use Node.js
         uses: actions/setup-node@v3
@@ -23,18 +29,17 @@ jobs:
       - name: Build
         run: yarn && yarn build
 
-      - name: Create Sentry release
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: classciswalk
-          SENTRY_PROJECT: node-nestjs
+      - name: Install and configure Sentry CLI
         run: |
-          # Install Sentry CLI
           curl -sL https://sentry.io/get-cli/ | bash
+          sentry-cli --version
+
+      - name: Create Sentry release and upload sourcemaps
+        run: |
           # Create new Sentry release
           sentry-cli releases new ${{ github.sha }}
           # Upload source maps
-          sentry-cli releases files ${{ github.sha }} upload-sourcemaps ./dist
+          sentry-cli releases files ${{ github.sha }} upload-sourcemaps ./dist --url-prefix '~/dist'
           # Finalize the release
           sentry-cli releases finalize ${{ github.sha }}
 
