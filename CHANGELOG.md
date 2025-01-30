@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+## [1.33.4](https://github.com/SamikBeach/backend/compare/1.33.3...1.33.4) (2025-01-30)
+
+
+### Bug Fixes
+
+* relations 수정 ([9ea4f60](https://github.com/SamikBeach/backend/commit/9ea4f6075e68e7a9af56624680aa8bd205d0f689))
+
 ## [1.33.3](https://github.com/SamikBeach/backend/compare/1.33.2...1.33.3) (2025-01-30)
 
 
