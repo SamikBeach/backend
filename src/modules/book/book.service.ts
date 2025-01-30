@@ -378,7 +378,7 @@ export class BookService {
       sortableColumns: ['id', 'createdAt', 'updatedAt'],
       defaultSortBy: [['createdAt', 'DESC']],
       where: whereCondition,
-      relations: ['user', 'book'],
+      relations: ['user', 'book', 'book.authorBooks.author'],
     });
 
     if (userId) {
