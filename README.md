@@ -1,5 +1,254 @@
 # 🚦 CHANGELOG
 
+## [1.33.4](https://github.com/SamikBeach/backend/compare/1.33.3...1.33.4) (2025-01-30)
+
+### Bug Fixes
+
+- relations 수정 ([9ea4f60](https://github.com/SamikBeach/backend/commit/9ea4f6075e68e7a9af56624680aa8bd205d0f689))
+
+## [1.33.3](https://github.com/SamikBeach/backend/compare/1.33.2...1.33.3) (2025-01-30)
+
+### Bug Fixes
+
+- setup Tracing 롤백 ([250a7e0](https://github.com/SamikBeach/backend/commit/250a7e0a177a3432cca0d7c5eef494dee7164b76))
+
+## [1.33.2](https://github.com/SamikBeach/backend/compare/1.33.1...1.33.2) (2025-01-30)
+
+### Bug Fixes
+
+- setup Tracing ([eb73598](https://github.com/SamikBeach/backend/commit/eb735987186f19f2b322274e1696045167f17b61))
+
+## [1.33.1](https://github.com/SamikBeach/backend/compare/1.33.0...1.33.1) (2025-01-30)
+
+### Bug Fixes
+
+- nest-cli 수정 ([68d40b3](https://github.com/SamikBeach/backend/commit/68d40b35d6fff998abed86827c0a97bb60fb0007))
+
+# [1.33.0](https://github.com/SamikBeach/backend/compare/1.32.1...1.33.0) (2025-01-30)
+
+### Bug Fixes
+
+- cors origin 수정 ([246e551](https://github.com/SamikBeach/backend/commit/246e55145a5f3cf65f083b0b5a71043819135cb7))
+- cors origin 추가 ([12e7aaf](https://github.com/SamikBeach/backend/commit/12e7aafb2e9611116c0b449c77f57100b8469f95))
+- Sentry CLI 인증 설정 개선 ([a0ebdd4](https://github.com/SamikBeach/backend/commit/a0ebdd41f278f6f7665dc10a85246e9847e61a2a))
+- update release.yml ([a2e90b1](https://github.com/SamikBeach/backend/commit/a2e90b15a931ef4faafa5b8d5a46f464bad9f308))
+- update release.yml ([6fa4810](https://github.com/SamikBeach/backend/commit/6fa48108369d915b55d8ee521ec2b4fa2864f135))
+- 센트리 소스맵 설정 ([db20e17](https://github.com/SamikBeach/backend/commit/db20e178139ace2d4dd9c0368f60461c33cd9021))
+- 타입스크립트 버전 수정 ([0f7710e](https://github.com/SamikBeach/backend/commit/0f7710e74c219baa8263b8975a385426daac8e3f))
+
+### Features
+
+- sentry 설정 ([df131de](https://github.com/SamikBeach/backend/commit/df131de737af757d0e6d9f75b95194128843d676))
+
+## [1.32.2](https://github.com/SamikBeach/backend/compare/1.32.1...1.32.2) (2025-01-29)
+
+### Bug Fixes
+
+- cors origin 수정 ([246e551](https://github.com/SamikBeach/backend/commit/246e55145a5f3cf65f083b0b5a71043819135cb7))
+- cors origin 추가 ([12e7aaf](https://github.com/SamikBeach/backend/commit/12e7aafb2e9611116c0b449c77f57100b8469f95))
+- 타입스크립트 버전 수정 ([0f7710e](https://github.com/SamikBeach/backend/commit/0f7710e74c219baa8263b8975a385426daac8e3f))
+
+## [1.32.2](https://github.com/SamikBeach/backend/compare/1.32.1...1.32.2) (2025-01-29)
+
+### Bug Fixes
+
+- cors origin 수정 ([246e551](https://github.com/SamikBeach/backend/commit/246e55145a5f3cf65f083b0b5a71043819135cb7))
+- cors origin 추가 ([12e7aaf](https://github.com/SamikBeach/backend/commit/12e7aafb2e9611116c0b449c77f57100b8469f95))
+
+## [1.32.2](https://github.com/SamikBeach/backend/compare/1.32.1...1.32.2) (2025-01-29)
+
+### Bug Fixes
+
+- cors origin 추가 ([12e7aaf](https://github.com/SamikBeach/backend/commit/12e7aafb2e9611116c0b449c77f57100b8469f95))
+
+## [1.32.1](https://github.com/SamikBeach/backend/compare/1.32.0...1.32.1) (2025-01-28)
+
+### Bug Fixes
+
+- Book 검색 시 null 참조 오류 수정 ([655004c](https://github.com/SamikBeach/backend/commit/655004c4518534002185e420667896f0f7a2d3d9))
+- BookOriginalWork 엔티티 NULL 값 처리 및 외래키 제약조건 강화 ([9c3cb9b](https://github.com/SamikBeach/backend/commit/9c3cb9bd5cb0e762e6d5cbe1008286797e053025))
+- searchBooks 수정 ([9750a55](https://github.com/SamikBeach/backend/commit/9750a5504809b0c8033d4a978aac212cff0ffc08))
+- 아이폰 HEIC 이미지 업로드 문제 해결 ([3c4e66c](https://github.com/SamikBeach/backend/commit/3c4e66c2ab44d1945ae3db896d70e8b30a606ec2))
+
+# [1.32.0](https://github.com/SamikBeach/backend/compare/1.31.0...1.32.0) (2025-01-27)
+
+### Features
+
+- 엔티티 외래키 설정 보완 ([568c561](https://github.com/SamikBeach/backend/commit/568c561007a2acaccf282c340e7496a031ec9bb8))
+- 엔티티 외래키 인덱스 설정 추가 ([983d5a1](https://github.com/SamikBeach/backend/commit/983d5a1b91e6d8479c2e2e8ee65c11341aa74319))
+
+# [1.31.0](https://github.com/SamikBeach/backend/compare/1.30.0...1.31.0) (2025-01-26)
+
+### Features
+
+- searchAuthors 수정 ([7cde1dd](https://github.com/SamikBeach/backend/commit/7cde1dda2c08ec1a26fa6817ccb8bf4363e0a673))
+
+# [1.30.0](https://github.com/SamikBeach/backend/compare/1.29.0...1.30.0) (2025-01-26)
+
+### Features
+
+- HEIC 변환 결과를 Buffer 타입으로 변환하도록 수정 ([32c4ecb](https://github.com/SamikBeach/backend/commit/32c4ecb42adda5d8edf151f08f9d15a23edab0e7))
+- 시대(Era) 목록 조회 API 추가 ([3263e62](https://github.com/SamikBeach/backend/commit/3263e627b953a1fa13a30b2c28cfc38292c267fa))
+
+# [1.29.0](https://github.com/SamikBeach/backend/compare/1.28.2...1.29.0) (2025-01-25)
+
+### Features
+
+- 로그 출력 형식 수정 ([a14fd29](https://github.com/SamikBeach/backend/commit/a14fd294fef30f7bd805aeea27ec32cde94a386f))
+
+## [1.28.2](https://github.com/SamikBeach/backend/compare/1.28.1...1.28.2) (2025-01-25)
+
+### Bug Fixes
+
+- 로그 설정 변경(롤백) ([3011c23](https://github.com/SamikBeach/backend/commit/3011c232f271b64cdf92f679143a576792fe6520))
+
+## [1.28.1](https://github.com/SamikBeach/backend/compare/1.28.0...1.28.1) (2025-01-25)
+
+# [1.28.0](https://github.com/SamikBeach/backend/compare/1.27.0...1.28.0) (2025-01-25)
+
+### Features
+
+- 로깅 시스템 안정성 개선 ([c4486a3](https://github.com/SamikBeach/backend/commit/c4486a36bcf8902f6283e95e18f9048beaa58902))
+
+# [1.27.0](https://github.com/SamikBeach/backend/compare/1.26.0...1.27.0) (2025-01-25)
+
+### Features
+
+- 로그 시스템 개선 ([0fffb9a](https://github.com/SamikBeach/backend/commit/0fffb9a1339830898da7f875194b040ffa505163))
+
+# [1.26.0](https://github.com/SamikBeach/backend/compare/1.25.0...1.26.0) (2025-01-25)
+
+### Features
+
+- Logstash 로그 파싱 설정 개선 ([6366e31](https://github.com/SamikBeach/backend/commit/6366e31587e69f2c702d2c2f5cf7e498a64bf7ee))
+
+# [1.25.0](https://github.com/SamikBeach/backend/compare/1.24.0...1.25.0) (2025-01-25)
+
+### Features
+
+- HTTP 로깅 시스템 개선 ([7c0817b](https://github.com/SamikBeach/backend/commit/7c0817bdd10c5b72e346e33f54d1ece261f34e6f))
+- Winston Logger 통합 개선 ([7fb921d](https://github.com/SamikBeach/backend/commit/7fb921dd8ad16f6a9b7be3535476bab7906db30b))
+- 로그 시스템 개선 ([faf4c2d](https://github.com/SamikBeach/backend/commit/faf4c2dacbb30c411e6a2a72da36e737dd2517c1))
+
+# [1.24.0](https://github.com/SamikBeach/backend/compare/1.23.6...1.24.0) (2025-01-25)
+
+### Features
+
+- ELK 스택 설정 추가 ([803731a](https://github.com/SamikBeach/backend/commit/803731a5e624886a0a8664dc8a1efc9bec106461))
+
+## [1.23.6](https://github.com/SamikBeach/backend/compare/1.23.5...1.23.6) (2025-01-25)
+
+### Bug Fixes
+
+- docker-compose 파일 수정 ([224ee5d](https://github.com/SamikBeach/backend/commit/224ee5d467a812ec70b78876db58e1d4a026b10d))
+
+## [1.23.5](https://github.com/SamikBeach/backend/compare/1.23.4...1.23.5) (2025-01-25)
+
+### Bug Fixes
+
+- docker-compose 파일 수정 ([c4857a7](https://github.com/SamikBeach/backend/commit/c4857a72158226772e035a39b625583f49f131d4))
+
+## [1.23.4](https://github.com/SamikBeach/backend/compare/1.23.3...1.23.4) (2025-01-25)
+
+## [1.23.3](https://github.com/SamikBeach/backend/compare/1.23.2...1.23.3) (2025-01-25)
+
+### Bug Fixes
+
+- docker-compose 파일 수정 ([91e0291](https://github.com/SamikBeach/backend/commit/91e02917930f83d2a3e09f4ece50ca4873e2b56e))
+
+## [1.23.2](https://github.com/SamikBeach/backend/compare/1.23.1...1.23.2) (2025-01-25)
+
+### Bug Fixes
+
+- docker-compose 파일 수정 ([8c81c6b](https://github.com/SamikBeach/backend/commit/8c81c6b5cd2c6aabaf7577ee8fc18389ad025617))
+
+## [1.23.1](https://github.com/SamikBeach/backend/compare/1.23.0...1.23.1) (2025-01-25)
+
+### Bug Fixes
+
+- 도커파일 제거 ([11cfa64](https://github.com/SamikBeach/backend/commit/11cfa64ae77578e1166b4fcc6f2687db1d5bbd92))
+
+# [1.23.0](https://github.com/SamikBeach/backend/compare/1.22.0...1.23.0) (2025-01-25)
+
+### Features
+
+- 프로덕션 환경 모니터링 보안 설정 추가 ([773e7b8](https://github.com/SamikBeach/backend/commit/773e7b8e8b60d12a088445fe8d815ba00e8a3962))
+- 프로덕션 환경 모니터링 설정 추가 ([d0fa223](https://github.com/SamikBeach/backend/commit/d0fa22396ca7eba84274fb2158387b93fc317b07))
+
+# [1.22.0](https://github.com/SamikBeach/backend/compare/1.21.0...1.22.0) (2025-01-25)
+
+### Bug Fixes
+
+- fix lint ([2228923](https://github.com/SamikBeach/backend/commit/222892394e39f8e43dd6b0bd8cb76421350f4a22))
+
+### Features
+
+- Sentry 관련 코드 제거 ([6249aec](https://github.com/SamikBeach/backend/commit/6249aec6fa3cf781c725f5160ac58325073ae83f))
+- 정적 파일 제공 경로를 /api/v2/uploads로 수정 ([cfaba42](https://github.com/SamikBeach/backend/commit/cfaba42596ff4fd8a7f84484c8280786c7957afc))
+
+# [1.22.0](https://github.com/SamikBeach/backend/compare/1.21.0...1.22.0) (2025-01-25)
+
+### Bug Fixes
+
+- fix lint ([2228923](https://github.com/SamikBeach/backend/commit/222892394e39f8e43dd6b0bd8cb76421350f4a22))
+
+### Features
+
+- Sentry 관련 코드 제거 ([6249aec](https://github.com/SamikBeach/backend/commit/6249aec6fa3cf781c725f5160ac58325073ae83f))
+- 정적 파일 제공 경로를 /api/v2/uploads로 수정 ([cfaba42](https://github.com/SamikBeach/backend/commit/cfaba42596ff4fd8a7f84484c8280786c7957afc))
+
+# [1.22.0](https://github.com/SamikBeach/backend/compare/1.21.0...1.22.0) (2025-01-25)
+
+### Features
+
+- 정적 파일 제공 경로를 /api/v2/uploads로 수정 ([cfaba42](https://github.com/SamikBeach/backend/commit/cfaba42596ff4fd8a7f84484c8280786c7957afc))
+
+# [1.22.0](https://github.com/SamikBeach/backend/compare/1.21.0...1.22.0) (2025-01-25)
+
+### Features
+
+- 정적 파일 제공 경로를 /api/v2/uploads로 수정 ([cfaba42](https://github.com/SamikBeach/backend/commit/cfaba42596ff4fd8a7f84484c8280786c7957afc))
+
+# [1.21.0](https://github.com/SamikBeach/backend/compare/1.20.0...1.21.0) (2025-01-24)
+
+### Bug Fixes
+
+- db schema 변경 ([3c3dd00](https://github.com/SamikBeach/backend/commit/3c3dd0039110b0d5d65d1171e5609a85e1d09438))
+- fix lint ([d3d1f18](https://github.com/SamikBeach/backend/commit/d3d1f18f483c49f106af08cd67a80ed6e92f835e))
+- Sentry 소스맵 관련 설정 제거 ([5479d41](https://github.com/SamikBeach/backend/commit/5479d417479f479104e14cc458703b33da288bdb))
+- user service relations 수정 ([ec641b1](https://github.com/SamikBeach/backend/commit/ec641b1d1e081c102d94a69923349bc1dbb11f7c))
+- user service relations 수정 ([8556944](https://github.com/SamikBeach/backend/commit/8556944fda51cdaf57206e40bd2bc96e81b82255))
+- 로그인시 이미지 정보도 함께 응답하도록 수정 ([3ecd2c8](https://github.com/SamikBeach/backend/commit/3ecd2c83cda7b59fdd343747d22412ebcde82003))
+- 로그인시 이미지 정보도 함께 응답하도록 수정 ([54e8144](https://github.com/SamikBeach/backend/commit/54e8144a268e1390e5b4c5f9d90f94d0c5851b69))
+- 사용자가 좋아요한 저자 목록 조회 시 bookCount 필드 추가 ([5754fcc](https://github.com/SamikBeach/backend/commit/5754fcc239f2ef3b2ad54099c5c0a72440b55cd4))
+
+### Features
+
+- Sentry 설정 오류 수정 및 소스맵 업로드 환경변수 구성 ([3c1ce22](https://github.com/SamikBeach/backend/commit/3c1ce223ff13fe77ef62c31d80ce786bad309ad8))
+- Sentry 설치 및 적용 ([d52864d](https://github.com/SamikBeach/backend/commit/d52864db424031dd768e53035a05d66bca602b03))
+- 댓글 삭제 시 트랜잭션 적용 및 commentCount 감소 로직 추가 ([b6939db](https://github.com/SamikBeach/backend/commit/b6939dbcf4ba38729a7821a60641d75b942f0a34))
+- 사용자가 좋아요한 책 목록 조회 시 totalTranslationCount 필드 추가 및 불필요한 relation 제거 ([f076270](https://github.com/SamikBeach/backend/commit/f0762708fd6171ae48cc53aee8358b28ee36fbb5))
+
+# [1.21.0](https://github.com/SamikBeach/backend/compare/1.20.0...1.21.0) (2025-01-24)
+
+### Bug Fixes
+
+- db schema 변경 ([3c3dd00](https://github.com/SamikBeach/backend/commit/3c3dd0039110b0d5d65d1171e5609a85e1d09438))
+- fix lint ([d3d1f18](https://github.com/SamikBeach/backend/commit/d3d1f18f483c49f106af08cd67a80ed6e92f835e))
+- Sentry 소스맵 관련 설정 제거 ([5479d41](https://github.com/SamikBeach/backend/commit/5479d417479f479104e14cc458703b33da288bdb))
+- user service relations 수정 ([ec641b1](https://github.com/SamikBeach/backend/commit/ec641b1d1e081c102d94a69923349bc1dbb11f7c))
+- user service relations 수정 ([8556944](https://github.com/SamikBeach/backend/commit/8556944fda51cdaf57206e40bd2bc96e81b82255))
+- 로그인시 이미지 정보도 함께 응답하도록 수정 ([3ecd2c8](https://github.com/SamikBeach/backend/commit/3ecd2c83cda7b59fdd343747d22412ebcde82003))
+- 로그인시 이미지 정보도 함께 응답하도록 수정 ([54e8144](https://github.com/SamikBeach/backend/commit/54e8144a268e1390e5b4c5f9d90f94d0c5851b69))
+- 사용자가 좋아요한 저자 목록 조회 시 bookCount 필드 추가 ([5754fcc](https://github.com/SamikBeach/backend/commit/5754fcc239f2ef3b2ad54099c5c0a72440b55cd4))
+
+### Features
+
+- Sentry 설정 오류 수정 및 소스맵 업로드 환경변수 구성 ([3c1ce22](https://github.com/SamikBeach/backend/commit/3c1ce223ff13fe77ef62c31d80ce786bad309ad8))
+- Sentry 설치 및 적용 ([d52864d](https://github.com/SamikBeach/backend/commit/d52864db424031dd768e53035a05d66bca602b03))
+- 댓글 삭제 시 트랜잭션 적용 및 commentCount 감소 로직 추가 ([b6939db](https://github.com/SamikBeach/backend/commit/b6939dbcf4ba38729a7821a60641d75b942f0a34))
+- 사용자가 좋아요한 책 목록 조회 시 totalTranslationCount 필드 추가 및 불필요한 relation 제거 ([f076270](https://github.com/SamikBeach/backend/commit/f0762708fd6171ae48cc53aee8358b28ee36fbb5))
+
 # [1.20.0](https://github.com/SamikBeach/backend/compare/1.19.2...1.20.0) (2025-01-20)
 
 ### Features
