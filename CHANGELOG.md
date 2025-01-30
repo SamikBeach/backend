@@ -1,5 +1,23 @@
 # 🚦 CHANGELOG
 
+# [1.33.0](https://github.com/SamikBeach/backend/compare/1.32.1...1.33.0) (2025-01-30)
+
+
+### Bug Fixes
+
+* cors origin 수정 ([246e551](https://github.com/SamikBeach/backend/commit/246e55145a5f3cf65f083b0b5a71043819135cb7))
+* cors origin 추가 ([12e7aaf](https://github.com/SamikBeach/backend/commit/12e7aafb2e9611116c0b449c77f57100b8469f95))
+* Sentry CLI 인증 설정 개선 ([a0ebdd4](https://github.com/SamikBeach/backend/commit/a0ebdd41f278f6f7665dc10a85246e9847e61a2a))
+* update release.yml ([a2e90b1](https://github.com/SamikBeach/backend/commit/a2e90b15a931ef4faafa5b8d5a46f464bad9f308))
+* update release.yml ([6fa4810](https://github.com/SamikBeach/backend/commit/6fa48108369d915b55d8ee521ec2b4fa2864f135))
+* 센트리 소스맵 설정 ([db20e17](https://github.com/SamikBeach/backend/commit/db20e178139ace2d4dd9c0368f60461c33cd9021))
+* 타입스크립트 버전 수정 ([0f7710e](https://github.com/SamikBeach/backend/commit/0f7710e74c219baa8263b8975a385426daac8e3f))
+
+
+### Features
+
+* sentry 설정 ([df131de](https://github.com/SamikBeach/backend/commit/df131de737af757d0e6d9f75b95194128843d676))
+
 ## [1.32.2](https://github.com/SamikBeach/backend/compare/1.32.1...1.32.2) (2025-01-29)
 
 
