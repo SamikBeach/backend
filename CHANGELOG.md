@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+## [1.33.5](https://github.com/SamikBeach/backend/compare/1.33.4...1.33.5) (2025-01-30)
+
+
+### Bug Fixes
+
+* update READEME.md ([f9600a9](https://github.com/SamikBeach/backend/commit/f9600a92437aa0f1381d84f0e0c8589638586c38))
+
 ## [1.33.4](https://github.com/SamikBeach/backend/compare/1.33.3...1.33.4) (2025-01-30)
 
 
