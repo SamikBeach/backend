@@ -4,7 +4,7 @@ import { Repository, DataSource, In, Brackets } from 'typeorm';
 import { Author } from '@entities/Author';
 import { UserAuthorLike } from '@entities/UserAuthorLike';
 import { Book } from '@entities/Book';
-import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
+import { PaginateQuery, paginate } from 'nestjs-paginate';
 import { Review } from '@entities/Review';
 import { UserReviewLike } from '@entities/UserReviewLike';
 import { addKoreanSearchCondition } from '@utils/search';
@@ -216,8 +216,10 @@ export class AuthorService {
     // 각 책에 대해 전체 번역서 개수 추가
     return books.map((book) => {
       const totalTranslationCount = new Set(
-        book.bookOriginalWorks.flatMap((bow) =>
-          bow.originalWork.bookOriginalWorks.map((obow) => obow.book.id),
+        (book.bookOriginalWorks || []).flatMap((bow) =>
+          (bow?.originalWork?.bookOriginalWorks || [])
+            .map((obow) => obow?.book?.id)
+            .filter(Boolean),
         ),
       ).size;
 
