@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, In, Not } from 'typeorm';
+import { Repository, DataSource, In, Not, Brackets } from 'typeorm';
 import { Book } from '@entities/Book';
 import { UserBookLike } from '@entities/UserBookLike';
 import { Review } from '@entities/Review';
 import { UserReviewLike } from '@entities/UserReviewLike';
-import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
+import { PaginateQuery, paginate } from 'nestjs-paginate';
+import { addKoreanSearchCondition } from '@utils/search';
 
 @Injectable()
 export class BookService {
@@ -68,7 +69,40 @@ export class BookService {
    * 책을 검색하고 페이지네이션된 결과를 반환합니다.
    */
   async searchBooks(query: PaginateQuery, userId?: number) {
-    const books = await paginate(query, this.bookRepository, {
+    const queryBuilder = this.bookRepository
+      .createQueryBuilder('book')
+      .leftJoinAndSelect('book.authorBooks', 'authorBooks')
+      .leftJoinAndSelect('authorBooks.author', 'author')
+      .leftJoinAndSelect('book.bookOriginalWorks', 'bookOriginalWorks')
+      .leftJoinAndSelect('bookOriginalWorks.originalWork', 'originalWork')
+      .leftJoinAndSelect('originalWork.bookOriginalWorks', 'originalWorkBooks')
+      .leftJoinAndSelect('originalWorkBooks.book', 'relatedBook');
+
+    if (query.search) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          addKoreanSearchCondition(qb, 'book.title', query.search, 'bookTitle');
+          addKoreanSearchCondition(
+            qb,
+            'author.nameInKor',
+            query.search,
+            'authorName',
+          );
+          qb.orWhere('book.isbn = :isbn', { isbn: query.search }).orWhere(
+            'book.isbn13 = :isbn13',
+            { isbn13: query.search },
+          );
+        }),
+      );
+    }
+
+    if (query.filter?.authorId) {
+      queryBuilder.andWhere('authorBooks.authorId = :authorId', {
+        authorId: Number(query.filter.authorId),
+      });
+    }
+
+    const books = await paginate(query, queryBuilder, {
       sortableColumns: [
         'id',
         'title',
@@ -77,33 +111,7 @@ export class BookService {
         'likeCount',
         'reviewCount',
       ],
-      searchableColumns: [
-        'title',
-        'authorBooks.author.nameInKor',
-        'publisher',
-        'isbn',
-        'isbn13',
-      ],
       defaultSortBy: [['id', 'DESC']],
-      relations: [
-        'authorBooks.author',
-        'bookOriginalWorks.originalWork.bookOriginalWorks.book',
-      ],
-      filterableColumns: {
-        title: [FilterOperator.ILIKE],
-        publisher: [FilterOperator.ILIKE],
-        isbn: [FilterOperator.EQ],
-        isbn13: [FilterOperator.EQ],
-        'authorBooks.author.id': [FilterOperator.EQ],
-        genre_id: [FilterOperator.EQ],
-      },
-      ...(query.filter?.authorId && {
-        where: {
-          authorBooks: {
-            authorId: Number(query.filter.authorId),
-          },
-        },
-      }),
       maxLimit: 100,
     });
 

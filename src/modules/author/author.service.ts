@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, In } from 'typeorm';
+import { Repository, DataSource, In, Brackets } from 'typeorm';
 import { Author } from '@entities/Author';
 import { UserAuthorLike } from '@entities/UserAuthorLike';
 import { Book } from '@entities/Book';
 import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
 import { Review } from '@entities/Review';
 import { UserReviewLike } from '@entities/UserReviewLike';
+import { addKoreanSearchCondition } from '@utils/search';
 
 @Injectable()
 export class AuthorService {
@@ -62,7 +63,36 @@ export class AuthorService {
    * 저자를 검색하고 페이지네이션된 결과를 반환합니다.
    */
   async searchAuthors(query: PaginateQuery, userId?: number) {
-    const authors = await paginate(query, this.authorRepository, {
+    const queryBuilder = this.authorRepository
+      .createQueryBuilder('author')
+      .leftJoinAndSelect('author.authorBooks', 'authorBooks');
+
+    if (query.search) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          addKoreanSearchCondition(
+            qb,
+            'author.name',
+            query.search,
+            'authorName',
+          );
+          addKoreanSearchCondition(
+            qb,
+            'author.nameInKor',
+            query.search,
+            'authorNameKor',
+          );
+        }),
+      );
+    }
+
+    if (query.filter?.eraId) {
+      queryBuilder.andWhere('author.eraId = :eraId', {
+        eraId: Number(query.filter.eraId),
+      });
+    }
+
+    const authors = await paginate(query, queryBuilder, {
       sortableColumns: [
         'id',
         'name',
@@ -72,21 +102,8 @@ export class AuthorService {
         'likeCount',
         'reviewCount',
       ],
-      searchableColumns: ['name', 'nameInKor'],
       defaultSortBy: [['id', 'DESC']],
-      filterableColumns: {
-        name: [FilterOperator.ILIKE],
-        nameInKor: [FilterOperator.ILIKE],
-        genre_id: [FilterOperator.EQ],
-        eraId: [FilterOperator.EQ],
-      },
-      relations: ['authorBooks'],
       maxLimit: 100,
-      ...(query.filter?.eraId && {
-        where: {
-          eraId: Number(query.filter.eraId),
-        },
-      }),
     });
 
     // 각 저자에 대해 책 개수 추가

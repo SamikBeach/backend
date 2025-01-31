@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository, Brackets } from 'typeorm';
 import { Book } from '@entities/Book';
 import { Author } from '@entities/Author';
+import { addKoreanSearchCondition } from '@utils/search';
 
 @Injectable()
 export class SearchService {
@@ -15,32 +16,49 @@ export class SearchService {
 
   async search(keyword: string) {
     const [books, authors] = await Promise.all([
-      this.bookRepository.find({
-        where: [
-          { title: Like(`%${keyword}%`) },
-          //   { description: Like(`%${keyword}%`) },
-        ],
-        relations: [
-          'authorBooks.author',
-          'bookOriginalWorks.originalWork',
-          'bookOriginalWorks.originalWork.bookOriginalWorks.book',
-        ],
-        take: 3,
-      }),
-      this.authorRepository.find({
-        where: [
-          { name: Like(`%${keyword}%`) },
-          { nameInKor: Like(`%${keyword}%`) },
-        ],
-        relations: [
-          'authorBooks',
-          'authorBooks.book',
-          'authorBooks.book.bookOriginalWorks',
-          'authorBooks.book.bookOriginalWorks.originalWork',
-          'authorBooks.book.bookOriginalWorks.originalWork.bookOriginalWorks.book',
-        ],
-        take: 3,
-      }),
+      this.bookRepository
+        .createQueryBuilder('book')
+        .leftJoinAndSelect('book.authorBooks', 'authorBooks')
+        .leftJoinAndSelect('authorBooks.author', 'author')
+        .leftJoinAndSelect('book.bookOriginalWorks', 'bookOriginalWorks')
+        .leftJoinAndSelect('bookOriginalWorks.originalWork', 'originalWork')
+        .leftJoinAndSelect(
+          'originalWork.bookOriginalWorks',
+          'originalWorkBooks',
+        )
+        .leftJoinAndSelect('originalWorkBooks.book', 'relatedBook')
+        .where(
+          new Brackets((qb) => {
+            addKoreanSearchCondition(qb, 'book.title', keyword, 'book');
+          }),
+        )
+        .take(3)
+        .getMany(),
+
+      this.authorRepository
+        .createQueryBuilder('author')
+        .leftJoinAndSelect('author.authorBooks', 'authorBooks')
+        .leftJoinAndSelect('authorBooks.book', 'book')
+        .leftJoinAndSelect('book.bookOriginalWorks', 'bookOriginalWorks')
+        .leftJoinAndSelect('bookOriginalWorks.originalWork', 'originalWork')
+        .leftJoinAndSelect(
+          'originalWork.bookOriginalWorks',
+          'originalWorkBooks',
+        )
+        .leftJoinAndSelect('originalWorkBooks.book', 'relatedBook')
+        .where(
+          new Brackets((qb) => {
+            addKoreanSearchCondition(
+              qb,
+              'author.nameInKor',
+              keyword,
+              'authorKor',
+            );
+            addKoreanSearchCondition(qb, 'author.name', keyword, 'authorEng');
+          }),
+        )
+        .take(3)
+        .getMany(),
     ]);
 
     const booksWithCount = books.map((book) => {
