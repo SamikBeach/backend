@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+# [1.34.0](https://github.com/SamikBeach/backend/compare/1.33.5...1.34.0) (2025-01-31)
+
+
+### Features
+
+* 한글 검색 기능 강화 ([5bbab56](https://github.com/SamikBeach/backend/commit/5bbab56e5415a2061bd93dedbbf66d2eff557537))
+
 ## [1.33.5](https://github.com/SamikBeach/backend/compare/1.33.4...1.33.5) (2025-01-30)
 
 
