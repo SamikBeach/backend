@@ -22,6 +22,8 @@ export class AuthorController {
    * 이름 오름차순으로 정렬됩니다.
    */
   @Get()
+  // @UseInterceptors(CacheKeyInterceptor)
+  // @CacheTTL(3600) // 1시간
   async getAllAuthors() {
     return this.authorService.getAllAuthors();
   }
@@ -32,6 +34,8 @@ export class AuthorController {
    */
   @Get('search')
   @UseGuards(OptionalJwtAuthGuard)
+  // @UseInterceptors(CacheKeyInterceptor)
+  // @CacheTTL(1800) // 30분
   async searchAuthors(
     @Paginate() query: PaginateQuery,
     @CurrentUser() user?: User,
@@ -44,6 +48,8 @@ export class AuthorController {
    */
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
+  // @UseInterceptors(CacheKeyInterceptor)
+  // @CacheTTL(3600) // 1시간
   async getAuthorDetail(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user?: User,
@@ -68,6 +74,8 @@ export class AuthorController {
    * 저자가 쓴 모든 책 목록을 조회합니다.
    */
   @Get(':id/books')
+  // @UseInterceptors(CacheKeyInterceptor)
+  // @CacheTTL(3600) // 1시간
   async getAllAuthorBooks(@Param('id', ParseIntPipe) id: number) {
     return this.authorService.getAllAuthorBooks(id);
   }

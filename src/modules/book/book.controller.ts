@@ -15,6 +15,7 @@ import { CurrentUser } from '@decorators/current-user.decorator';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { User } from '@entities/User';
 import { OptionalJwtAuthGuard } from '@guards/optional-jwt-auth.guard';
+import { CacheTTL } from '@nestjs/cache-manager';
 
 @Controller('book')
 export class BookController {
@@ -24,7 +25,9 @@ export class BookController {
    * 페이지네이션, 정렬, 검색, 필터링을 지원합니다.
    */
   @Get('search')
-  @UseGuards(OptionalJwtAuthGuard)
+  // @UseGuards(OptionalJwtAuthGuard)
+  // @UseInterceptors(CacheKeyInterceptor)
+  @CacheTTL(1800) // 30분
   async searchBooks(
     @Paginate() query: PaginateQuery,
     @CurrentUser() user?: User,
@@ -38,6 +41,8 @@ export class BookController {
    */
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
+  // @UseInterceptors(CacheKeyInterceptor)
+  // @CacheTTL(3600) // 1시간
   async getBookDetail(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user?: User,
@@ -63,6 +68,8 @@ export class BookController {
    * 페이지네이션을 지원합니다.
    */
   @Get(':id/related/search')
+  // @UseInterceptors(CacheKeyInterceptor)
+  // @CacheTTL(3600) // 1시간
   async searchRelatedBooks(
     @Param('id', ParseIntPipe) id: number,
     @Paginate() query: PaginateQuery,
@@ -75,6 +82,8 @@ export class BookController {
    * 페이지네이션 없이 전체 목록을 반환합니다.
    */
   @Get(':id/related')
+  // @UseInterceptors(CacheKeyInterceptor)
+  // @CacheTTL(3600) // 1시간
   async getAllRelatedBooks(@Param('id', ParseIntPipe) id: number) {
     return this.bookService.getAllRelatedBooks(id);
   }
