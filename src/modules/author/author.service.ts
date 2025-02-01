@@ -211,6 +211,9 @@ export class AuthorService {
         'bookOriginalWorks.originalWork',
         'bookOriginalWorks.originalWork.bookOriginalWorks.book',
       ],
+      order: {
+        publicationDate: 'DESC',
+      },
     });
 
     // 각 책에 대해 전체 번역서 개수 추가

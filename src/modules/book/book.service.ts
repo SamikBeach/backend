@@ -102,6 +102,15 @@ export class BookService {
       });
     }
 
+    // likeCount DESC 정렬일 때 publicationDate DESC를 보조 정렬로 추가
+    if (
+      query.sortBy?.[0]?.[0] === 'likeCount' &&
+      query.sortBy?.[0]?.[1] === 'DESC'
+    ) {
+      queryBuilder.orderBy('book.likeCount', 'DESC');
+      queryBuilder.addOrderBy('book.publicationDate', 'DESC');
+    }
+
     const books = await paginate(query, queryBuilder, {
       sortableColumns: [
         'id',
@@ -330,6 +339,9 @@ export class BookService {
         'bookOriginalWorks.originalWork',
         'bookOriginalWorks.originalWork.bookOriginalWorks.book',
       ],
+      order: {
+        publicationDate: 'DESC', // 최신순 정렬
+      },
     });
 
     // 각 책에 대해 전체 번역서 개수 추가
