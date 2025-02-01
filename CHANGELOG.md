@@ -1,5 +1,14 @@
 # 🚦 CHANGELOG
 
+# [1.36.0](https://github.com/SamikBeach/backend/compare/1.35.1...1.36.0) (2025-02-01)
+
+
+### Features
+
+* 연관 도서 목록 최신순 정렬 적용 ([d357896](https://github.com/SamikBeach/backend/commit/d3578967db86be841cc0c4e114235b299e54c582))
+* 저자의 책 목록 최신순 정렬 적용 ([ad7adf4](https://github.com/SamikBeach/backend/commit/ad7adf494ea2971e971acd96885b2ace1c986e91))
+* 책 검색 정렬 로직 개선 ([876c0b1](https://github.com/SamikBeach/backend/commit/876c0b1eb26489317190d287b05dd0a9ef56c89f))
+
 ## [1.35.1](https://github.com/SamikBeach/backend/compare/1.35.0...1.35.1) (2025-02-01)
 
 
