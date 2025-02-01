@@ -1,5 +1,18 @@
 # 🚦 CHANGELOG
 
+# [1.35.0](https://github.com/SamikBeach/backend/compare/1.34.0...1.35.0) (2025-02-01)
+
+
+### Bug Fixes
+
+* Cache 관련 데코레이터 주석 처리 ([1fb2c8a](https://github.com/SamikBeach/backend/commit/1fb2c8ae654d389a336d5702d8f2cfa868dc2eca))
+* 저자의 책 목록 조회 시 500 에러 수정 ([9fa0d60](https://github.com/SamikBeach/backend/commit/9fa0d60c316cce28a2fe2da01e2f566cfb31c1e8))
+
+
+### Features
+
+* redis 설치 및 주요 엔드포인트 캐시 적용 ([6af9e46](https://github.com/SamikBeach/backend/commit/6af9e46434e94c846e2dc0d222e7e7cf025424bf))
+
 # [1.34.0](https://github.com/SamikBeach/backend/compare/1.33.5...1.34.0) (2025-01-31)
 
 
