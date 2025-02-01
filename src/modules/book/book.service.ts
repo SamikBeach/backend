@@ -330,6 +330,9 @@ export class BookService {
         'bookOriginalWorks.originalWork',
         'bookOriginalWorks.originalWork.bookOriginalWorks.book',
       ],
+      order: {
+        publicationDate: 'DESC', // 최신순 정렬
+      },
     });
 
     // 각 책에 대해 전체 번역서 개수 추가
