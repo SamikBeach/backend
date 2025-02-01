@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+## [1.35.1](https://github.com/SamikBeach/backend/compare/1.35.0...1.35.1) (2025-02-01)
+
+
+### Bug Fixes
+
+* 캐시 모듈 주석 처리 ([50f23f9](https://github.com/SamikBeach/backend/commit/50f23f961fb0e22e96a1253c91091203159dc157))
+
 # [1.35.0](https://github.com/SamikBeach/backend/compare/1.34.0...1.35.0) (2025-02-01)
 
 
