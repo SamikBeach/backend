@@ -34,8 +34,8 @@ import { PrometheusModule } from './prometheus/prometheus.module';
 import { EraModule } from './era/era.module';
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { APP_FILTER } from '@nestjs/core';
-import { CacheModule } from '@nestjs/cache-manager';
-import { CacheConfigService } from '@config/cache.config';
+// import { CacheModule } from '@nestjs/cache-manager';
+// import { CacheConfigService } from '@config/cache.config';
 
 @Module({
   imports: [
@@ -44,10 +44,10 @@ import { CacheConfigService } from '@config/cache.config';
       envFilePath: `.env.${process.env.NODE_ENV}`,
       isGlobal: true,
     }),
-    CacheModule.registerAsync({
-      isGlobal: true,
-      useClass: CacheConfigService,
-    }),
+    // CacheModule.registerAsync({
+    //   isGlobal: true,
+    //   useClass: CacheConfigService,
+    // }),
     WinstonModule.forRoot({
       transports: [
         new winston.transports.Console({
