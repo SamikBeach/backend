@@ -118,6 +118,7 @@ export class AuthService {
   async login(user: User): Promise<AuthResponse> {
     return {
       accessToken: this.generateAccessToken(user),
+      refreshToken: this.generateRefreshToken(user),
       user: {
         id: user.id,
         email: user.email,
@@ -167,6 +168,7 @@ export class AuthService {
       if (user && user.password === null) {
         return {
           accessToken: this.generateAccessToken(user),
+          refreshToken: this.generateRefreshToken(user),
           user: {
             id: user.id,
             email: user.email,
