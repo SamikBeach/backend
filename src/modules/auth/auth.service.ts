@@ -34,7 +34,7 @@ export class AuthService {
   // 상수 정의
   private readonly VERIFICATION_CODE_EXPIRY = 10 * 60 * 1000; // 10분
   private readonly REFRESH_TOKEN_EXPIRY = '7d';
-  private readonly ACCESS_TOKEN_EXPIRY = '1h';
+  private readonly ACCESS_TOKEN_EXPIRY = '10s';
   private readonly PASSWORD_RESET_TOKEN_EXPIRY = 30 * 60 * 1000; // 30분
 
   // 비밀번호 리셋 토큰 저장소
@@ -131,11 +131,19 @@ export class AuthService {
   /**
    * 구글 로그인
    */
-  async googleLogin(code: string): Promise<AuthResponse> {
+  async googleLogin(
+    code: string,
+    clientType: 'ios' | 'web' = 'web',
+  ): Promise<AuthResponse> {
     try {
+      const clientId =
+        clientType === 'ios'
+          ? this.configService.get('GOOGLE_IOS_CLIENT_ID')
+          : this.configService.get('GOOGLE_CLIENT_ID');
+
       const googleClient = new OAuth2Client(
-        process.env.GOOGLE_CLIENT_ID,
-        process.env.GOOGLE_CLIENT_SECRET,
+        clientId,
+        this.configService.get('GOOGLE_CLIENT_SECRET'),
         'postmessage',
       );
       // 구글 토큰 검증
@@ -143,7 +151,7 @@ export class AuthService {
 
       const ticket = await googleClient.verifyIdToken({
         idToken: tokens.id_token,
-        audience: process.env.GOOGLE_CLIENT_ID,
+        audience: clientId,
       });
 
       const payload = ticket.getPayload();
@@ -214,6 +222,7 @@ export class AuthService {
 
       return {
         accessToken: this.generateAccessToken(user),
+        refreshToken: this.generateRefreshToken(user),
         user: {
           id: user.id,
           email: user.email,
