@@ -6,8 +6,6 @@ import {
   UnauthorizedException,
   Req,
   UseGuards,
-  Get,
-  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
@@ -214,48 +212,46 @@ export class AuthController {
   }
 
   /**
-   * 비밀번호 재설정 이메일 발송 API
-   * @summary 비밀번호 재설정을 위한 이메일을 발송합니다.
+   * 비밀번호 재설정을 위한 인증 코드 발송 API
+   * @summary 비밀번호 재설정을 위한 인증 코드를 이메일로 발송합니다.
    * @param email 사용자 이메일
-   * @returns 이메일 발송 결과 메시지
+   * @returns 인증 코드 발송 결과 메시지
    */
-  @Post('password/reset-request')
-  async sendPasswordResetEmail(
+  @Post('password/send-code')
+  async sendPasswordResetCode(
     @Body('email') email: string,
   ): Promise<{ message: string }> {
-    return this.authService.sendPasswordResetEmail(email);
+    return this.authService.sendPasswordResetCode(email);
   }
 
   /**
-   * 비밀번호 재설정 토큰 검증 API
-   * @summary 비밀번호 재설정 토큰의 유효성을 검증합니다.
+   * 비밀번호 재설정 인증 코드 검증 API
+   * @summary 비밀번호 재설정 인증 코드의 유효성을 검증합니다.
    * @param email 사용자 이메일
-   * @param token 재설정 토큰
-   * @returns 토큰 유효성 검증 결과
+   * @param code 인증 코드
+   * @returns 인증 코드 검증 결과
    */
-  @Get('password/verify-token')
-  async verifyPasswordResetToken(
-    @Query('email') email: string,
-
-    @Query('token') token: string,
-  ): Promise<{ valid: boolean }> {
-    return this.authService.verifyPasswordResetToken(email, token);
+  @Post('password/verify-code')
+  async verifyPasswordResetCode(
+    @Body('email') email: string,
+    @Body('code') code: string,
+  ): Promise<{ verified: boolean }> {
+    return this.authService.verifyPasswordResetCode(email, code);
   }
 
   /**
    * 비밀번호 재설정 API
-   * @summary 새로운 비밀번호로 재설정합니다.
+   * @summary 인증 코드 검증 후 새로운 비밀번호로 재설정합니다.
    * @param email 사용자 이메일
-   * @param token 재설정 토큰
+   * @param code 인증 코드
    * @param newPassword 새로운 비밀번호
    * @returns 비밀번호 재설정 결과 메시지
    */
   @Post('password/reset')
   async resetPassword(
     @Body('email') email: string,
-    @Body('token') token: string,
     @Body('newPassword') newPassword: string,
   ): Promise<{ message: string }> {
-    return this.authService.resetPassword(email, token, newPassword);
+    return this.authService.resetPassword(email, newPassword);
   }
 }
