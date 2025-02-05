@@ -33,7 +33,7 @@ export class AuthService {
   // 상수 정의
   private readonly VERIFICATION_CODE_EXPIRY = 10 * 60 * 1000; // 10분
   private readonly REFRESH_TOKEN_EXPIRY = '7d';
-  private readonly ACCESS_TOKEN_EXPIRY = '10s';
+  private readonly ACCESS_TOKEN_EXPIRY = '1h';
   private readonly PASSWORD_RESET_TOKEN_EXPIRY = 30 * 60 * 1000; // 30분
 
   // 비밀번호 리셋 토큰 저장소
