@@ -18,7 +18,6 @@ import { OAuth2Client } from 'google-auth-library';
 import { ConfigService } from '@nestjs/config';
 import {
   TokenPayload,
-  AuthTokens,
   EmailVerification,
   AuthResponse,
 } from './types/auth.types';
@@ -136,23 +135,29 @@ export class AuthService {
     clientType: 'ios' | 'web' = 'web',
   ): Promise<AuthResponse> {
     try {
-      const clientId =
-        clientType === 'ios'
-          ? this.configService.get('GOOGLE_IOS_CLIENT_ID')
-          : this.configService.get('GOOGLE_CLIENT_ID');
-
-      const googleClient = new OAuth2Client(
-        clientId,
-        this.configService.get('GOOGLE_CLIENT_SECRET'),
-        'postmessage',
-      );
-      // 구글 토큰 검증
-      const { tokens } = await googleClient.getToken(code);
-
-      const ticket = await googleClient.verifyIdToken({
-        idToken: tokens.id_token,
-        audience: clientId,
-      });
+      let ticket;
+      if (clientType === 'ios') {
+        // iOS의 경우 이미 idToken을 받았으므로 바로 검증
+        const client = new OAuth2Client(
+          this.configService.get('GOOGLE_IOS_CLIENT_ID'),
+        );
+        ticket = await client.verifyIdToken({
+          idToken: code, // iOS에서는 code가 idToken
+          audience: this.configService.get('GOOGLE_IOS_CLIENT_ID'),
+        });
+      } else {
+        // 웹의 경우 기존 로직 유지
+        const googleClient = new OAuth2Client(
+          this.configService.get('GOOGLE_CLIENT_ID'),
+          this.configService.get('GOOGLE_CLIENT_SECRET'),
+          'postmessage',
+        );
+        const { tokens } = await googleClient.getToken(code);
+        ticket = await googleClient.verifyIdToken({
+          idToken: tokens.id_token,
+          audience: this.configService.get('GOOGLE_CLIENT_ID'),
+        });
+      }
 
       const payload = ticket.getPayload();
       if (!payload?.email) {
