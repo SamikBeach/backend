@@ -1,5 +1,19 @@
 # 🚦 CHANGELOG
 
+# [1.37.0](https://github.com/SamikBeach/backend/compare/1.36.0...1.37.0) (2025-02-05)
+
+
+### Bug Fixes
+
+* API 응답 형식 수정 ([f743826](https://github.com/SamikBeach/backend/commit/f743826541da92c261186593a8f4e91af94dd32c))
+
+
+### Features
+
+* iOS 네이티브 구글 로그인 지원 추가 ([528a31c](https://github.com/SamikBeach/backend/commit/528a31ca498785e2ad20d32d0c95f37495a7e477))
+* 구글 로그인 클라이언트 타입 구분 추가 ([82d0a62](https://github.com/SamikBeach/backend/commit/82d0a62974a2a80875bc058216c02fc65c62dc8c))
+* 댓글 목록 조회 시 좋아요 여부 포함 ([41773d6](https://github.com/SamikBeach/backend/commit/41773d63fb5f54a6f59ecf4f3775b3db2e1ec2fb))
+
 # [1.36.0](https://github.com/SamikBeach/backend/compare/1.35.1...1.36.0) (2025-02-01)
 
 
