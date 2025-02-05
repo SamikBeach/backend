@@ -163,26 +163,32 @@ export class AuthController {
 
   /**
    * 리프레시 토큰으로 새로운 액세스 토큰을 발급합니다.
-   * 리프레시 토큰은 쿠키에서 추출합니다.
+   * 리프레시 토큰은 쿠키 또는 요청 바디에서 추출합니다.
    */
   @Post('refresh')
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
+    @Body() body: { refreshToken?: string },
   ): Promise<AuthResponse> {
-    const refreshToken = req.cookies['refreshToken'];
+    // 쿠키 또는 요청 바디에서 리프레시 토큰 추출
+    const refreshToken = body.refreshToken || req.cookies['refreshToken'];
+
     if (!refreshToken) {
       throw new UnauthorizedException('리프레시 토큰이 없습니다.');
     }
 
     const result = await this.authService.refreshTokens(refreshToken);
 
-    res.cookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    // 웹 클라이언트인 경우에만 쿠키 설정
+    if (!body.refreshToken) {
+      res.cookie('refreshToken', result.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+    }
 
     return result;
   }

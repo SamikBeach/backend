@@ -491,9 +491,13 @@ export class AuthService {
         throw new UnauthorizedException('이메일 인증이 필요합니다.');
       }
 
+      // 새로운 토큰 발급
+      const newAccessToken = this.generateAccessToken(user);
+      const newRefreshToken = this.generateRefreshToken(user);
+
       return {
-        accessToken: this.generateAccessToken(user),
-        refreshToken: this.generateRefreshToken(user),
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
         user: {
           id: user.id,
           email: user.email,
