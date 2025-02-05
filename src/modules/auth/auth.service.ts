@@ -18,7 +18,6 @@ import { OAuth2Client } from 'google-auth-library';
 import { ConfigService } from '@nestjs/config';
 import {
   TokenPayload,
-  AuthTokens,
   EmailVerification,
   AuthResponse,
 } from './types/auth.types';
@@ -34,7 +33,7 @@ export class AuthService {
   // 상수 정의
   private readonly VERIFICATION_CODE_EXPIRY = 10 * 60 * 1000; // 10분
   private readonly REFRESH_TOKEN_EXPIRY = '7d';
-  private readonly ACCESS_TOKEN_EXPIRY = '1h';
+  private readonly ACCESS_TOKEN_EXPIRY = '10s';
   private readonly PASSWORD_RESET_TOKEN_EXPIRY = 30 * 60 * 1000; // 30분
 
   // 비밀번호 리셋 토큰 저장소
@@ -118,6 +117,7 @@ export class AuthService {
   async login(user: User): Promise<AuthResponse> {
     return {
       accessToken: this.generateAccessToken(user),
+      refreshToken: this.generateRefreshToken(user),
       user: {
         id: user.id,
         email: user.email,
@@ -130,20 +130,34 @@ export class AuthService {
   /**
    * 구글 로그인
    */
-  async googleLogin(code: string): Promise<AuthResponse> {
+  async googleLogin(
+    code: string,
+    clientType: 'ios' | 'web' = 'web',
+  ): Promise<AuthResponse> {
     try {
-      const googleClient = new OAuth2Client(
-        process.env.GOOGLE_CLIENT_ID,
-        process.env.GOOGLE_CLIENT_SECRET,
-        'postmessage',
-      );
-      // 구글 토큰 검증
-      const { tokens } = await googleClient.getToken(code);
-
-      const ticket = await googleClient.verifyIdToken({
-        idToken: tokens.id_token,
-        audience: process.env.GOOGLE_CLIENT_ID,
-      });
+      let ticket;
+      if (clientType === 'ios') {
+        // iOS의 경우 이미 idToken을 받았으므로 바로 검증
+        const client = new OAuth2Client(
+          this.configService.get('GOOGLE_IOS_CLIENT_ID'),
+        );
+        ticket = await client.verifyIdToken({
+          idToken: code, // iOS에서는 code가 idToken
+          audience: this.configService.get('GOOGLE_IOS_CLIENT_ID'),
+        });
+      } else {
+        // 웹의 경우 기존 로직 유지
+        const googleClient = new OAuth2Client(
+          this.configService.get('GOOGLE_CLIENT_ID'),
+          this.configService.get('GOOGLE_CLIENT_SECRET'),
+          'postmessage',
+        );
+        const { tokens } = await googleClient.getToken(code);
+        ticket = await googleClient.verifyIdToken({
+          idToken: tokens.id_token,
+          audience: this.configService.get('GOOGLE_CLIENT_ID'),
+        });
+      }
 
       const payload = ticket.getPayload();
       if (!payload?.email) {
@@ -167,6 +181,7 @@ export class AuthService {
       if (user && user.password === null) {
         return {
           accessToken: this.generateAccessToken(user),
+          refreshToken: this.generateRefreshToken(user),
           user: {
             id: user.id,
             email: user.email,
@@ -212,6 +227,7 @@ export class AuthService {
 
       return {
         accessToken: this.generateAccessToken(user),
+        refreshToken: this.generateRefreshToken(user),
         user: {
           id: user.id,
           email: user.email,
@@ -359,7 +375,11 @@ export class AuthService {
    */
   async completeRegistration(
     completeRegistrationDto: CompleteRegistrationDto,
-  ): Promise<{ user: Omit<User, 'password'>; tokens: AuthTokens }> {
+  ): Promise<{
+    user: Omit<User, 'password'>;
+    accessToken: string;
+    refreshToken: string;
+  }> {
     const verification = this.verificationCodes.get(
       completeRegistrationDto.email,
     );
@@ -430,7 +450,8 @@ export class AuthService {
 
       return {
         user: result,
-        tokens,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();

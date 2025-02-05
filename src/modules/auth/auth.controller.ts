@@ -137,10 +137,13 @@ export class AuthController {
    */
   @Post('login/google')
   async googleLogin(
-    @Body() googleAuthDto: { code: string },
+    @Body() googleAuthDto: { code: string; clientType?: 'ios' | 'web' },
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponse> {
-    const response = await this.authService.googleLogin(googleAuthDto.code);
+    const response = await this.authService.googleLogin(
+      googleAuthDto.code,
+      googleAuthDto.clientType || 'web',
+    );
     const refreshToken = this.authService.generateRefreshToken({
       id: response.user.id,
       email: response.user.email,

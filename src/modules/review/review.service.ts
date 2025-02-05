@@ -274,9 +274,27 @@ export class ReviewService {
       baseQuery.orderBy('comment.createdAt', 'ASC');
     }
 
-    return paginate(query, baseQuery, {
+    const comments = await paginate(query, baseQuery, {
       sortableColumns: ['id', 'createdAt', 'updatedAt'],
     });
+
+    if (currentUserId) {
+      const userLikes = await this.userCommentLikeRepository.find({
+        where: {
+          userId: currentUserId,
+          commentId: In(comments.data.map((comment) => comment.id)),
+        },
+      });
+
+      const likedCommentIds = new Set(userLikes.map((like) => like.commentId));
+
+      comments.data = comments.data.map((comment) => ({
+        ...comment,
+        isLiked: likedCommentIds.has(comment.id),
+      }));
+    }
+
+    return comments;
   }
 
   /**
