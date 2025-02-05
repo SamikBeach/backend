@@ -361,7 +361,11 @@ export class AuthService {
    */
   async completeRegistration(
     completeRegistrationDto: CompleteRegistrationDto,
-  ): Promise<{ user: Omit<User, 'password'>; tokens: AuthTokens }> {
+  ): Promise<{
+    user: Omit<User, 'password'>;
+    accessToken: string;
+    refreshToken: string;
+  }> {
     const verification = this.verificationCodes.get(
       completeRegistrationDto.email,
     );
@@ -432,7 +436,8 @@ export class AuthService {
 
       return {
         user: result,
-        tokens,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
