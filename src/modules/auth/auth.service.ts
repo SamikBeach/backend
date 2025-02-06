@@ -135,18 +135,21 @@ export class AuthService {
    */
   async googleLogin(
     code: string,
-    clientType: 'ios' | 'web' = 'web',
+    clientType: 'ios' | 'android' | 'web' = 'web',
   ): Promise<AuthResponse> {
     try {
       let ticket;
-      if (clientType === 'ios') {
-        // iOS의 경우 이미 idToken을 받았으므로 바로 검증
-        const client = new OAuth2Client(
-          this.configService.get('GOOGLE_IOS_CLIENT_ID'),
-        );
+      if (clientType === 'ios' || clientType === 'android') {
+        // 모바일(iOS/Android)의 경우 이미 idToken을 받았으므로 바로 검증
+        const clientId =
+          clientType === 'ios'
+            ? this.configService.get('GOOGLE_IOS_CLIENT_ID')
+            : this.configService.get('GOOGLE_ANDROID_CLIENT_ID');
+
+        const client = new OAuth2Client(clientId);
         ticket = await client.verifyIdToken({
-          idToken: code, // iOS에서는 code가 idToken
-          audience: this.configService.get('GOOGLE_IOS_CLIENT_ID'),
+          idToken: code,
+          audience: clientId,
         });
       } else {
         // 웹의 경우 기존 로직 유지
@@ -208,6 +211,7 @@ export class AuthService {
           nickname: payload.name || payload.email.split('@')[0],
           password: null,
           verified: true,
+          imageUrl: payload.picture, // 구글 프로필 이미지 추가
         } as Partial<User>);
 
         const savedUser = await this.userRepository.findOne({

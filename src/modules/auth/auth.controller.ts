@@ -135,7 +135,8 @@ export class AuthController {
    */
   @Post('login/google')
   async googleLogin(
-    @Body() googleAuthDto: { code: string; clientType?: 'ios' | 'web' },
+    @Body()
+    googleAuthDto: { code: string; clientType?: 'ios' | 'android' | 'web' },
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponse> {
     const response = await this.authService.googleLogin(
