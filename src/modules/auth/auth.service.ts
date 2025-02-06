@@ -16,24 +16,27 @@ import {
 import * as bcrypt from 'bcrypt';
 import { OAuth2Client } from 'google-auth-library';
 import { ConfigService } from '@nestjs/config';
-import {
-  TokenPayload,
-  EmailVerification,
-  AuthResponse,
-} from './types/auth.types';
+import { TokenPayload, AuthResponse } from './types/auth.types';
 
 // 구글 로그인을 위한 User 타입 확장
 
 @Injectable()
 export class AuthService {
   // 이메일 인증 코드 저장소
-  private readonly verificationCodes: Map<string, EmailVerification> =
-    new Map();
+  private readonly verificationCodes: Map<
+    string,
+    {
+      code: string;
+      expires: Date;
+      type: 'signup' | 'password-reset';
+      userData?: any;
+    }
+  > = new Map();
 
   // 상수 정의
   private readonly VERIFICATION_CODE_EXPIRY = 10 * 60 * 1000; // 10분
   private readonly REFRESH_TOKEN_EXPIRY = '7d';
-  private readonly ACCESS_TOKEN_EXPIRY = '10s';
+  private readonly ACCESS_TOKEN_EXPIRY = '1h';
   private readonly PASSWORD_RESET_TOKEN_EXPIRY = 30 * 60 * 1000; // 30분
 
   // 비밀번호 리셋 토큰 저장소
@@ -132,18 +135,21 @@ export class AuthService {
    */
   async googleLogin(
     code: string,
-    clientType: 'ios' | 'web' = 'web',
+    clientType: 'ios' | 'android' | 'web' = 'web',
   ): Promise<AuthResponse> {
     try {
       let ticket;
-      if (clientType === 'ios') {
-        // iOS의 경우 이미 idToken을 받았으므로 바로 검증
-        const client = new OAuth2Client(
-          this.configService.get('GOOGLE_IOS_CLIENT_ID'),
-        );
+      if (clientType === 'ios' || clientType === 'android') {
+        // 모바일(iOS/Android)의 경우 이미 idToken을 받았으므로 바로 검증
+        const clientId =
+          clientType === 'ios'
+            ? this.configService.get('GOOGLE_IOS_CLIENT_ID')
+            : this.configService.get('GOOGLE_CLIENT_ID');
+
+        const client = new OAuth2Client(clientId);
         ticket = await client.verifyIdToken({
-          idToken: code, // iOS에서는 code가 idToken
-          audience: this.configService.get('GOOGLE_IOS_CLIENT_ID'),
+          idToken: code,
+          audience: clientId,
         });
       } else {
         // 웹의 경우 기존 로직 유지
@@ -205,6 +211,7 @@ export class AuthService {
           nickname: payload.name || payload.email.split('@')[0],
           password: null,
           verified: true,
+          imageUrl: payload.picture, // 구글 프로필 이미지 추가
         } as Partial<User>);
 
         const savedUser = await this.userRepository.findOne({
@@ -250,20 +257,24 @@ export class AuthService {
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
     const expires = new Date(Date.now() + this.VERIFICATION_CODE_EXPIRY);
 
-    this.verificationCodes.set(email, { code, expires });
+    this.verificationCodes.set(email, {
+      code,
+      expires,
+      type: 'signup',
+    });
 
     try {
       await this.mailerService.sendMail({
         to: email,
         from: this.configService.get<string>('MAIL_USER'),
-        subject: '[삼익비치] 이메일 인증 안내',
+        subject: '[고전산책] 이메일 인증 안내',
         html: `
           <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px; font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; line-height: 1.6; color: #333333; background: #ffffff;">
             <div style="text-align: center; margin-bottom: 40px;">
-              <h1 style="font-size: 24px; font-weight: 700; color: #1a1a1a; margin: 0;">삼익비치 이메일 인증 안내</h1>
+              <h1 style="font-size: 24px; font-weight: 700; color: #1a1a1a; margin: 0;">고전산책 이메일 인증 안내</h1>
             </div>
             <div style="background: #f8f9fa; border-radius: 12px; padding: 30px; margin-bottom: 30px;">
-              <p style="font-size: 16px; margin: 0 0 20px 0;">안녕하세요.<br/>삼익비치 서비스를 이용해 주셔서 감사합니다.</p>
+              <p style="font-size: 16px; margin: 0 0 20px 0;">안녕하세요.<br/>고전산책 서비스를 이용해 주셔서 감사합니다.</p>
               <p style="font-size: 16px; margin: 0 0 15px 0;">아래의 인증번호를 입력해 주세요.</p>
               <div style="background: #ffffff; border-radius: 8px; padding: 20px; text-align: center; margin: 25px 0;">
                 <h2 style="font-size: 32px; font-weight: 700; color: #4A90E2; margin: 0; letter-spacing: 4px;">${code}</h2>
@@ -491,9 +502,13 @@ export class AuthService {
         throw new UnauthorizedException('이메일 인증이 필요합니다.');
       }
 
+      // 새로운 토큰 발급
+      const newAccessToken = this.generateAccessToken(user);
+      const newRefreshToken = this.generateRefreshToken(user);
+
       return {
-        accessToken: this.generateAccessToken(user),
-        refreshToken: this.generateRefreshToken(user),
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
         user: {
           id: user.id,
           email: user.email,
@@ -521,9 +536,9 @@ export class AuthService {
   }
 
   /**
-   * 비밀번호 리셋 이메일 발송
+   * 비밀번호 재설정을 위한 이메일 인증 코드 발송
    */
-  async sendPasswordResetEmail(email: string): Promise<{ message: string }> {
+  async sendPasswordResetCode(email: string): Promise<{ message: string }> {
     const user = await this.userRepository.findOne({
       where: { email },
       select: {
@@ -543,78 +558,76 @@ export class AuthService {
       );
     }
 
-    // 리셋 토큰 생성
-    const resetToken =
-      Math.random().toString(36).substring(2, 15) +
-      Math.random().toString(36).substring(2, 15);
-    const expires = new Date(Date.now() + this.PASSWORD_RESET_TOKEN_EXPIRY);
+    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const expires = new Date(Date.now() + this.VERIFICATION_CODE_EXPIRY);
 
-    // 토큰 저장
-    this.passwordResetTokens.set(email, { token: resetToken, expires });
-    // 클라이언트 도메인 주소
-    const serviceUrl = this.configService.get('SERVICE_URL');
-    const resetUrl = `${serviceUrl}?dialog=reset-password&token=${resetToken}&email=${email}`;
+    // 인증 코드 저장
+    this.verificationCodes.set(email, {
+      code,
+      expires,
+      type: 'password-reset',
+    });
 
     try {
       await this.mailerService.sendMail({
         to: email,
         from: this.configService.get<string>('MAIL_USER'),
-        subject: '[삼익비치] 비밀번호 재설정 안내',
+        subject: '[고전산책] 비밀번호 재설정 인증코드 안내',
         html: `
           <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px; font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; line-height: 1.6; color: #333333; background: #ffffff;">
             <div style="text-align: center; margin-bottom: 40px;">
-              <h1 style="font-size: 24px; font-weight: 700; color: #1a1a1a; margin: 0;">비밀번호 재설정 안내</h1>
+              <h1 style="font-size: 24px; font-weight: 700; color: #1a1a1a; margin: 0;">비밀번호 재설정 인증코드 안내</h1>
             </div>
             <div style="background: #f8f9fa; border-radius: 12px; padding: 30px; margin-bottom: 30px;">
-              <p style="font-size: 16px; margin: 0 0 20px 0;">안녕하세요.<br/>삼익비치 서비스를 이용해 주셔서 감사합니다.</p>
-              <p style="font-size: 16px; margin: 0 0 15px 0;">아래 버튼을 클릭하여 비밀번호를 재설정해 주세요.</p>
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${resetUrl}" style="display: inline-block; background: #4A90E2; color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600;">비밀번호 재설정</a>
+              <p style="font-size: 16px; margin: 0 0 20px 0;">안녕하세요.<br/>고전산책 서비스를 이용해 주셔서 감사합니다.</p>
+              <p style="font-size: 16px; margin: 0 0 15px 0;">아래의 인증번호를 입력해 주세요.</p>
+              <div style="background: #ffffff; border-radius: 8px; padding: 20px; text-align: center; margin: 25px 0;">
+                <h2 style="font-size: 32px; font-weight: 700; color: #4A90E2; margin: 0; letter-spacing: 4px;">${code}</h2>
               </div>
-              <p style="font-size: 14px; color: #666666; margin: 0;">본 링크는 발급 시점으로부터 30분간 유효합니다.</p>
+              <p style="font-size: 14px; color: #666666; margin: 0;">본 인증번호는 발급 시점으로부터 10분간 유효합니다.</p>
             </div>
           </div>
         `,
       });
 
-      return { message: '비밀번호 재설정 이메일이 전송되었습니다.' };
+      return { message: '인증 코드가 이메일로 전송되었습니다.' };
     } catch (error) {
       throw new InternalServerErrorException('이메일 전송에 실패했습니다.');
     }
   }
 
   /**
-   * 비밀번호 리셋 토큰 검증
+   * 비밀번호 재설정을 위한 인증 코드 검증
    */
-  async verifyPasswordResetToken(
+  async verifyPasswordResetCode(
     email: string,
-    token: string,
-  ): Promise<{ valid: boolean }> {
-    const resetData = this.passwordResetTokens.get(email);
+    code: string,
+  ): Promise<{ verified: boolean }> {
+    const verification = this.verificationCodes.get(email);
 
-    if (!resetData || resetData.token !== token) {
-      throw new UnauthorizedException('유효하지 않은 리셋 토큰입니다.');
+    if (!verification || verification.code !== code) {
+      throw new UnauthorizedException('잘못된 인증 코드입니다.');
     }
 
-    if (resetData.expires < new Date()) {
-      this.passwordResetTokens.delete(email);
-      throw new UnauthorizedException('만료된 리셋 토큰입니다.');
+    if (verification.expires < new Date()) {
+      this.verificationCodes.delete(email);
+      throw new UnauthorizedException('만료된 인증 코드입니다.');
     }
 
-    return { valid: true };
+    if (verification.type !== 'password-reset') {
+      throw new UnauthorizedException('잘못된 인증 코드입니다.');
+    }
+
+    return { verified: true };
   }
 
   /**
-   * 새로운 비밀번호로 업데이트
+   * 새로운 비밀번호로 재설정
    */
   async resetPassword(
     email: string,
-    token: string,
     newPassword: string,
   ): Promise<{ message: string }> {
-    // 토큰 검증
-    await this.verifyPasswordResetToken(email, token);
-
     // 비밀번호 해시화
     const hashedPassword = await bcrypt.hash(
       newPassword,
@@ -624,8 +637,8 @@ export class AuthService {
     // 비밀번호 업데이트
     await this.userRepository.update({ email }, { password: hashedPassword });
 
-    // 토큰 삭제
-    this.passwordResetTokens.delete(email);
+    // 인증 코드 삭제
+    this.verificationCodes.delete(email);
 
     return { message: '비밀번호가 성공적으로 변경되었습니다.' };
   }

@@ -6,8 +6,6 @@ import {
   UnauthorizedException,
   Req,
   UseGuards,
-  Get,
-  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
@@ -137,7 +135,8 @@ export class AuthController {
    */
   @Post('login/google')
   async googleLogin(
-    @Body() googleAuthDto: { code: string; clientType?: 'ios' | 'web' },
+    @Body()
+    googleAuthDto: { code: string; clientType?: 'ios' | 'android' | 'web' },
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponse> {
     const response = await this.authService.googleLogin(
@@ -163,26 +162,32 @@ export class AuthController {
 
   /**
    * 리프레시 토큰으로 새로운 액세스 토큰을 발급합니다.
-   * 리프레시 토큰은 쿠키에서 추출합니다.
+   * 리프레시 토큰은 쿠키 또는 요청 바디에서 추출합니다.
    */
   @Post('refresh')
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
+    @Body() body: { refreshToken?: string },
   ): Promise<AuthResponse> {
-    const refreshToken = req.cookies['refreshToken'];
+    // 쿠키 또는 요청 바디에서 리프레시 토큰 추출
+    const refreshToken = body.refreshToken || req.cookies['refreshToken'];
+
     if (!refreshToken) {
       throw new UnauthorizedException('리프레시 토큰이 없습니다.');
     }
 
     const result = await this.authService.refreshTokens(refreshToken);
 
-    res.cookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    // 웹 클라이언트인 경우에만 쿠키 설정
+    if (!body.refreshToken) {
+      res.cookie('refreshToken', result.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+    }
 
     return result;
   }
@@ -208,48 +213,46 @@ export class AuthController {
   }
 
   /**
-   * 비밀번호 재설정 이메일 발송 API
-   * @summary 비밀번호 재설정을 위한 이메일을 발송합니다.
+   * 비밀번호 재설정을 위한 인증 코드 발송 API
+   * @summary 비밀번호 재설정을 위한 인증 코드를 이메일로 발송합니다.
    * @param email 사용자 이메일
-   * @returns 이메일 발송 결과 메시지
+   * @returns 인증 코드 발송 결과 메시지
    */
-  @Post('password/reset-request')
-  async sendPasswordResetEmail(
+  @Post('password/send-code')
+  async sendPasswordResetCode(
     @Body('email') email: string,
   ): Promise<{ message: string }> {
-    return this.authService.sendPasswordResetEmail(email);
+    return this.authService.sendPasswordResetCode(email);
   }
 
   /**
-   * 비밀번호 재설정 토큰 검증 API
-   * @summary 비밀번호 재설정 토큰의 유효성을 검증합니다.
+   * 비밀번호 재설정 인증 코드 검증 API
+   * @summary 비밀번호 재설정 인증 코드의 유효성을 검증합니다.
    * @param email 사용자 이메일
-   * @param token 재설정 토큰
-   * @returns 토큰 유효성 검증 결과
+   * @param code 인증 코드
+   * @returns 인증 코드 검증 결과
    */
-  @Get('password/verify-token')
-  async verifyPasswordResetToken(
-    @Query('email') email: string,
-
-    @Query('token') token: string,
-  ): Promise<{ valid: boolean }> {
-    return this.authService.verifyPasswordResetToken(email, token);
+  @Post('password/verify-code')
+  async verifyPasswordResetCode(
+    @Body('email') email: string,
+    @Body('code') code: string,
+  ): Promise<{ verified: boolean }> {
+    return this.authService.verifyPasswordResetCode(email, code);
   }
 
   /**
    * 비밀번호 재설정 API
-   * @summary 새로운 비밀번호로 재설정합니다.
+   * @summary 인증 코드 검증 후 새로운 비밀번호로 재설정합니다.
    * @param email 사용자 이메일
-   * @param token 재설정 토큰
+   * @param code 인증 코드
    * @param newPassword 새로운 비밀번호
    * @returns 비밀번호 재설정 결과 메시지
    */
   @Post('password/reset')
   async resetPassword(
     @Body('email') email: string,
-    @Body('token') token: string,
     @Body('newPassword') newPassword: string,
   ): Promise<{ message: string }> {
-    return this.authService.resetPassword(email, token, newPassword);
+    return this.authService.resetPassword(email, newPassword);
   }
 }
