@@ -1,5 +1,21 @@
 # 🚦 CHANGELOG
 
+# [1.38.0](https://github.com/SamikBeach/backend/compare/1.37.0...1.38.0) (2025-02-06)
+
+
+### Bug Fixes
+
+* 문구 수정 ([6a2dd6c](https://github.com/SamikBeach/backend/commit/6a2dd6ce4ec9330409998317f35f99b3f2dd7470))
+* 클라이언트 아이디 변경 ([5dd073e](https://github.com/SamikBeach/backend/commit/5dd073efec0462fd8639644202bea6e81a2df47d))
+* 토큰 만료 시간 수정 ([b46bb3d](https://github.com/SamikBeach/backend/commit/b46bb3d454b36c2ffe92f21d2b3d8f9bd6c4d865))
+
+
+### Features
+
+* 구글 로그인 안드로이드 클라이언트 지원 추가 ([c4d0b54](https://github.com/SamikBeach/backend/commit/c4d0b5474de041df5e70fe4f55e918c2b79abafb))
+* 리프레시 토큰 처리 로직 개선 ([3fab222](https://github.com/SamikBeach/backend/commit/3fab222f57cf2f95fb6afa17982ece27af8beb79))
+* 비밀번호 재설정 로직 개선 ([70bb26d](https://github.com/SamikBeach/backend/commit/70bb26d23a726ae540f6ee5287486a19e1f08935))
+
 # [1.37.0](https://github.com/SamikBeach/backend/compare/1.36.0...1.37.0) (2025-02-05)
 
 
