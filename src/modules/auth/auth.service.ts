@@ -144,7 +144,7 @@ export class AuthService {
         const clientId =
           clientType === 'ios'
             ? this.configService.get('GOOGLE_IOS_CLIENT_ID')
-            : this.configService.get('GOOGLE_ANDROID_CLIENT_ID');
+            : this.configService.get('GOOGLE_CLIENT_ID');
 
         const client = new OAuth2Client(clientId);
         ticket = await client.verifyIdToken({
