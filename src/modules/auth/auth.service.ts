@@ -263,14 +263,14 @@ export class AuthService {
       await this.mailerService.sendMail({
         to: email,
         from: this.configService.get<string>('MAIL_USER'),
-        subject: '[삼익비치] 이메일 인증 안내',
+        subject: '[고전산책] 이메일 인증 안내',
         html: `
           <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px; font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; line-height: 1.6; color: #333333; background: #ffffff;">
             <div style="text-align: center; margin-bottom: 40px;">
-              <h1 style="font-size: 24px; font-weight: 700; color: #1a1a1a; margin: 0;">삼익비치 이메일 인증 안내</h1>
+              <h1 style="font-size: 24px; font-weight: 700; color: #1a1a1a; margin: 0;">고전산책 이메일 인증 안내</h1>
             </div>
             <div style="background: #f8f9fa; border-radius: 12px; padding: 30px; margin-bottom: 30px;">
-              <p style="font-size: 16px; margin: 0 0 20px 0;">안녕하세요.<br/>삼익비치 서비스를 이용해 주셔서 감사합니다.</p>
+              <p style="font-size: 16px; margin: 0 0 20px 0;">안녕하세요.<br/>고전산책 서비스를 이용해 주셔서 감사합니다.</p>
               <p style="font-size: 16px; margin: 0 0 15px 0;">아래의 인증번호를 입력해 주세요.</p>
               <div style="background: #ffffff; border-radius: 8px; padding: 20px; text-align: center; margin: 25px 0;">
                 <h2 style="font-size: 32px; font-weight: 700; color: #4A90E2; margin: 0; letter-spacing: 4px;">${code}</h2>
@@ -568,14 +568,14 @@ export class AuthService {
       await this.mailerService.sendMail({
         to: email,
         from: this.configService.get<string>('MAIL_USER'),
-        subject: '[삼익비치] 비밀번호 재설정 인증코드 안내',
+        subject: '[고전산책] 비밀번호 재설정 인증코드 안내',
         html: `
           <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px; font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; line-height: 1.6; color: #333333; background: #ffffff;">
             <div style="text-align: center; margin-bottom: 40px;">
               <h1 style="font-size: 24px; font-weight: 700; color: #1a1a1a; margin: 0;">비밀번호 재설정 인증코드 안내</h1>
             </div>
             <div style="background: #f8f9fa; border-radius: 12px; padding: 30px; margin-bottom: 30px;">
-              <p style="font-size: 16px; margin: 0 0 20px 0;">안녕하세요.<br/>삼익비치 서비스를 이용해 주셔서 감사합니다.</p>
+              <p style="font-size: 16px; margin: 0 0 20px 0;">안녕하세요.<br/>고전산책 서비스를 이용해 주셔서 감사합니다.</p>
               <p style="font-size: 16px; margin: 0 0 15px 0;">아래의 인증번호를 입력해 주세요.</p>
               <div style="background: #ffffff; border-radius: 8px; padding: 20px; text-align: center; margin: 25px 0;">
                 <h2 style="font-size: 32px; font-weight: 700; color: #4A90E2; margin: 0; letter-spacing: 4px;">${code}</h2>
