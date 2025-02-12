@@ -1,5 +1,16 @@
 # 🚦 CHANGELOG
 
+# [1.39.0](https://github.com/SamikBeach/backend/compare/1.38.0...1.39.0) (2025-02-12)
+
+
+### Features
+
+* 구글 로그인에 googleId 저장 기능 추가 ([251e47a](https://github.com/SamikBeach/backend/commit/251e47ab60b00d5ffdd606e8a004edcc40a7cb95))
+* 리뷰 신고와 사용자 차단 기능 추가 ([10e574a](https://github.com/SamikBeach/backend/commit/10e574aebf39ead9e34d0a07841babf8d84f42c2))
+* 애플 로그인 구현 ([d4c5a64](https://github.com/SamikBeach/backend/commit/d4c5a64faebf16c0442b6dcccbb35878f6f2e924))
+* 차단 사용자 목록 구현 ([9e5c631](https://github.com/SamikBeach/backend/commit/9e5c6315c241ee3db5343d4723450bfab7b4ee94))
+* 책 상세 조회시 다른 번역서들의 리뷰 수를 포함하는 옵션 추가 ([3fe2b39](https://github.com/SamikBeach/backend/commit/3fe2b39a558ed75040da670c558c317fa9e7dd81))
+
 # [1.38.0](https://github.com/SamikBeach/backend/compare/1.37.0...1.38.0) (2025-02-06)
 
 
