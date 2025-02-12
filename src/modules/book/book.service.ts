@@ -25,7 +25,11 @@ export class BookService {
   /**
    * ID로 책을 찾습니다.
    */
-  async findById(id: number, userId?: number) {
+  async findById(
+    id: number,
+    userId?: number,
+    includeOtherTranslations = false,
+  ) {
     const book = await this.bookRepository.findOne({
       where: { id },
       relations: [
@@ -46,9 +50,29 @@ export class BookService {
       ),
     ).size;
 
+    let reviewCount = book.reviewCount;
+
+    // includeOtherTranslations가 true이고 원전이 있는 경우
+    if (includeOtherTranslations && book.bookOriginalWorks?.length > 0) {
+      const originalWorkId = book.bookOriginalWorks[0].originalWork.id;
+
+      // 같은 원전을 가진 모든 책의 리뷰 수를 합산
+      const relatedBooks = await this.bookRepository
+        .createQueryBuilder('book')
+        .innerJoin('book.bookOriginalWorks', 'bow')
+        .where('bow.originalWorkId = :originalWorkId', { originalWorkId })
+        .getMany();
+
+      reviewCount = relatedBooks.reduce(
+        (sum, book) => sum + book.reviewCount,
+        0,
+      );
+    }
+
     const response = {
       ...book,
       totalTranslationCount,
+      reviewCount,
     };
 
     if (userId) {

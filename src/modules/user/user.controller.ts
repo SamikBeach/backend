@@ -21,8 +21,7 @@ import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { Response } from 'express';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { FileInterceptor } from '@nestjs/platform-express';
-
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('User')
 @Controller('user')
@@ -280,5 +279,59 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   async deleteProfileImage(@CurrentUser() user: User) {
     return this.userService.deleteProfileImage(user.id);
+  }
+
+  /**
+   * 사용자를 차단합니다.
+   */
+  @Post(':id/block')
+  @UseGuards(JwtAuthGuard)
+  async blockUser(
+    @Param('id', ParseIntPipe) blockedId: number,
+    @CurrentUser() user: User,
+  ) {
+    return this.userService.blockUser(user.id, blockedId);
+  }
+
+  /**
+   * 사용자 차단을 해제합니다.
+   */
+  @Delete(':id/block')
+  @UseGuards(JwtAuthGuard)
+  async unblockUser(
+    @Param('id', ParseIntPipe) blockedId: number,
+    @CurrentUser() user: User,
+  ) {
+    return this.userService.unblockUser(user.id, blockedId);
+  }
+
+  /**
+   * 차단한 사용자 목록을 조회합니다.
+   */
+  @Get('me/blocked')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '차단한 사용자 목록 조회' })
+  @ApiResponse({
+    status: 200,
+    description: '차단한 사용자 목록을 반환합니다.',
+    schema: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'number' },
+              nickname: { type: 'string' },
+              imageUrl: { type: 'string', nullable: true },
+            },
+          },
+        },
+      },
+    },
+  })
+  async getBlockedUsers(@CurrentUser() user: User) {
+    return this.userService.getBlockedUsers(user.id);
   }
 }

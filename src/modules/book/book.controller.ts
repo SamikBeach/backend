@@ -46,8 +46,14 @@ export class BookController {
   async getBookDetail(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user?: User,
+    @Query(
+      'includeOtherTranslations',
+      new DefaultValuePipe(false),
+      ParseBoolPipe,
+    )
+    includeOtherTranslations?: boolean,
   ) {
-    return this.bookService.findById(id, user?.id);
+    return this.bookService.findById(id, user?.id, includeOtherTranslations);
   }
 
   /**

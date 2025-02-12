@@ -20,6 +20,7 @@ import { Response, Request } from 'express';
 import { User } from '@entities/User';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { AuthResponse } from './types/auth.types';
+import { ApiOperation } from '@nestjs/swagger';
 
 /**
  * 인증 관련 컨트롤러
@@ -254,5 +255,25 @@ export class AuthController {
     @Body('newPassword') newPassword: string,
   ): Promise<{ message: string }> {
     return this.authService.resetPassword(email, newPassword);
+  }
+
+  @Post('login/apple')
+  @ApiOperation({ summary: '애플 로그인' })
+  async appleLogin(
+    @Body('idToken') idToken: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { accessToken, refreshToken, user } =
+      await this.authService.appleLogin(idToken);
+
+    // 리프레시 토큰을 쿠키에 저장
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    return { accessToken, refreshToken, user };
   }
 }

@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../../entities/User';
 import { JwtModule } from '@nestjs/jwt';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { AppleAuthService } from './apple-auth.service';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, AppleAuthService],
   exports: [AuthService],
 })
 export class AuthModule {}

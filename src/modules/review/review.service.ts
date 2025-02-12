@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
@@ -10,9 +11,10 @@ import { Comment } from '@entities/Comment';
 import { Book } from '@entities/Book';
 import { UserReviewLike } from '@entities/UserReviewLike';
 import { UserCommentLike } from '@entities/UserCommentLike';
+import { ReviewReport, ReportReason } from '@entities/ReviewReport';
 import { CreateReviewDto, UpdateReviewDto } from './dto/review.dto';
 import { CreateCommentDto, UpdateCommentDto } from './dto/comment.dto';
-import { FilterOperator, PaginateQuery, paginate } from 'nestjs-paginate';
+import { PaginateQuery, paginate } from 'nestjs-paginate';
 
 @Injectable()
 export class ReviewService {
@@ -27,6 +29,8 @@ export class ReviewService {
     private readonly userReviewLikeRepository: Repository<UserReviewLike>,
     @InjectRepository(UserCommentLike)
     private readonly userCommentLikeRepository: Repository<UserCommentLike>,
+    @InjectRepository(ReviewReport)
+    private readonly reviewReportRepository: Repository<ReviewReport>,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -34,20 +38,35 @@ export class ReviewService {
    * 리뷰 목록을 조회합니다.
    */
   async searchReviews(query: PaginateQuery, userId?: number) {
-    const reviews = await paginate(query, this.reviewRepository, {
+    const queryBuilder = this.reviewRepository
+      .createQueryBuilder('review')
+      .leftJoinAndSelect('review.user', 'user')
+      .leftJoinAndSelect('review.book', 'book')
+      .leftJoinAndSelect('book.authorBooks', 'authorBooks')
+      .leftJoinAndSelect('authorBooks.author', 'author');
+
+    // 차단한 사용자의 리뷰 제외
+    if (userId) {
+      queryBuilder.leftJoin(
+        'user_block',
+        'block',
+        'block.blocked_id = user.id AND block.blocker_id = :userId',
+        { userId },
+      );
+      queryBuilder.andWhere('block.id IS NULL');
+    }
+
+    if (query.search) {
+      queryBuilder.andWhere(
+        '(review.title LIKE :search OR review.content LIKE :search)',
+        { search: `%${query.search}%` },
+      );
+    }
+
+    const reviews = await paginate(query, queryBuilder, {
       sortableColumns: ['id', 'likeCount', 'createdAt', 'updatedAt'],
       searchableColumns: ['title', 'content'],
       defaultSortBy: [['id', 'DESC']],
-      relations: [
-        'user',
-        'book',
-        'book.authorBooks',
-        'book.authorBooks.author',
-      ],
-      filterableColumns: {
-        title: [FilterOperator.ILIKE],
-        content: [FilterOperator.ILIKE],
-      },
       maxLimit: 100,
     });
 
@@ -522,5 +541,46 @@ export class ReviewService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  /**
+   * 리뷰를 신고합니다.
+   */
+  async reportReview(
+    reviewId: number,
+    reporterId: number,
+    reason: ReportReason,
+  ) {
+    const review = await this.reviewRepository.findOne({
+      where: { id: reviewId },
+    });
+
+    if (!review) {
+      throw new NotFoundException('리뷰를 찾을 수 없습니다.');
+    }
+
+    // 자신의 리뷰는 신고할 수 없음
+    if (review.userId === reporterId) {
+      throw new UnauthorizedException('자신의 리뷰는 신고할 수 없습니다.');
+    }
+
+    // 이미 신고한 리뷰인지 확인
+    const existingReport = await this.reviewReportRepository.findOne({
+      where: { reviewId, reporterId },
+    });
+
+    if (existingReport) {
+      throw new ConflictException('이미 신고한 리뷰입니다.');
+    }
+
+    const report = this.reviewReportRepository.create({
+      reviewId,
+      reporterId,
+      reason,
+    });
+
+    await this.reviewReportRepository.save(report);
+
+    return { message: '신고가 접수되었습니다.' };
   }
 }

@@ -17,6 +17,7 @@ import { UserAuthorLike } from '@entities/UserAuthorLike';
 import { Review } from '@entities/Review';
 import { UserSearch } from '@entities/UserSearch';
 import { FileService } from '../file/file.service';
+import { UserBlock } from '@entities/UserBlock';
 
 @Injectable()
 export class UserService {
@@ -29,9 +30,11 @@ export class UserService {
     private readonly userAuthorLikeRepository: Repository<UserAuthorLike>,
     @InjectRepository(Review)
     private readonly reviewRepository: Repository<Review>,
-    private readonly configService: ConfigService,
     @InjectRepository(UserSearch)
     private readonly userSearchRepository: Repository<UserSearch>,
+    @InjectRepository(UserBlock)
+    private readonly userBlockRepository: Repository<UserBlock>,
+    private readonly configService: ConfigService,
     private readonly fileService: FileService,
   ) {}
 
@@ -420,5 +423,82 @@ export class UserService {
     await this.userRepository.save(user);
 
     return user;
+  }
+
+  /**
+   * 사용자를 차단합니다.
+   */
+  async blockUser(blockerId: number, blockedId: number) {
+    if (blockerId === blockedId) {
+      throw new BadRequestException('자기 자신을 차단할 수 없습니다.');
+    }
+
+    const blockedUser = await this.userRepository.findOne({
+      where: { id: blockedId },
+    });
+
+    if (!blockedUser) {
+      throw new NotFoundException('차단할 사용자를 찾을 수 없습니다.');
+    }
+
+    const existingBlock = await this.userBlockRepository.findOne({
+      where: { blockerId, blockedId },
+    });
+
+    if (existingBlock) {
+      throw new ConflictException('이미 차단한 사용자입니다.');
+    }
+
+    const block = this.userBlockRepository.create({
+      blockerId,
+      blockedId,
+    });
+
+    await this.userBlockRepository.save(block);
+
+    return { message: '사용자를 차단했습니다.' };
+  }
+
+  /**
+   * 사용자 차단을 해제합니다.
+   */
+  async unblockUser(blockerId: number, blockedId: number) {
+    const block = await this.userBlockRepository.findOne({
+      where: { blockerId, blockedId },
+    });
+
+    if (!block) {
+      throw new NotFoundException('차단 정보를 찾을 수 없습니다.');
+    }
+
+    await this.userBlockRepository.remove(block);
+
+    return { message: '차단이 해제되었습니다.' };
+  }
+
+  /**
+   * 차단한 사용자 목록을 조회합니다.
+   */
+  async getBlockedUsers(userId: number) {
+    const blocks = await this.userBlockRepository.find({
+      where: { blockerId: userId },
+      relations: ['blocked'],
+      select: {
+        blocked: {
+          id: true,
+          nickname: true,
+          imageUrl: true,
+        },
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    return blocks.map((block) => ({
+      id: block.blocked.id,
+      nickname: block.blocked.nickname,
+      imageUrl: block.blocked.imageUrl,
+    }));
   }
 }

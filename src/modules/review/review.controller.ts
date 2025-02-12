@@ -17,6 +17,7 @@ import { CurrentUser } from '@decorators/current-user.decorator';
 import { User } from '@entities/User';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { CreateCommentDto, UpdateCommentDto } from './dto/comment.dto';
+import { ReportReason } from '@entities/ReviewReport';
 
 @Controller('review')
 export class ReviewController {
@@ -171,5 +172,18 @@ export class ReviewController {
     @CurrentUser() user: User,
   ) {
     return this.reviewService.toggleCommentLike(reviewId, commentId, user.id);
+  }
+
+  /**
+   * 리뷰를 신고합니다.
+   */
+  @Post(':id/report')
+  @UseGuards(JwtAuthGuard)
+  async reportReview(
+    @Param('id', ParseIntPipe) reviewId: number,
+    @Body('reason') reason: ReportReason,
+    @CurrentUser() user: User,
+  ) {
+    return this.reviewService.reportReview(reviewId, user.id, reason);
   }
 }

@@ -42,3 +42,9 @@ export class ChangePasswordDto {
   @MinLength(8)
   newPassword: string;
 }
+
+export class BlockedUserDto {
+  id: number;
+  nickname: string;
+  imageUrl?: string;
+}
