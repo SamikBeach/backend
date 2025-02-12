@@ -486,13 +486,19 @@ export class UserService {
       select: {
         blocked: {
           id: true,
-          email: true,
           nickname: true,
           imageUrl: true,
         },
       },
+      order: {
+        createdAt: 'DESC',
+      },
     });
 
-    return blocks.map((block) => block.blocked);
+    return blocks.map((block) => ({
+      id: block.blocked.id,
+      nickname: block.blocked.nickname,
+      imageUrl: block.blocked.imageUrl,
+    }));
   }
 }
