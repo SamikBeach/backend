@@ -172,9 +172,16 @@ export class AuthService {
         throw new UnauthorizedException('구글 인증에 실패했습니다.');
       }
 
+      const {
+        sub: googleId,
+        email,
+        name: nickname,
+        picture: imageUrl,
+      } = payload;
+
       // 사용자 조회
       let user = await this.userRepository.findOne({
-        where: { email: payload.email },
+        where: [{ googleId }, { email }],
         select: {
           id: true,
           email: true,
@@ -182,11 +189,12 @@ export class AuthService {
           nickname: true,
           imageUrl: true,
           verified: true,
+          googleId: true,
         },
       });
 
       // 이미 가입된 회원이고 구글 계정으로 가입한 경우
-      if (user && user.password === null) {
+      if (user && user.googleId) {
         return {
           accessToken: this.generateAccessToken(user),
           refreshToken: this.generateRefreshToken(user),
@@ -208,30 +216,19 @@ export class AuthService {
 
       // 가입되지 않은 회원인 경우 회원가입 후 로그인
       if (!user) {
-        user = await this.userRepository.save({
-          email: payload.email,
-          nickname: payload.name || payload.email.split('@')[0],
+        const newUser = this.userRepository.create({
+          email,
+          googleId,
+          nickname: nickname || email.split('@')[0],
+          imageUrl,
           password: null,
           verified: true,
-          imageUrl: payload.picture, // 구글 프로필 이미지 추가
-        } as Partial<User>);
-
-        const savedUser = await this.userRepository.findOne({
-          where: { id: user.id },
-          select: {
-            id: true,
-            email: true,
-            nickname: true,
-            imageUrl: true,
-            verified: true,
-          },
         });
-
-        if (!savedUser) {
-          throw new InternalServerErrorException('회원가입에 실패했습니다.');
-        }
-
-        user = savedUser;
+        user = await this.userRepository.save(newUser);
+      } else if (!user.googleId) {
+        // 기존 이메일 사용자가 구글 로그인을 시도하는 경우
+        await this.userRepository.update(user.id, { googleId });
+        user.googleId = googleId;
       }
 
       return {
