@@ -17,6 +17,7 @@ import * as bcrypt from 'bcrypt';
 import { OAuth2Client } from 'google-auth-library';
 import { ConfigService } from '@nestjs/config';
 import { TokenPayload, AuthResponse } from './types/auth.types';
+import { AppleAuthService } from './apple-auth.service';
 
 // 구글 로그인을 위한 User 타입 확장
 
@@ -51,6 +52,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly mailerService: MailerService,
     private readonly configService: ConfigService,
+    private readonly appleAuthService: AppleAuthService,
   ) {}
 
   /**
@@ -641,5 +643,57 @@ export class AuthService {
     this.verificationCodes.delete(email);
 
     return { message: '비밀번호가 성공적으로 변경되었습니다.' };
+  }
+
+  async appleLogin(idToken: string): Promise<AuthResponse> {
+    try {
+      // 애플 ID 토큰 검증
+      const payload = await this.appleAuthService.verifyAppleToken(idToken);
+      const { sub: appleId, email } = payload;
+
+      if (!appleId) {
+        throw new UnauthorizedException('유효하지 않은 애플 토큰입니다.');
+      }
+
+      // 이미 가입된 사용자인지 확인
+      let user = await this.userRepository.findOne({
+        where: [{ appleId }, ...(email ? [{ email }] : [])],
+        select: {
+          id: true,
+          email: true,
+          nickname: true,
+          imageUrl: true,
+          appleId: true,
+        },
+      });
+
+      if (!user) {
+        // 새로운 사용자 생성
+        const newUser = this.userRepository.create({
+          email: email || null,
+          appleId,
+          nickname: `user${Math.random().toString(36).substring(2, 8)}`,
+          verified: true,
+        });
+        user = await this.userRepository.save(newUser);
+      } else if (!user.appleId) {
+        // 기존 이메일 사용자가 애플 로그인을 시도하는 경우
+        await this.userRepository.update(user.id, { appleId });
+        user.appleId = appleId;
+      }
+
+      return {
+        accessToken: this.generateAccessToken(user),
+        refreshToken: this.generateRefreshToken(user),
+        user: {
+          id: user.id,
+          email: user.email,
+          nickname: user.nickname,
+          imageUrl: user.imageUrl,
+        },
+      };
+    } catch (error) {
+      throw new UnauthorizedException('애플 로그인에 실패했습니다.');
+    }
   }
 }

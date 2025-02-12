@@ -33,6 +33,14 @@ export class User {
   })
   password: string | null;
 
+  @Column('varchar', {
+    name: 'apple_id',
+    length: 200,
+    nullable: true,
+    select: false,
+  })
+  appleId: string | null;
+
   @Column('tinyint', {
     name: 'verified',
     width: 1,

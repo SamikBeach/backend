@@ -3238,6 +3238,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/jsonwebtoken@npm:^9":
+  version: 9.0.8
+  resolution: "@types/jsonwebtoken@npm:9.0.8"
+  dependencies:
+    "@types/ms": "npm:*"
+    "@types/node": "npm:*"
+  checksum: 10c0/dd3ccea05115ad9c4458d0c2a487179b1abf8886eaa8cc77d64031a8ef47abd3ff038cdde26e76893372238c8612e4f5fd578b3400e525b65c0e8d3abefe5282
+  languageName: node
+  linkType: hard
+
 "@types/keyv@npm:^4.2.0":
   version: 4.2.0
   resolution: "@types/keyv@npm:4.2.0"
@@ -3281,6 +3291,13 @@ __metadata:
   dependencies:
     "@types/mjml-core": "npm:*"
   checksum: 10c0/6f4bbdf709e1f6c9b26be67146b1e4c759142fb4ddfa4c079b600835701bb2039c60cd530d016f1d2f1aef4256580e30cdc942c3acd6935e2fe56b5a665795ae
+  languageName: node
+  linkType: hard
+
+"@types/ms@npm:*":
+  version: 2.1.0
+  resolution: "@types/ms@npm:2.1.0"
+  checksum: 10c0/5ce692ffe1549e1b827d99ef8ff71187457e0eb44adbae38fdf7b9a74bae8d20642ee963c14516db1d35fa2652e65f47680fdf679dcbde52bbfadd021f497225
   languageName: node
   linkType: hard
 
@@ -4090,6 +4107,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"apple-signin-auth@npm:^1.7.8":
+  version: 1.7.8
+  resolution: "apple-signin-auth@npm:1.7.8"
+  dependencies:
+    jsonwebtoken: "npm:^9.0.0"
+    node-fetch: "npm:^2.6.7"
+    node-rsa: "npm:^1.1.1"
+  checksum: 10c0/9a10669fd392a83f12e92e3f0fdd0ca0ad934955750d80a657bea07ec3bb0a730abb0a889c94c54d89353e056667be5a73ffb52e451a6dd48fe2a7a52ec900c9
+  languageName: node
+  linkType: hard
+
 "aproba@npm:^1.0.3 || ^2.0.0, aproba@npm:^2.0.0":
   version: 2.0.0
   resolution: "aproba@npm:2.0.0"
@@ -4176,6 +4204,15 @@ __metadata:
   version: 2.0.6
   resolution: "asap@npm:2.0.6"
   checksum: 10c0/c6d5e39fe1f15e4b87677460bd66b66050cd14c772269cee6688824c1410a08ab20254bb6784f9afb75af9144a9f9a7692d49547f4d19d715aeb7c0318f3136d
+  languageName: node
+  linkType: hard
+
+"asn1@npm:^0.2.4":
+  version: 0.2.6
+  resolution: "asn1@npm:0.2.6"
+  dependencies:
+    safer-buffer: "npm:~2.1.0"
+  checksum: 10c0/00c8a06c37e548762306bcb1488388d2f76c74c36f70c803f0c081a01d3bdf26090fc088cd812afc5e56a6d49e33765d451a5f8a68ab9c2b087eba65d2e980e0
   languageName: node
   linkType: hard
 
@@ -4323,6 +4360,7 @@ __metadata:
     "@types/express": "npm:^4.17.17"
     "@types/heic-convert": "npm:^2"
     "@types/jest": "npm:^29.5.2"
+    "@types/jsonwebtoken": "npm:^9"
     "@types/keyv": "npm:^4.2.0"
     "@types/lodash": "npm:^4"
     "@types/multer": "npm:^1.4.12"
@@ -4332,6 +4370,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:^6.0.0"
     "@typescript-eslint/parser": "npm:^6.0.0"
     "@willsoto/nestjs-prometheus": "npm:^6.0.2"
+    apple-signin-auth: "npm:^1.7.8"
     bcrypt: "npm:^5.1.1"
     cache-manager: "npm:^5.2.0"
     cache-manager-redis-store: "npm:^2.0.0"
@@ -4344,6 +4383,7 @@ __metadata:
     google-auth-library: "npm:^9.15.0"
     heic-convert: "npm:^2.1.0"
     jest: "npm:^29.5.0"
+    jsonwebtoken: "npm:^9.0.2"
     keyv: "npm:^5.2.3"
     lodash: "npm:^4.17.21"
     mysql2: "npm:^3.6.5"
@@ -8839,7 +8879,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonwebtoken@npm:9.0.2":
+"jsonwebtoken@npm:9.0.2, jsonwebtoken@npm:^9.0.0, jsonwebtoken@npm:^9.0.2":
   version: 9.0.2
   resolution: "jsonwebtoken@npm:9.0.2"
   dependencies:
@@ -10521,6 +10561,15 @@ __metadata:
   version: 2.0.18
   resolution: "node-releases@npm:2.0.18"
   checksum: 10c0/786ac9db9d7226339e1dc84bbb42007cb054a346bd9257e6aa154d294f01bc6a6cddb1348fa099f079be6580acbb470e3c048effd5f719325abd0179e566fd27
+  languageName: node
+  linkType: hard
+
+"node-rsa@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "node-rsa@npm:1.1.1"
+  dependencies:
+    asn1: "npm:^0.2.4"
+  checksum: 10c0/af3b6534844dfeaa8290a7bc20d5e4d1a134f05d456725e56d75b7661d4d63cd63914ce335ee8889adc2458112b996d4ba8a83ba105bde744a26e61d9160f639
   languageName: node
   linkType: hard
 
@@ -12404,7 +12453,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"safer-buffer@npm:>= 2.1.2 < 3, safer-buffer@npm:>= 2.1.2 < 3.0.0":
+"safer-buffer@npm:>= 2.1.2 < 3, safer-buffer@npm:>= 2.1.2 < 3.0.0, safer-buffer@npm:~2.1.0":
   version: 2.1.2
   resolution: "safer-buffer@npm:2.1.2"
   checksum: 10c0/7e3c8b2e88a1841c9671094bbaeebd94448111dd90a81a1f606f3f67708a6ec57763b3b47f06da09fc6054193e0e6709e77325415dc8422b04497a8070fa02d4
