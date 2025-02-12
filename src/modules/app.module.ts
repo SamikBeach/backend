@@ -34,6 +34,8 @@ import { PrometheusModule } from './prometheus/prometheus.module';
 import { EraModule } from './era/era.module';
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { APP_FILTER } from '@nestjs/core';
+import { ReviewReport } from '@entities/ReviewReport';
+import { UserBlock } from '@entities/UserBlock';
 // import { CacheModule } from '@nestjs/cache-manager';
 // import { CacheConfigService } from '@config/cache.config';
 
@@ -139,6 +141,8 @@ import { APP_FILTER } from '@nestjs/core';
         BookOriginalWork,
         Era,
         Genre,
+        ReviewReport,
+        UserBlock,
       ],
       synchronize: process.env.NODE_ENV !== 'production',
     }),

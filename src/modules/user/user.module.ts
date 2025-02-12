@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserSearch } from '@entities/UserSearch';
 import { FileModule } from '../file/file.module';
+import { UserBlock } from '@entities/UserBlock';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { FileModule } from '../file/file.module';
       UserAuthorLike,
       Review,
       UserSearch,
+      UserBlock,
     ]),
     FileModule,
   ],

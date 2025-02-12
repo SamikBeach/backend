@@ -281,4 +281,37 @@ export class UserController {
   async deleteProfileImage(@CurrentUser() user: User) {
     return this.userService.deleteProfileImage(user.id);
   }
+
+  /**
+   * 사용자를 차단합니다.
+   */
+  @Post(':id/block')
+  @UseGuards(JwtAuthGuard)
+  async blockUser(
+    @Param('id', ParseIntPipe) blockedId: number,
+    @CurrentUser() user: User,
+  ) {
+    return this.userService.blockUser(user.id, blockedId);
+  }
+
+  /**
+   * 사용자 차단을 해제합니다.
+   */
+  @Delete(':id/block')
+  @UseGuards(JwtAuthGuard)
+  async unblockUser(
+    @Param('id', ParseIntPipe) blockedId: number,
+    @CurrentUser() user: User,
+  ) {
+    return this.userService.unblockUser(user.id, blockedId);
+  }
+
+  /**
+   * 차단한 사용자 목록을 조회합니다.
+   */
+  @Get('me/blocked')
+  @UseGuards(JwtAuthGuard)
+  async getBlockedUsers(@CurrentUser() user: User) {
+    return this.userService.getBlockedUsers(user.id);
+  }
 }

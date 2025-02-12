@@ -9,6 +9,7 @@ import { UserReviewLike } from '@entities/UserReviewLike';
 import { UserCommentLike } from '@entities/UserCommentLike';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@entities/User';
+import { ReviewReport } from '@entities/ReviewReport';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { User } from '@entities/User';
       UserReviewLike,
       UserCommentLike,
       User,
+      ReviewReport,
     ]),
   ],
   controllers: [ReviewController],
