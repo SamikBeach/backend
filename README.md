@@ -1,5 +1,78 @@
 # 🚦 CHANGELOG
 
+# [1.39.0](https://github.com/SamikBeach/backend/compare/1.38.0...1.39.0) (2025-02-12)
+
+### Features
+
+- 구글 로그인에 googleId 저장 기능 추가 ([251e47a](https://github.com/SamikBeach/backend/commit/251e47ab60b00d5ffdd606e8a004edcc40a7cb95))
+- 리뷰 신고와 사용자 차단 기능 추가 ([10e574a](https://github.com/SamikBeach/backend/commit/10e574aebf39ead9e34d0a07841babf8d84f42c2))
+- 애플 로그인 구현 ([d4c5a64](https://github.com/SamikBeach/backend/commit/d4c5a64faebf16c0442b6dcccbb35878f6f2e924))
+- 차단 사용자 목록 구현 ([9e5c631](https://github.com/SamikBeach/backend/commit/9e5c6315c241ee3db5343d4723450bfab7b4ee94))
+- 책 상세 조회시 다른 번역서들의 리뷰 수를 포함하는 옵션 추가 ([3fe2b39](https://github.com/SamikBeach/backend/commit/3fe2b39a558ed75040da670c558c317fa9e7dd81))
+
+# [1.38.0](https://github.com/SamikBeach/backend/compare/1.37.0...1.38.0) (2025-02-06)
+
+### Bug Fixes
+
+- 문구 수정 ([6a2dd6c](https://github.com/SamikBeach/backend/commit/6a2dd6ce4ec9330409998317f35f99b3f2dd7470))
+- 클라이언트 아이디 변경 ([5dd073e](https://github.com/SamikBeach/backend/commit/5dd073efec0462fd8639644202bea6e81a2df47d))
+- 토큰 만료 시간 수정 ([b46bb3d](https://github.com/SamikBeach/backend/commit/b46bb3d454b36c2ffe92f21d2b3d8f9bd6c4d865))
+
+### Features
+
+- 구글 로그인 안드로이드 클라이언트 지원 추가 ([c4d0b54](https://github.com/SamikBeach/backend/commit/c4d0b5474de041df5e70fe4f55e918c2b79abafb))
+- 리프레시 토큰 처리 로직 개선 ([3fab222](https://github.com/SamikBeach/backend/commit/3fab222f57cf2f95fb6afa17982ece27af8beb79))
+- 비밀번호 재설정 로직 개선 ([70bb26d](https://github.com/SamikBeach/backend/commit/70bb26d23a726ae540f6ee5287486a19e1f08935))
+
+# [1.37.0](https://github.com/SamikBeach/backend/compare/1.36.0...1.37.0) (2025-02-05)
+
+### Bug Fixes
+
+- API 응답 형식 수정 ([f743826](https://github.com/SamikBeach/backend/commit/f743826541da92c261186593a8f4e91af94dd32c))
+
+### Features
+
+- iOS 네이티브 구글 로그인 지원 추가 ([528a31c](https://github.com/SamikBeach/backend/commit/528a31ca498785e2ad20d32d0c95f37495a7e477))
+- 구글 로그인 클라이언트 타입 구분 추가 ([82d0a62](https://github.com/SamikBeach/backend/commit/82d0a62974a2a80875bc058216c02fc65c62dc8c))
+- 댓글 목록 조회 시 좋아요 여부 포함 ([41773d6](https://github.com/SamikBeach/backend/commit/41773d63fb5f54a6f59ecf4f3775b3db2e1ec2fb))
+
+# [1.36.0](https://github.com/SamikBeach/backend/compare/1.35.1...1.36.0) (2025-02-01)
+
+### Features
+
+- 연관 도서 목록 최신순 정렬 적용 ([d357896](https://github.com/SamikBeach/backend/commit/d3578967db86be841cc0c4e114235b299e54c582))
+- 저자의 책 목록 최신순 정렬 적용 ([ad7adf4](https://github.com/SamikBeach/backend/commit/ad7adf494ea2971e971acd96885b2ace1c986e91))
+- 책 검색 정렬 로직 개선 ([876c0b1](https://github.com/SamikBeach/backend/commit/876c0b1eb26489317190d287b05dd0a9ef56c89f))
+
+## [1.35.1](https://github.com/SamikBeach/backend/compare/1.35.0...1.35.1) (2025-02-01)
+
+### Bug Fixes
+
+- 캐시 모듈 주석 처리 ([50f23f9](https://github.com/SamikBeach/backend/commit/50f23f961fb0e22e96a1253c91091203159dc157))
+
+# [1.35.0](https://github.com/SamikBeach/backend/compare/1.34.0...1.35.0) (2025-02-01)
+
+### Bug Fixes
+
+- Cache 관련 데코레이터 주석 처리 ([1fb2c8a](https://github.com/SamikBeach/backend/commit/1fb2c8ae654d389a336d5702d8f2cfa868dc2eca))
+- 저자의 책 목록 조회 시 500 에러 수정 ([9fa0d60](https://github.com/SamikBeach/backend/commit/9fa0d60c316cce28a2fe2da01e2f566cfb31c1e8))
+
+### Features
+
+- redis 설치 및 주요 엔드포인트 캐시 적용 ([6af9e46](https://github.com/SamikBeach/backend/commit/6af9e46434e94c846e2dc0d222e7e7cf025424bf))
+
+# [1.34.0](https://github.com/SamikBeach/backend/compare/1.33.5...1.34.0) (2025-01-31)
+
+### Features
+
+- 한글 검색 기능 강화 ([5bbab56](https://github.com/SamikBeach/backend/commit/5bbab56e5415a2061bd93dedbbf66d2eff557537))
+
+## [1.33.5](https://github.com/SamikBeach/backend/compare/1.33.4...1.33.5) (2025-01-30)
+
+### Bug Fixes
+
+- update READEME.md ([f9600a9](https://github.com/SamikBeach/backend/commit/f9600a92437aa0f1381d84f0e0c8589638586c38))
+
 ## [1.33.4](https://github.com/SamikBeach/backend/compare/1.33.3...1.33.4) (2025-01-30)
 
 ### Bug Fixes
