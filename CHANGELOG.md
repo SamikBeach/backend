@@ -1,5 +1,7 @@
 # 🚦 CHANGELOG
 
+## [1.39.1](https://github.com/SamikBeach/backend/compare/1.39.0...1.39.1) (2025-02-13)
+
 # [1.39.0](https://github.com/SamikBeach/backend/compare/1.38.0...1.39.0) (2025-02-12)
 
 
