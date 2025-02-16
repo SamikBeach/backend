@@ -63,10 +63,52 @@ export class ReviewService {
       );
     }
 
+    // 인기순일 때는 좋아요 수로 정렬 후 랜덤 정렬
+    const isLikeCountSort = query.sortBy?.some(
+      ([column, order]) => column === 'likeCount' && order === 'DESC',
+    );
+
+    if (isLikeCountSort) {
+      // 좋아요 수가 같은 리뷰들끼리 랜덤하게 정렬
+      queryBuilder
+        .addSelect('RAND()', 'rand')
+        .orderBy('review.likeCount', 'DESC')
+        .addOrderBy('rand');
+
+      const reviews = await paginate(query, queryBuilder, {
+        sortableColumns: ['id', 'likeCount', 'createdAt', 'updatedAt'],
+        searchableColumns: ['title', 'content'],
+        maxLimit: 100,
+      });
+
+      if (userId) {
+        const userLikes = await this.userReviewLikeRepository.find({
+          where: {
+            userId,
+            reviewId: In(reviews.data.map((review) => review.id)),
+          },
+        });
+
+        const likedReviewIds = new Set(userLikes.map((like) => like.reviewId));
+
+        reviews.data = reviews.data.map((review) => ({
+          ...review,
+          isLiked: likedReviewIds.has(review.id),
+        }));
+      }
+
+      return reviews;
+    }
+
+    // 정렬 옵션이 없을 때는 완전 랜덤 정렬
+    if (!query.sortBy || query.sortBy.length === 0) {
+      queryBuilder.addSelect('RAND()', 'rand').orderBy('rand');
+    }
+
     const reviews = await paginate(query, queryBuilder, {
       sortableColumns: ['id', 'likeCount', 'createdAt', 'updatedAt'],
       searchableColumns: ['title', 'content'],
-      defaultSortBy: [['id', 'DESC']],
+      defaultSortBy: [['createdAt', 'DESC']],
       maxLimit: 100,
     });
 

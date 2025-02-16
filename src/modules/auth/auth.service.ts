@@ -669,7 +669,10 @@ export class AuthService {
         const newUser = this.userRepository.create({
           email: email || null,
           appleId,
-          nickname: `user${Math.random().toString(36).substring(2, 8)}`,
+          // 이메일이 있는 경우 이메일의 @ 앞부분을 닉네임으로 사용, 없는 경우 랜덤 닉네임 생성
+          nickname: email
+            ? email.split('@')[0]
+            : `user${Math.random().toString(36).substring(2, 8)}`,
           verified: true,
         });
         user = await this.userRepository.save(newUser);
