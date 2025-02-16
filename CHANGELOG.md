@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+# [1.41.0](https://github.com/SamikBeach/backend/compare/1.40.0...1.41.0) (2025-02-16)
+
+
+### Features
+
+* Redis 환경별 설정 분리 ([542d75c](https://github.com/SamikBeach/backend/commit/542d75ca9c17b5130db743c2851f1606b22bf0fc))
+
 # [1.40.0](https://github.com/SamikBeach/backend/compare/1.39.1...1.40.0) (2025-02-16)
 
 
