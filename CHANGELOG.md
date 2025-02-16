@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+## [1.41.1](https://github.com/SamikBeach/backend/compare/1.41.0...1.41.1) (2025-02-16)
+
+
+### Bug Fixes
+
+* 스크립트 수정 ([e2619c5](https://github.com/SamikBeach/backend/commit/e2619c55ea05ae1d22e52250a74c9a1ad3495752))
+
 # [1.41.0](https://github.com/SamikBeach/backend/compare/1.40.0...1.41.0) (2025-02-16)
 
 
