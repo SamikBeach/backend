@@ -1,5 +1,17 @@
 # 🚦 CHANGELOG
 
+# [1.40.0](https://github.com/SamikBeach/backend/compare/1.39.1...1.40.0) (2025-02-16)
+
+
+### Bug Fixes
+
+* 애플 로그인 시 사용자 정보 처리 개선 ([a28fcaf](https://github.com/SamikBeach/backend/commit/a28fcaf8e87a113f7862b46f87e21066e6fef10d))
+
+
+### Features
+
+* Redis 서비스 추가 ([dc6c057](https://github.com/SamikBeach/backend/commit/dc6c05701ee2b4e30e35a08cb8f76a2892a26efc))
+
 ## [1.39.1](https://github.com/SamikBeach/backend/compare/1.39.0...1.39.1) (2025-02-13)
 
 # [1.39.0](https://github.com/SamikBeach/backend/compare/1.38.0...1.39.0) (2025-02-12)
