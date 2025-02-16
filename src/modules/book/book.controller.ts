@@ -8,7 +8,6 @@ import {
   Query,
   DefaultValuePipe,
   ParseBoolPipe,
-  UseInterceptors,
 } from '@nestjs/common';
 import { BookService } from './book.service';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
@@ -16,8 +15,6 @@ import { CurrentUser } from '@decorators/current-user.decorator';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { User } from '@entities/User';
 import { OptionalJwtAuthGuard } from '@guards/optional-jwt-auth.guard';
-import { CacheKeyInterceptor } from '@common/interceptors/cache-key.interceptor';
-import { CacheTTL } from '@nestjs/cache-manager';
 
 @Controller('book')
 export class BookController {
@@ -28,8 +25,8 @@ export class BookController {
    */
   @Get('search')
   @UseGuards(OptionalJwtAuthGuard)
-  @UseInterceptors(CacheKeyInterceptor)
-  @CacheTTL(30) // 30초
+  // @UseInterceptors(CacheKeyInterceptor)
+  // @CacheTTL(1800) // 30분
   async searchBooks(
     @Paginate() query: PaginateQuery,
     @CurrentUser() user?: User,
