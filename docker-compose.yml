@@ -9,6 +9,10 @@ services:
       - redis-data:/data
     command: redis-server --appendonly yes
     restart: unless-stopped
+    networks:
+      - monitoring
+    env_file:
+      - .env.${NODE_ENV:-development}
 
   prometheus:
     image: prom/prometheus:latest
