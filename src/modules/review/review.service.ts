@@ -40,10 +40,29 @@ export class ReviewService {
   async searchReviews(query: PaginateQuery, userId?: number) {
     const queryBuilder = this.reviewRepository
       .createQueryBuilder('review')
-      .leftJoinAndSelect('review.user', 'user')
-      .leftJoinAndSelect('review.book', 'book')
-      .leftJoinAndSelect('book.authorBooks', 'authorBooks')
-      .leftJoinAndSelect('authorBooks.author', 'author');
+      .distinct(true)
+      .select([
+        'review.id',
+        'review.title',
+        'review.content',
+        'review.rating',
+        'review.likeCount',
+        'review.commentCount',
+        'review.createdAt',
+        'review.updatedAt',
+        'user.id',
+        'user.nickname',
+        'user.profileImage',
+        'book.id',
+        'book.title',
+        'book.coverImage',
+        'author.id',
+        'author.name',
+      ])
+      .leftJoin('review.user', 'user')
+      .leftJoin('review.book', 'book')
+      .leftJoin('book.authorBooks', 'authorBooks')
+      .leftJoin('authorBooks.author', 'author');
 
     // 차단한 사용자의 리뷰 제외
     if (userId) {
@@ -63,52 +82,10 @@ export class ReviewService {
       );
     }
 
-    // 인기순일 때는 좋아요 수로 정렬 후 랜덤 정렬
-    const isLikeCountSort = query.sortBy?.some(
-      ([column, order]) => column === 'likeCount' && order === 'DESC',
-    );
-
-    if (isLikeCountSort) {
-      // 좋아요 수가 같은 리뷰들끼리 랜덤하게 정렬
-      queryBuilder
-        .addSelect('RAND()', 'rand')
-        .orderBy('review.likeCount', 'DESC')
-        .addOrderBy('rand');
-
-      const reviews = await paginate(query, queryBuilder, {
-        sortableColumns: ['id', 'likeCount', 'createdAt', 'updatedAt'],
-        searchableColumns: ['title', 'content'],
-        maxLimit: 100,
-      });
-
-      if (userId) {
-        const userLikes = await this.userReviewLikeRepository.find({
-          where: {
-            userId,
-            reviewId: In(reviews.data.map((review) => review.id)),
-          },
-        });
-
-        const likedReviewIds = new Set(userLikes.map((like) => like.reviewId));
-
-        reviews.data = reviews.data.map((review) => ({
-          ...review,
-          isLiked: likedReviewIds.has(review.id),
-        }));
-      }
-
-      return reviews;
-    }
-
-    // 정렬 옵션이 없을 때는 완전 랜덤 정렬
-    if (!query.sortBy || query.sortBy.length === 0) {
-      queryBuilder.addSelect('RAND()', 'rand').orderBy('rand');
-    }
-
     const reviews = await paginate(query, queryBuilder, {
       sortableColumns: ['id', 'likeCount', 'createdAt', 'updatedAt'],
       searchableColumns: ['title', 'content'],
-      defaultSortBy: [['createdAt', 'DESC']],
+      defaultSortBy: [['id', 'DESC']],
       maxLimit: 100,
     });
 
