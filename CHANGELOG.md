@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+## [1.41.3](https://github.com/SamikBeach/backend/compare/1.41.2...1.41.3) (2025-02-20)
+
+
+### Bug Fixes
+
+* 리뷰 목록 조회 시 중복 데이터 제거 ([8b613cb](https://github.com/SamikBeach/backend/commit/8b613cb9b7e78b37e9fb5488b0e042a4cb745600))
+
 ## [1.41.2](https://github.com/SamikBeach/backend/compare/1.41.1...1.41.2) (2025-02-16)
 
 ## [1.41.1](https://github.com/SamikBeach/backend/compare/1.41.0...1.41.1) (2025-02-16)
