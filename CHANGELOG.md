@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+## [1.41.4](https://github.com/SamikBeach/backend/compare/1.41.3...1.41.4) (2025-02-20)
+
+
+### Bug Fixes
+
+* searchReviews 원복 ([93b677c](https://github.com/SamikBeach/backend/commit/93b677c7eea93ba7e9e4068af2bfa273edb8489f))
+
 ## [1.41.3](https://github.com/SamikBeach/backend/compare/1.41.2...1.41.3) (2025-02-20)
 
 
