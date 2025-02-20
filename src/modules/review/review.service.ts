@@ -40,29 +40,10 @@ export class ReviewService {
   async searchReviews(query: PaginateQuery, userId?: number) {
     const queryBuilder = this.reviewRepository
       .createQueryBuilder('review')
-      .distinct(true)
-      .select([
-        'review.id',
-        'review.title',
-        'review.content',
-        'review.rating',
-        'review.likeCount',
-        'review.commentCount',
-        'review.createdAt',
-        'review.updatedAt',
-        'user.id',
-        'user.nickname',
-        'user.profileImage',
-        'book.id',
-        'book.title',
-        'book.coverImage',
-        'author.id',
-        'author.name',
-      ])
-      .leftJoin('review.user', 'user')
-      .leftJoin('review.book', 'book')
-      .leftJoin('book.authorBooks', 'authorBooks')
-      .leftJoin('authorBooks.author', 'author');
+      .leftJoinAndSelect('review.user', 'user')
+      .leftJoinAndSelect('review.book', 'book')
+      .leftJoinAndSelect('book.authorBooks', 'authorBooks')
+      .leftJoinAndSelect('authorBooks.author', 'author');
 
     // 차단한 사용자의 리뷰 제외
     if (userId) {
@@ -82,10 +63,14 @@ export class ReviewService {
       );
     }
 
+    // 좋아요 순으로 정렬, 같은 경우 최신순
+    queryBuilder
+      .orderBy('review.likeCount', 'DESC')
+      .addOrderBy('review.commentCount', 'DESC');
+
     const reviews = await paginate(query, queryBuilder, {
       sortableColumns: ['likeCount', 'id', 'createdAt'],
       searchableColumns: ['title', 'content'],
-      defaultSortBy: [['id', 'DESC']],
       maxLimit: 100,
     });
 
