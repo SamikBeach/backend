@@ -83,7 +83,7 @@ export class ReviewService {
     }
 
     const reviews = await paginate(query, queryBuilder, {
-      sortableColumns: ['id', 'likeCount', 'createdAt', 'updatedAt'],
+      sortableColumns: ['likeCount', 'id', 'createdAt'],
       searchableColumns: ['title', 'content'],
       defaultSortBy: [['id', 'DESC']],
       maxLimit: 100,
@@ -99,10 +99,9 @@ export class ReviewService {
 
       const likedReviewIds = new Set(userLikes.map((like) => like.reviewId));
 
-      reviews.data = reviews.data.map((review) => ({
-        ...review,
-        isLiked: likedReviewIds.has(review.id),
-      }));
+      reviews.data.forEach((review) => {
+        review['isLiked'] = likedReviewIds.has(review.id);
+      });
     }
 
     return reviews;
