@@ -9,6 +9,7 @@ import { Review } from '@entities/Review';
 import { UserReviewLike } from '@entities/UserReviewLike';
 import { addKoreanSearchCondition } from '@utils/search';
 import axios from 'axios';
+import { AuthorDetailResponse } from './dto/author.dto';
 
 interface WikiPage {
   extract?: string;
@@ -24,9 +25,38 @@ interface WikiResponse {
   };
 }
 
+interface WikiDataResponse {
+  head: {
+    vars: string[];
+  };
+  results: {
+    bindings: Array<{
+      influenced?: {
+        value: string;
+      };
+      influencedLabel?: {
+        value: string;
+      };
+      influencedBy?: {
+        value: string;
+      };
+      influencedByLabel?: {
+        value: string;
+      };
+      item?: {
+        value: string;
+      };
+      itemLabel?: {
+        value: string;
+      };
+    }>;
+  };
+}
+
 @Injectable()
 export class AuthorService {
   private readonly wikiApiUrl = 'https://ko.wikipedia.org/w/api.php';
+  private readonly wikiDataUrl = 'https://query.wikidata.org/sparql';
 
   constructor(
     @InjectRepository(Author)
@@ -41,6 +71,112 @@ export class AuthorService {
     @InjectRepository(UserReviewLike)
     private readonly userReviewLikeRepository: Repository<UserReviewLike>,
   ) {}
+
+  /**
+   * 위키데이터 API에서 영향 관계 정보를 가져옵니다.
+   */
+  private async getWikiDataInfo(nameInKor: string) {
+    try {
+      // 영향을 준 저자들 조회 (influenced)
+      const influencedQuery = `
+        SELECT ?influenced ?influencedLabel WHERE {
+          ?person rdfs:label "${nameInKor}"@ko.
+          ?person wdt:P737 ?influenced.
+          ?influenced wdt:P31 wd:Q5.  # instance of human
+          SERVICE wikibase:label { bd:serviceParam wikibase:language "ko,en". }
+        }
+      `;
+
+      // 영향을 받은 저자들 조회 (influencedBy)
+      const influencedByQuery = `
+        SELECT ?influencedBy ?influencedByLabel WHERE {
+          ?person rdfs:label "${nameInKor}"@ko.
+          ?influencedBy wdt:P737 ?person.
+          ?influencedBy wdt:P31 wd:Q5.  # instance of human
+          SERVICE wikibase:label { bd:serviceParam wikibase:language "ko,en". }
+        }
+      `;
+
+      const [influencedResponse, influencedByResponse] = await Promise.all([
+        axios.get<WikiDataResponse>(this.wikiDataUrl, {
+          params: {
+            query: influencedQuery,
+            format: 'json',
+          },
+        }),
+        axios.get<WikiDataResponse>(this.wikiDataUrl, {
+          params: {
+            query: influencedByQuery,
+            format: 'json',
+          },
+        }),
+      ]);
+
+      // 영향을 준/받은 저자들의 이름을 기반으로 우리 DB에서 저자 정보 조회
+      const influencedNames = influencedResponse.data.results.bindings
+        .map((binding) => ({
+          name: binding.influenced?.value,
+          nameInKor: binding.influencedLabel?.value,
+        }))
+        .filter((author) => author.name && author.nameInKor);
+
+      const influencedByNames = influencedByResponse.data.results.bindings
+        .map((binding) => ({
+          name: binding.influencedBy?.value,
+          nameInKor: binding.influencedByLabel?.value,
+        }))
+        .filter((author) => author.name && author.nameInKor);
+
+      console.log('위키데이터 결과:', {
+        influencedNames,
+        influencedByNames,
+      });
+
+      // DB에서 저자 찾기
+      const influenced = await Promise.all(
+        influencedNames.map(async (authorName) => {
+          const dbAuthor = await this.authorRepository.findOne({
+            where: { nameInKor: authorName.nameInKor },
+          });
+
+          return (
+            dbAuthor || {
+              id: Math.floor(Math.random() * 1000000),
+              name: authorName.name,
+              nameInKor: authorName.nameInKor,
+            }
+          );
+        }),
+      );
+
+      const influencedBy = await Promise.all(
+        influencedByNames.map(async (authorName) => {
+          const dbAuthor = await this.authorRepository.findOne({
+            where: { nameInKor: authorName.nameInKor },
+          });
+
+          return (
+            dbAuthor || {
+              id: Math.floor(Math.random() * 1000000),
+              name: authorName.name,
+              nameInKor: authorName.nameInKor,
+            }
+          );
+        }),
+      );
+
+      return {
+        influenced,
+        influencedBy,
+      };
+    } catch (error) {
+      console.error('위키데이터 API 호출 중 오류:', error);
+      return {
+        influenced: [],
+        influencedBy: [],
+      };
+    }
+  }
 
   /**
    * 위키피디아 API에서 저자 정보를 가져옵니다.
@@ -76,7 +212,7 @@ export class AuthorService {
   /**
    * ID로 저자를 찾습니다.
    */
-  async findById(id: number, userId?: number) {
+  async findById(id: number, userId?: number): Promise<AuthorDetailResponse> {
     const author = await this.authorRepository.findOne({
       where: { id },
       relations: ['authorBooks.book'],
@@ -88,13 +224,17 @@ export class AuthorService {
 
     const bookCount = author.authorBooks.length;
 
-    // 위키피디아 정보 가져오기
-    const wikiInfo = await this.getWikiInfo(author.nameInKor);
+    // 위키피디아 정보와 위키데이터 정보 가져오기
+    const [wikiInfo, wikiDataInfo] = await Promise.all([
+      this.getWikiInfo(author.nameInKor),
+      this.getWikiDataInfo(author.nameInKor),
+    ]);
 
-    const response = {
+    const response: AuthorDetailResponse = {
       ...author,
       bookCount,
       ...wikiInfo,
+      ...wikiDataInfo,
     };
 
     if (userId) {
@@ -102,10 +242,7 @@ export class AuthorService {
         where: { userId, authorId: id },
       });
 
-      return {
-        ...response,
-        isLiked: !!userLike,
-      };
+      response.isLiked = !!userLike;
     }
 
     return response;
