@@ -8,9 +8,26 @@ import { PaginateQuery, paginate } from 'nestjs-paginate';
 import { Review } from '@entities/Review';
 import { UserReviewLike } from '@entities/UserReviewLike';
 import { addKoreanSearchCondition } from '@utils/search';
+import axios from 'axios';
+
+interface WikiPage {
+  extract?: string;
+  pageid?: number;
+  title?: string;
+}
+
+interface WikiResponse {
+  query: {
+    pages: {
+      [key: string]: WikiPage;
+    };
+  };
+}
 
 @Injectable()
 export class AuthorService {
+  private readonly wikiApiUrl = 'https://ko.wikipedia.org/w/api.php';
+
   constructor(
     @InjectRepository(Author)
     private readonly authorRepository: Repository<Author>,
@@ -24,6 +41,37 @@ export class AuthorService {
     @InjectRepository(UserReviewLike)
     private readonly userReviewLikeRepository: Repository<UserReviewLike>,
   ) {}
+
+  /**
+   * 위키피디아 API에서 저자 정보를 가져옵니다.
+   */
+  private async getWikiInfo(nameInKor: string) {
+    try {
+      // 한국어 위키피디아 검색
+      const korResponse = await axios.get<WikiResponse>(this.wikiApiUrl, {
+        params: {
+          action: 'query',
+          format: 'json',
+          prop: 'extracts',
+          exintro: true,
+          explaintext: true,
+          titles: nameInKor.trim(),
+        },
+      });
+
+      const korPages = korResponse.data.query.pages;
+      const korPage = Object.values(korPages)[0] as WikiPage;
+
+      return {
+        description: korPage?.extract || null,
+      };
+    } catch (error) {
+      console.error('위키피디아 API 호출 중 오류:', error);
+      return {
+        description: null,
+      };
+    }
+  }
 
   /**
    * ID로 저자를 찾습니다.
@@ -40,9 +88,13 @@ export class AuthorService {
 
     const bookCount = author.authorBooks.length;
 
+    // 위키피디아 정보 가져오기
+    const wikiInfo = await this.getWikiInfo(author.nameInKor);
+
     const response = {
       ...author,
       bookCount,
+      ...wikiInfo,
     };
 
     if (userId) {
