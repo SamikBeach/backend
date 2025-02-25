@@ -99,23 +99,26 @@ export class AuthorService {
    */
   async getInfluencedAuthors(nameInKor: string) {
     try {
-      const query = `
-        SELECT ?influenced ?influencedLabel ?influencedEnLabel WHERE {
-          ?person rdfs:label "${nameInKor}"@ko.
-          ?person wdt:P737 ?influenced.
-          ?influenced wdt:P31 wd:Q5.  # instance of human
-          ?influenced rdfs:label ?influencedEnLabel.
-          ?influenced rdfs:label ?influencedLabel.
-          FILTER(LANG(?influencedEnLabel) = "en")
-          FILTER(LANG(?influencedLabel) = "ko")
-          SERVICE wikibase:label { bd:serviceParam wikibase:language "ko". }
-        }
-      `;
+      const cleanName = nameInKor.trim().replace(/[\r\n]+/g, '');
+      const query =
+        `SELECT ?influenced ?influencedLabel ?influencedEnLabel WHERE {
+  ?person rdfs:label "${cleanName}"@ko.
+  ?person wdt:P737 ?influenced.
+  ?influenced wdt:P31 wd:Q5.  # instance of human
+  ?influenced rdfs:label ?influencedEnLabel.
+  ?influenced rdfs:label ?influencedLabel.
+  FILTER(LANG(?influencedEnLabel) = "en")
+  FILTER(LANG(?influencedLabel) = "ko")
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "ko". }
+}`.trim();
 
       const response = await axios.get<WikiDataResponse>(this.wikiDataUrl, {
         params: {
           query,
           format: 'json',
+        },
+        headers: {
+          'User-Agent': 'ClassicsWalk/1.0 (https://classicswalk.com)',
         },
       });
 
@@ -175,23 +178,26 @@ export class AuthorService {
    */
   async getInfluencedByAuthors(nameInKor: string) {
     try {
-      const query = `
-        SELECT ?influencedBy ?influencedByLabel ?influencedByEnLabel WHERE {
-          ?person rdfs:label "${nameInKor}"@ko.
-          ?influencedBy wdt:P737 ?person.
-          ?influencedBy wdt:P31 wd:Q5.  # instance of human
-          ?influencedBy rdfs:label ?influencedByEnLabel.
-          ?influencedBy rdfs:label ?influencedByLabel.
-          FILTER(LANG(?influencedByEnLabel) = "en")
-          FILTER(LANG(?influencedByLabel) = "ko")
-          SERVICE wikibase:label { bd:serviceParam wikibase:language "ko". }
-        }
-      `;
+      const cleanName = nameInKor.trim().replace(/[\r\n]+/g, '');
+      const query =
+        `SELECT ?influencedBy ?influencedByLabel ?influencedByEnLabel WHERE {
+  ?person rdfs:label "${cleanName}"@ko.
+  ?influencedBy wdt:P737 ?person.
+  ?influencedBy wdt:P31 wd:Q5.  # instance of human
+  ?influencedBy rdfs:label ?influencedByEnLabel.
+  ?influencedBy rdfs:label ?influencedByLabel.
+  FILTER(LANG(?influencedByEnLabel) = "en")
+  FILTER(LANG(?influencedByLabel) = "ko")
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "ko". }
+}`.trim();
 
       const response = await axios.get<WikiDataResponse>(this.wikiDataUrl, {
         params: {
           query,
           format: 'json',
+        },
+        headers: {
+          'User-Agent': 'ClassicsWalk/1.0 (https://classicswalk.com)',
         },
       });
 
