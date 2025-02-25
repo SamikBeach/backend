@@ -90,7 +90,9 @@ export class AuthorService {
           ?person wdt:P737 ?influenced.
           ?influenced wdt:P31 wd:Q5.  # instance of human
           ?influenced rdfs:label ?influencedEnLabel.
+          ?influenced rdfs:label ?influencedLabel.
           FILTER(LANG(?influencedEnLabel) = "en")
+          FILTER(LANG(?influencedLabel) = "ko")
           SERVICE wikibase:label { bd:serviceParam wikibase:language "ko". }
         }
       `;
@@ -102,7 +104,9 @@ export class AuthorService {
           ?influencedBy wdt:P737 ?person.
           ?influencedBy wdt:P31 wd:Q5.  # instance of human
           ?influencedBy rdfs:label ?influencedByEnLabel.
+          ?influencedBy rdfs:label ?influencedByLabel.
           FILTER(LANG(?influencedByEnLabel) = "en")
+          FILTER(LANG(?influencedByLabel) = "ko")
           SERVICE wikibase:label { bd:serviceParam wikibase:language "ko". }
         }
       `;
@@ -122,11 +126,6 @@ export class AuthorService {
         }),
       ]);
 
-      console.log('위키데이터 응답:', {
-        influenced: influencedResponse.data.results.bindings,
-        influencedBy: influencedByResponse.data.results.bindings,
-      });
-
       // 영향을 준/받은 저자들의 이름을 기반으로 우리 DB에서 저자 정보 조회
       const influencedNames = influencedResponse.data.results.bindings
         .map((binding) => ({
@@ -145,41 +144,102 @@ export class AuthorService {
       // DB에서 저자 찾기
       const influenced = await Promise.all(
         influencedNames.map(async (authorName) => {
-          const dbAuthor = await this.authorRepository.findOne({
+          // 먼저 한글 이름으로 찾기
+          let dbAuthor = await this.authorRepository.findOne({
             where: { nameInKor: authorName.nameInKor },
           });
 
-          return (
-            dbAuthor || {
+          // 없으면 영문 이름으로 찾기
+          if (!dbAuthor) {
+            dbAuthor = await this.authorRepository.findOne({
+              where: { name: authorName.name },
+            });
+          }
+
+          return {
+            ...(dbAuthor || {
               id: Math.floor(Math.random() * 1000000),
               name: authorName.name,
               nameInKor: authorName.nameInKor,
+              bornDate: null,
+              bornDateIsBc: null,
               isWikiData: true,
-            }
-          );
+            }),
+            isWikiData: !dbAuthor,
+          };
         }),
       );
 
       const influencedBy = await Promise.all(
         influencedByNames.map(async (authorName) => {
-          const dbAuthor = await this.authorRepository.findOne({
+          // 먼저 한글 이름으로 찾기
+          let dbAuthor = await this.authorRepository.findOne({
             where: { nameInKor: authorName.nameInKor },
           });
 
-          return (
-            dbAuthor || {
-              id: Math.floor(Math.random() * 1000000),
+          // 없으면 영문 이름으로 찾기
+          if (!dbAuthor) {
+            dbAuthor = await this.authorRepository.findOne({
+              where: { name: authorName.name },
+            });
+          }
+
+          return {
+            ...(dbAuthor || {
+              id: -Math.floor(Math.random() * 1000000),
               name: authorName.name,
               nameInKor: authorName.nameInKor,
+              bornDate: null,
+              bornDateIsBc: null,
               isWikiData: true,
-            }
-          );
+            }),
+            isWikiData: !dbAuthor,
+          };
         }),
       );
 
+      // 태어난 순으로 정렬하고, WikiData 저자는 뒤로
+      const sortAuthors = (authors: any[]) => {
+        return authors.sort((a, b) => {
+          // WikiData 저자는 뒤로
+          if (a.isWikiData !== b.isWikiData) {
+            return a.isWikiData ? 1 : -1;
+          }
+
+          // 둘 다 bornDate가 없으면 이름순
+          if (!a.bornDate && !b.bornDate) {
+            return a.nameInKor.localeCompare(b.nameInKor);
+          }
+
+          // bornDate가 없는 쪽이 뒤로
+          if (!a.bornDate) return 1;
+          if (!b.bornDate) return -1;
+
+          // BC/AD 비교
+          if (a.bornDateIsBc !== b.bornDateIsBc) {
+            // BC인 경우가 더 앞으로
+            if (a.bornDateIsBc) return -1;
+            if (b.bornDateIsBc) return 1;
+          }
+
+          // 둘 다 BC이거나 둘 다 AD인 경우
+          if (a.bornDateIsBc && b.bornDateIsBc) {
+            // BC의 경우 숫자가 클수록 더 오래된 것
+            const aYear = parseInt(a.bornDate.split('-')[0]);
+            const bYear = parseInt(b.bornDate.split('-')[0]);
+            return bYear - aYear; // 더 큰 숫자(더 오래된)가 앞으로
+          } else {
+            // AD의 경우 일반적인 날짜 비교
+            return (
+              new Date(a.bornDate).getTime() - new Date(b.bornDate).getTime()
+            );
+          }
+        });
+      };
+
       return {
-        influenced,
-        influencedBy,
+        influenced: sortAuthors(influenced),
+        influencedBy: sortAuthors(influencedBy),
       };
     } catch (error) {
       console.error('위키데이터 API 호출 중 오류:', error);
