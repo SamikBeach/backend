@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+## [1.42.1](https://github.com/SamikBeach/backend/compare/1.42.0...1.42.1) (2025-02-25)
+
+
+### Bug Fixes
+
+* 위키데이터 SPARQL 쿼리 오류 수정 ([5a6b990](https://github.com/SamikBeach/backend/commit/5a6b990e44c0feed75527d48a288576b528fde5a))
+
 # [1.42.0](https://github.com/SamikBeach/backend/compare/1.41.5...1.42.0) (2025-02-25)
 
 
