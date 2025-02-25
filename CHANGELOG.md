@@ -1,5 +1,21 @@
 # 🚦 CHANGELOG
 
+# [1.42.0](https://github.com/SamikBeach/backend/compare/1.41.5...1.42.0) (2025-02-25)
+
+
+### Bug Fixes
+
+* 저자 영향 관계 API 응답에 이미지 추가 ([cdc59fe](https://github.com/SamikBeach/backend/commit/cdc59fecc7a059a2866d048c8599ccc9b700cb72))
+* 저자 출생연도 정렬 로직 개선 ([2506181](https://github.com/SamikBeach/backend/commit/25061813187611c35a7aea6b743a96a7a215974a))
+
+
+### Features
+
+* 위키데이터 저자 정보 반환 개선 ([1b7f4cd](https://github.com/SamikBeach/backend/commit/1b7f4cd99c152397c5a84d028a5ccc0ca73d9178))
+* 위키데이터 저자 정보에 영어 이름 추가 ([0a80996](https://github.com/SamikBeach/backend/commit/0a80996b6b4a786e4ad99fa01b9c2eee3cdbb554))
+* 저자 검색 로직 개선 ([d8b8f06](https://github.com/SamikBeach/backend/commit/d8b8f06d83fda3023e7d94ecb5182459c114ac18))
+* 저자 정보에 위키피디아 데이터 추가 ([19e1f56](https://github.com/SamikBeach/backend/commit/19e1f56bab12303309cef1b7ea50b8ad6b21e4b9))
+
 ## [1.41.5](https://github.com/SamikBeach/backend/compare/1.41.4...1.41.5) (2025-02-20)
 
 
