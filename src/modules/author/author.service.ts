@@ -200,40 +200,41 @@ export class AuthorService {
 
       // 태어난 순으로 정렬하고, WikiData 저자는 뒤로
       const sortAuthors = (authors: any[]) => {
+        // 연도를 숫자로 변환하는 헬퍼 함수
+        const getYearNumber = (date: string | null) => {
+          if (!date) return null;
+          // YYYY-MM-DD 또는 YYYY 형식 지원
+          const yearMatch = date.match(/^(\d{1,4})/);
+          return yearMatch ? parseInt(yearMatch[1]) : null;
+        };
+
+        // 저자의 출생 연도를 가져오는 함수 (BC는 음수로 변환)
+        const getBirthYear = (author: any) => {
+          const year = getYearNumber(author.bornDate);
+          if (year === null) return null;
+          return author.bornDateIsBc ? -year : year;
+        };
+
         return authors.sort((a, b) => {
           // WikiData 저자는 뒤로
           if (a.isWikiData !== b.isWikiData) {
             return a.isWikiData ? 1 : -1;
           }
 
-          // 둘 다 bornDate가 없으면 이름순
-          if (!a.bornDate && !b.bornDate) {
+          const yearA = getBirthYear(a);
+          const yearB = getBirthYear(b);
+
+          // 둘 다 출생연도가 없으면 이름순
+          if (yearA === null && yearB === null) {
             return a.nameInKor.localeCompare(b.nameInKor);
           }
 
-          // bornDate가 없는 쪽이 뒤로
-          if (!a.bornDate) return 1;
-          if (!b.bornDate) return -1;
+          // 출생연도가 없는 쪽이 뒤로
+          if (yearA === null) return 1;
+          if (yearB === null) return -1;
 
-          // BC/AD 비교
-          if (a.bornDateIsBc !== b.bornDateIsBc) {
-            // BC인 경우가 더 앞으로
-            if (a.bornDateIsBc) return -1;
-            if (b.bornDateIsBc) return 1;
-          }
-
-          // 둘 다 BC이거나 둘 다 AD인 경우
-          if (a.bornDateIsBc && b.bornDateIsBc) {
-            // BC의 경우 숫자가 클수록 더 오래된 것
-            const aYear = parseInt(a.bornDate.split('-')[0]);
-            const bYear = parseInt(b.bornDate.split('-')[0]);
-            return bYear - aYear; // 더 큰 숫자(더 오래된)가 앞으로
-          } else {
-            // AD의 경우 일반적인 날짜 비교
-            return (
-              new Date(a.bornDate).getTime() - new Date(b.bornDate).getTime()
-            );
-          }
+          // 연도 비교 (BC는 음수이므로 자동으로 더 작은 값으로 처리됨)
+          return yearA - yearB;
         });
       };
 
