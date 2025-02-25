@@ -37,10 +37,16 @@ interface WikiDataResponse {
       influencedLabel?: {
         value: string;
       };
+      influencedEnLabel?: {
+        value: string;
+      };
       influencedBy?: {
         value: string;
       };
       influencedByLabel?: {
+        value: string;
+      };
+      influencedByEnLabel?: {
         value: string;
       };
       item?: {
@@ -79,21 +85,25 @@ export class AuthorService {
     try {
       // 영향을 준 저자들 조회 (influenced)
       const influencedQuery = `
-        SELECT ?influenced ?influencedLabel WHERE {
+        SELECT ?influenced ?influencedLabel ?influencedEnLabel WHERE {
           ?person rdfs:label "${nameInKor}"@ko.
           ?person wdt:P737 ?influenced.
           ?influenced wdt:P31 wd:Q5.  # instance of human
-          SERVICE wikibase:label { bd:serviceParam wikibase:language "ko,en". }
+          ?influenced rdfs:label ?influencedEnLabel.
+          FILTER(LANG(?influencedEnLabel) = "en")
+          SERVICE wikibase:label { bd:serviceParam wikibase:language "ko". }
         }
       `;
 
       // 영향을 받은 저자들 조회 (influencedBy)
       const influencedByQuery = `
-        SELECT ?influencedBy ?influencedByLabel WHERE {
+        SELECT ?influencedBy ?influencedByLabel ?influencedByEnLabel WHERE {
           ?person rdfs:label "${nameInKor}"@ko.
           ?influencedBy wdt:P737 ?person.
           ?influencedBy wdt:P31 wd:Q5.  # instance of human
-          SERVICE wikibase:label { bd:serviceParam wikibase:language "ko,en". }
+          ?influencedBy rdfs:label ?influencedByEnLabel.
+          FILTER(LANG(?influencedByEnLabel) = "en")
+          SERVICE wikibase:label { bd:serviceParam wikibase:language "ko". }
         }
       `;
 
@@ -112,25 +122,25 @@ export class AuthorService {
         }),
       ]);
 
+      console.log('위키데이터 응답:', {
+        influenced: influencedResponse.data.results.bindings,
+        influencedBy: influencedByResponse.data.results.bindings,
+      });
+
       // 영향을 준/받은 저자들의 이름을 기반으로 우리 DB에서 저자 정보 조회
       const influencedNames = influencedResponse.data.results.bindings
         .map((binding) => ({
-          name: binding.influenced?.value,
+          name: binding.influencedEnLabel?.value,
           nameInKor: binding.influencedLabel?.value,
         }))
         .filter((author) => author.name && author.nameInKor);
 
       const influencedByNames = influencedByResponse.data.results.bindings
         .map((binding) => ({
-          name: binding.influencedBy?.value,
+          name: binding.influencedByEnLabel?.value,
           nameInKor: binding.influencedByLabel?.value,
         }))
         .filter((author) => author.name && author.nameInKor);
-
-      console.log('위키데이터 결과:', {
-        influencedNames,
-        influencedByNames,
-      });
 
       // DB에서 저자 찾기
       const influenced = await Promise.all(
@@ -144,6 +154,7 @@ export class AuthorService {
               id: Math.floor(Math.random() * 1000000),
               name: authorName.name,
               nameInKor: authorName.nameInKor,
+              isWikiData: true,
             }
           );
         }),
@@ -160,6 +171,7 @@ export class AuthorService {
               id: Math.floor(Math.random() * 1000000),
               name: authorName.name,
               nameInKor: authorName.nameInKor,
+              isWikiData: true,
             }
           );
         }),
