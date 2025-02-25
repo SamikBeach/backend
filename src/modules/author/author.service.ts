@@ -79,12 +79,27 @@ export class AuthorService {
   ) {}
 
   /**
-   * 위키데이터 API에서 영향 관계 정보를 가져옵니다.
+   * 저자의 기본 정보만 조회합니다.
    */
-  private async getWikiDataInfo(nameInKor: string) {
+  async findAuthorBasicInfo(id: number) {
+    const author = await this.authorRepository.findOne({
+      where: { id },
+      select: ['id', 'name', 'nameInKor'],
+    });
+
+    if (!author) {
+      throw new NotFoundException('저자를 찾을 수 없습니다.');
+    }
+
+    return author;
+  }
+
+  /**
+   * 영향을 준 저자들을 조회합니다.
+   */
+  async getInfluencedAuthors(nameInKor: string) {
     try {
-      // 영향을 준 저자들 조회 (influenced)
-      const influencedQuery = `
+      const query = `
         SELECT ?influenced ?influencedLabel ?influencedEnLabel WHERE {
           ?person rdfs:label "${nameInKor}"@ko.
           ?person wdt:P737 ?influenced.
@@ -97,8 +112,70 @@ export class AuthorService {
         }
       `;
 
-      // 영향을 받은 저자들 조회 (influencedBy)
-      const influencedByQuery = `
+      const response = await axios.get<WikiDataResponse>(this.wikiDataUrl, {
+        params: {
+          query,
+          format: 'json',
+        },
+      });
+
+      const authorNames = response.data.results.bindings
+        .map((binding) => ({
+          name: binding.influencedEnLabel?.value,
+          nameInKor: binding.influencedLabel?.value,
+        }))
+        .filter((author) => author.name && author.nameInKor);
+
+      // DB에서 한 번에 모든 저자 조회
+      const dbAuthors = await this.authorRepository
+        .createQueryBuilder('author')
+        .where(
+          '(author.nameInKor IN (:...names) OR author.name IN (:...names))',
+          {
+            names: [
+              ...authorNames.map((a) => a.nameInKor),
+              ...authorNames.map((a) => a.name),
+            ],
+          },
+        )
+        .getMany();
+
+      // DB 저자를 이름으로 빠르게 찾기 위한 맵 생성
+      const authorMap = new Map<string, Author>();
+      dbAuthors.forEach((author) => {
+        authorMap.set(author.nameInKor, author);
+        authorMap.set(author.name, author);
+      });
+
+      const influenced = authorNames.map((authorName) => {
+        const dbAuthor =
+          authorMap.get(authorName.nameInKor) || authorMap.get(authorName.name);
+        return {
+          ...(dbAuthor || {
+            id: -Math.floor(Math.random() * 1000000),
+            name: authorName.name,
+            nameInKor: authorName.nameInKor,
+            bornDate: null,
+            bornDateIsBc: null,
+            isWikiData: true,
+          }),
+          isWikiData: !dbAuthor,
+        };
+      });
+
+      return this.sortAuthors(influenced);
+    } catch (error) {
+      console.error('위키데이터 API 호출 중 오류:', error);
+      return [];
+    }
+  }
+
+  /**
+   * 영향을 받은 저자들을 조회합니다.
+   */
+  async getInfluencedByAuthors(nameInKor: string) {
+    try {
+      const query = `
         SELECT ?influencedBy ?influencedByLabel ?influencedByEnLabel WHERE {
           ?person rdfs:label "${nameInKor}"@ko.
           ?influencedBy wdt:P737 ?person.
@@ -111,144 +188,104 @@ export class AuthorService {
         }
       `;
 
-      const [influencedResponse, influencedByResponse] = await Promise.all([
-        axios.get<WikiDataResponse>(this.wikiDataUrl, {
-          params: {
-            query: influencedQuery,
-            format: 'json',
-          },
-        }),
-        axios.get<WikiDataResponse>(this.wikiDataUrl, {
-          params: {
-            query: influencedByQuery,
-            format: 'json',
-          },
-        }),
-      ]);
+      const response = await axios.get<WikiDataResponse>(this.wikiDataUrl, {
+        params: {
+          query,
+          format: 'json',
+        },
+      });
 
-      // 영향을 준/받은 저자들의 이름을 기반으로 우리 DB에서 저자 정보 조회
-      const influencedNames = influencedResponse.data.results.bindings
-        .map((binding) => ({
-          name: binding.influencedEnLabel?.value,
-          nameInKor: binding.influencedLabel?.value,
-        }))
-        .filter((author) => author.name && author.nameInKor);
-
-      const influencedByNames = influencedByResponse.data.results.bindings
+      const authorNames = response.data.results.bindings
         .map((binding) => ({
           name: binding.influencedByEnLabel?.value,
           nameInKor: binding.influencedByLabel?.value,
         }))
         .filter((author) => author.name && author.nameInKor);
 
-      // DB에서 저자 찾기
-      const influenced = await Promise.all(
-        influencedNames.map(async (authorName) => {
-          // 먼저 한글 이름으로 찾기
-          let dbAuthor = await this.authorRepository.findOne({
-            where: { nameInKor: authorName.nameInKor },
-          });
+      // DB에서 한 번에 모든 저자 조회
+      const dbAuthors = await this.authorRepository
+        .createQueryBuilder('author')
+        .where(
+          '(author.nameInKor IN (:...names) OR author.name IN (:...names))',
+          {
+            names: [
+              ...authorNames.map((a) => a.nameInKor),
+              ...authorNames.map((a) => a.name),
+            ],
+          },
+        )
+        .getMany();
 
-          // 없으면 영문 이름으로 찾기
-          if (!dbAuthor) {
-            dbAuthor = await this.authorRepository.findOne({
-              where: { name: authorName.name },
-            });
-          }
+      // DB 저자를 이름으로 빠르게 찾기 위한 맵 생성
+      const authorMap = new Map<string, Author>();
+      dbAuthors.forEach((author) => {
+        authorMap.set(author.nameInKor, author);
+        authorMap.set(author.name, author);
+      });
 
-          return {
-            ...(dbAuthor || {
-              id: Math.floor(Math.random() * 1000000),
-              name: authorName.name,
-              nameInKor: authorName.nameInKor,
-              bornDate: null,
-              bornDateIsBc: null,
-              isWikiData: true,
-            }),
-            isWikiData: !dbAuthor,
-          };
-        }),
-      );
-
-      const influencedBy = await Promise.all(
-        influencedByNames.map(async (authorName) => {
-          // 먼저 한글 이름으로 찾기
-          let dbAuthor = await this.authorRepository.findOne({
-            where: { nameInKor: authorName.nameInKor },
-          });
-
-          // 없으면 영문 이름으로 찾기
-          if (!dbAuthor) {
-            dbAuthor = await this.authorRepository.findOne({
-              where: { name: authorName.name },
-            });
-          }
-
-          return {
-            ...(dbAuthor || {
-              id: -Math.floor(Math.random() * 1000000),
-              name: authorName.name,
-              nameInKor: authorName.nameInKor,
-              bornDate: null,
-              bornDateIsBc: null,
-              isWikiData: true,
-            }),
-            isWikiData: !dbAuthor,
-          };
-        }),
-      );
-
-      // 태어난 순으로 정렬하고, WikiData 저자는 뒤로
-      const sortAuthors = (authors: any[]) => {
-        // 연도를 숫자로 변환하는 헬퍼 함수
-        const getYearNumber = (date: string | null) => {
-          if (!date) return null;
-          // YYYY-MM-DD 또는 YYYY 형식 지원
-          const yearMatch = date.match(/^(\d{1,4})/);
-          return yearMatch ? parseInt(yearMatch[1]) : null;
+      const influencedBy = authorNames.map((authorName) => {
+        const dbAuthor =
+          authorMap.get(authorName.nameInKor) || authorMap.get(authorName.name);
+        return {
+          ...(dbAuthor || {
+            id: -Math.floor(Math.random() * 1000000),
+            name: authorName.name,
+            nameInKor: authorName.nameInKor,
+            bornDate: null,
+            bornDateIsBc: null,
+            isWikiData: true,
+          }),
+          isWikiData: !dbAuthor,
         };
+      });
 
-        // 저자의 출생 연도를 가져오는 함수 (BC는 음수로 변환)
-        const getBirthYear = (author: any) => {
-          const year = getYearNumber(author.bornDate);
-          if (year === null) return null;
-          return author.bornDateIsBc ? -year : year;
-        };
-
-        return authors.sort((a, b) => {
-          // WikiData 저자는 뒤로
-          if (a.isWikiData !== b.isWikiData) {
-            return a.isWikiData ? 1 : -1;
-          }
-
-          const yearA = getBirthYear(a);
-          const yearB = getBirthYear(b);
-
-          // 둘 다 출생연도가 없으면 이름순
-          if (yearA === null && yearB === null) {
-            return a.nameInKor.localeCompare(b.nameInKor);
-          }
-
-          // 출생연도가 없는 쪽이 뒤로
-          if (yearA === null) return 1;
-          if (yearB === null) return -1;
-
-          // 연도 비교 (BC는 음수이므로 자동으로 더 작은 값으로 처리됨)
-          return yearA - yearB;
-        });
-      };
-
-      return {
-        influenced: sortAuthors(influenced),
-        influencedBy: sortAuthors(influencedBy),
-      };
+      return this.sortAuthors(influencedBy);
     } catch (error) {
       console.error('위키데이터 API 호출 중 오류:', error);
-      return {
-        influenced: [],
-        influencedBy: [],
-      };
+      return [];
     }
+  }
+
+  /**
+   * 저자들을 태어난 순으로 정렬합니다.
+   */
+  private sortAuthors(authors: any[]) {
+    // 연도를 숫자로 변환하는 헬퍼 함수
+    const getYearNumber = (date: string | null) => {
+      if (!date) return null;
+      // YYYY-MM-DD 또는 YYYY 형식 지원
+      const yearMatch = date.match(/^(\d{1,4})/);
+      return yearMatch ? parseInt(yearMatch[1]) : null;
+    };
+
+    // 저자의 출생 연도를 가져오는 함수 (BC는 음수로 변환)
+    const getBirthYear = (author: any) => {
+      const year = getYearNumber(author.bornDate);
+      if (year === null) return null;
+      return author.bornDateIsBc ? -year : year;
+    };
+
+    return authors.sort((a, b) => {
+      // WikiData 저자는 뒤로
+      if (a.isWikiData !== b.isWikiData) {
+        return a.isWikiData ? 1 : -1;
+      }
+
+      const yearA = getBirthYear(a);
+      const yearB = getBirthYear(b);
+
+      // 둘 다 출생연도가 없으면 이름순
+      if (yearA === null && yearB === null) {
+        return a.nameInKor.localeCompare(b.nameInKor);
+      }
+
+      // 출생연도가 없는 쪽이 뒤로
+      if (yearA === null) return 1;
+      if (yearB === null) return -1;
+
+      // 연도 비교 (BC는 음수이므로 자동으로 더 작은 값으로 처리됨)
+      return yearA - yearB;
+    });
   }
 
   /**
@@ -297,17 +334,13 @@ export class AuthorService {
 
     const bookCount = author.authorBooks.length;
 
-    // 위키피디아 정보와 위키데이터 정보 가져오기
-    const [wikiInfo, wikiDataInfo] = await Promise.all([
-      this.getWikiInfo(author.nameInKor),
-      this.getWikiDataInfo(author.nameInKor),
-    ]);
+    // 위키피디아 정보만 가져오기
+    const wikiInfo = await this.getWikiInfo(author.nameInKor);
 
     const response: AuthorDetailResponse = {
       ...author,
       bookCount,
       ...wikiInfo,
-      ...wikiDataInfo,
     };
 
     if (userId) {
