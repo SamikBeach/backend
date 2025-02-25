@@ -93,4 +93,22 @@ export class AuthorController {
   ) {
     return this.authorService.getAuthorReviews(id, query, user?.id);
   }
+
+  /**
+   * 저자에게 영향을 받은 저자 목록을 조회합니다.
+   */
+  @Get(':id/influenced')
+  async getInfluencedAuthors(@Param('id', ParseIntPipe) id: number) {
+    const author = await this.authorService.findAuthorBasicInfo(id);
+    return this.authorService.getInfluencedAuthors(author.nameInKor);
+  }
+
+  /**
+   * 저자에게 영향을 준 저자 목록을 조회합니다.
+   */
+  @Get(':id/influenced-by')
+  async getInfluencedByAuthors(@Param('id', ParseIntPipe) id: number) {
+    const author = await this.authorService.findAuthorBasicInfo(id);
+    return this.authorService.getInfluencedByAuthors(author.nameInKor);
+  }
 }
