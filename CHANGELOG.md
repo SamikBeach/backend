@@ -1,5 +1,13 @@
 # 🚦 CHANGELOG
 
+# [1.43.0](https://github.com/SamikBeach/backend/compare/1.42.1...1.43.0) (2025-02-26)
+
+
+### Features
+
+* YouTube API 호출 시 콘솔 로그 추가 ([f0b2303](https://github.com/SamikBeach/backend/commit/f0b2303677e7385a2e5a4b2ab1e8e8b1c8adc719))
+* 작가의 원작 목록 조회 시 번역서 정보 포함 ([9da3d6c](https://github.com/SamikBeach/backend/commit/9da3d6cd07b7c848306fd140f9a07d7bf017c40a))
+
 ## [1.42.1](https://github.com/SamikBeach/backend/compare/1.42.0...1.42.1) (2025-02-25)
 
 
