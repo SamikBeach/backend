@@ -27,7 +27,7 @@ export class AiService {
   private readonly logger = new Logger(AiService.name);
 
   constructor(private configService: ConfigService) {
-    // OpenAI 모델 초기화 - 무료 티어 모델 사용
+    // OpenAI 모델 초기화 - 가장 저렴한 모델 사용
     const openaiApiKey = this.configService.get<string>('OPENAI_API_KEY');
     if (openaiApiKey) {
       try {
@@ -38,12 +38,14 @@ export class AiService {
 
         this.openaiModel = new ChatOpenAI({
           openAIApiKey: openaiApiKey,
-          modelName: 'gpt-3.5-turbo', // 무료 티어에서 사용 가능한 모델
-          temperature: 0.7,
+          modelName: 'gpt-3.5-turbo', // 가장 저렴한 모델
+          temperature: 0.7, // 생동감 있는 응답을 위해 temperature 조정
+          maxTokens: 800, // 철학적 대화를 위해 토큰 제한 확장
+          maxRetries: 2, // 재시도 횟수 제한
         });
 
         this.activeModel = 'openai';
-        this.logger.log('OpenAI 모델이 초기화되었습니다.');
+        this.logger.log('OpenAI 모델이 초기화되었습니다. (철학적 대화 설정)');
       } catch (error) {
         this.logger.error('OpenAI 모델 초기화 중 오류:', error);
       }
@@ -51,23 +53,7 @@ export class AiService {
       this.logger.warn('OpenAI API 키가 설정되지 않았습니다.');
     }
 
-    // Anthropic 모델 초기화
-    const anthropicApiKey = this.configService.get<string>('ANTHROPIC_API_KEY');
-    if (anthropicApiKey && !this.activeModel) {
-      try {
-        this.anthropicModel = new ChatAnthropic({
-          anthropicApiKey: anthropicApiKey,
-          modelName: 'claude-3-haiku-20240307', // 더 저렴한 모델로 변경
-          temperature: 0.7,
-        });
-
-        this.activeModel = 'anthropic';
-        this.logger.log('Anthropic 모델이 초기화되었습니다.');
-      } catch (error) {
-        this.logger.error('Anthropic 모델 초기화 중 오류:', error);
-      }
-    }
-
+    // Anthropic 모델은 사용하지 않음
     if (!this.activeModel) {
       this.logger.error(
         '사용 가능한 LLM 모델이 없습니다. AI 기능이 작동하지 않습니다.',
@@ -77,6 +63,7 @@ export class AiService {
 
   /**
    * 작가 정보를 기반으로 시스템 프롬프트를 생성합니다.
+   * 토큰 사용량을 최소화하면서도 깊이 있는 대화를 위한 프롬프트를 생성합니다.
    */
   private generateAuthorSystemPrompt(authorInfo: AuthorInfo): string {
     const {
@@ -87,7 +74,7 @@ export class AiService {
     } = authorInfo;
 
     // 작가 기본 정보
-    let prompt = `당신은 ${author.nameInKor}(${author.name}) 작가입니다.\n`;
+    let prompt = `당신은 ${author.nameInKor}(${author.name}) 작가입니다. 당신의 시대와 사상을 생생하게 표현하세요.\n`;
 
     // 생애 정보
     if (author.bornDate || author.diedDate) {
@@ -101,35 +88,49 @@ export class AiService {
       prompt += '\n';
     }
 
-    // 작가 설명
+    // 작가 설명 (핵심 내용 유지)
     if (description) {
-      prompt += `작가 설명: ${description}\n\n`;
+      // 설명이 너무 길면 잘라내되, 중요 내용은 유지
+      const shortDescription =
+        description.length > 500
+          ? description.substring(0, 500) + '...'
+          : description;
+      prompt += `작가 설명: ${shortDescription}\n\n`;
     }
 
-    // 원작 목록
+    // 원작 목록 (중요 작품 위주)
     if (originalWorks.length > 0) {
       prompt += '주요 원작 목록:\n';
-      originalWorks.forEach((work, index) => {
-        prompt += `${index + 1}. ${work.title}${work.titleInKor ? ` (${work.titleInKor})` : ''} - ${work.publicationDate || '출판연도 미상'}\n`;
+      originalWorks.slice(0, 5).forEach((work, index) => {
+        prompt += `${index + 1}. ${work.title}${work.titleInKor ? ` (${work.titleInKor})` : ''}\n`;
       });
       prompt += '\n';
     }
 
-    // 번역서 목록
+    // 번역서 목록 (중요 번역서 위주)
     if (books.length > 0) {
       prompt += '주요 번역서 목록:\n';
-      books.forEach((book, index) => {
-        prompt += `${index + 1}. ${book.title} - ${book.publisher || '출판사 미상'}\n`;
+      books.slice(0, 5).forEach((book, index) => {
+        prompt += `${index + 1}. ${book.title}\n`;
       });
       prompt += '\n';
     }
 
-    // 역할 지침
+    // 역할 지침 (철학적 깊이와 생동감 강화)
     prompt += `
-${author.nameInKor}의 작품, 철학, 사상, 생애에 대한 깊은 지식을 가지고 있으며, ${author.nameInKor}처럼 생각하고 말합니다.
-${author.nameInKor}의 문체와 어조를 최대한 모방하여 답변하세요.
-${author.nameInKor}의 관점에서 질문에 답변하되, 역사적 사실과 작가의 실제 작품, 사상을 기반으로 답변하세요.
-답변은 한국어로 제공하세요.
+당신은 ${author.nameInKor}의 사상, 철학, 세계관을 완벽히 이해하고 체화한 상태입니다.
+다음 지침을 따라 응답하세요:
+
+1. 인칭: 1인칭으로 대화하세요. "나는...", "내 생각에는..." 등으로 말하세요.
+2. 시대적 맥락: 당신이 살았던 시대의 역사적, 사회적 맥락을 반영하세요.
+3. 철학적 깊이: 당신의 주요 철학적 개념과 사상을 깊이 있게 설명하세요.
+4. 작품 인용: 적절한 경우 자신의 작품에서 핵심 구절이나 개념을 인용하세요.
+5. 어조와 말투: 당신만의 특징적인 어조와 말투를 사용하세요.
+6. 시대적 한계: 당신이 살았던 시대 이후의 사건이나 개념에 대해서는 "내가 살았던 시대 이후의 일이지만..." 식으로 언급하세요.
+7. 대화 방식: 단순한 정보 전달이 아닌, 상대방과 진정한 대화를 나누는 것처럼 응답하세요.
+
+당신의 철학과 사상에 대한 질문에 깊이 있게 답변하고, 당신의 작품과 사상이 현대에 어떤 의미를 가지는지 생각해보세요.
+답변은 한국어로 제공하되, 필요시 원어 용어나 개념을 함께 설명하세요.
 `;
 
     return prompt;
@@ -157,8 +158,9 @@ ${author.nameInKor}의 관점에서 질문에 답변하되, 역사적 사실과 
     // 시스템 메시지 생성
     const systemMessage = new SystemMessage(authorSystemPrompt);
 
-    // 대화 기록을 LangChain 메시지 형식으로 변환
-    const historyMessages = conversationHistory.map((msg) => {
+    // 대화 기록을 LangChain 메시지 형식으로 변환 (최근 5개로 확장하여 맥락 유지)
+    const recentHistory = conversationHistory.slice(-5);
+    const historyMessages = recentHistory.map((msg) => {
       if (msg.role === 'user') {
         return new HumanMessage(msg.content);
       } else {
@@ -173,8 +175,7 @@ ${author.nameInKor}의 관점에서 질문에 답변하되, 역사적 사실과 
     const messages = [systemMessage, ...historyMessages, userMessage];
 
     // 사용할 모델 선택
-    const model =
-      this.activeModel === 'openai' ? this.openaiModel : this.anthropicModel;
+    const model = this.openaiModel;
 
     try {
       this.logger.log(
@@ -191,19 +192,17 @@ ${author.nameInKor}의 관점에서 질문에 답변하되, 역사적 사실과 
       this.logger.error('AI 채팅 오류:', error);
 
       // 오류 메시지 상세화
-      if (
-        this.activeModel === 'openai' &&
-        error.type === 'auth_subrequest_error'
-      ) {
+      if (error.type === 'auth_subrequest_error') {
         throw new Error(
           'OpenAI API 키 인증 오류가 발생했습니다. API 키를 확인하세요.',
         );
-      } else if (
-        this.activeModel === 'anthropic' &&
-        error.error?.type === 'invalid_request_error'
-      ) {
+      } else if (error.type === 'insufficient_quota') {
         throw new Error(
-          'Anthropic API 크레딧이 부족합니다. 결제 정보를 확인하세요.',
+          'OpenAI API 할당량이 부족합니다. 결제 정보를 확인하세요.',
+        );
+      } else if (error.type === 'rate_limit_exceeded') {
+        throw new Error(
+          'OpenAI API 요청 한도를 초과했습니다. 잠시 후 다시 시도하세요.',
         );
       }
 
