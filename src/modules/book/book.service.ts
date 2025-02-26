@@ -7,6 +7,7 @@ import { Review } from '@entities/Review';
 import { UserReviewLike } from '@entities/UserReviewLike';
 import { PaginateQuery, paginate } from 'nestjs-paginate';
 import { addKoreanSearchCondition } from '@utils/search';
+import { YouTubeService } from '../youtube/youtube.service';
 
 @Injectable()
 export class BookService {
@@ -20,6 +21,7 @@ export class BookService {
     @InjectRepository(UserReviewLike)
     private readonly userReviewLikeRepository: Repository<UserReviewLike>,
     private readonly dataSource: DataSource,
+    private readonly youtubeService: YouTubeService,
   ) {}
 
   /**
@@ -442,5 +444,21 @@ export class BookService {
     }
 
     return reviews;
+  }
+
+  /**
+   * 책 관련 YouTube 동영상을 검색합니다.
+   */
+  async getBookVideos(bookId: number, maxResults: number = 5) {
+    const book = await this.findById(bookId);
+
+    // 작가 이름 추출 (첫 번째 작가만 사용)
+    const authorName = book.authorBooks?.[0]?.author?.nameInKor || '';
+
+    return this.youtubeService.searchBookVideos({
+      bookTitle: book.title,
+      maxResults,
+      authorName,
+    });
   }
 }

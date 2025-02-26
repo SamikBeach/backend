@@ -47,6 +47,7 @@
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
     "google-auth-library": "^9.15.0",
+    "googleapis": "^144.0.0",
     "heic-convert": "^2.1.0",
     "jsonwebtoken": "^9.0.2",
     "keyv": "^5.2.3",

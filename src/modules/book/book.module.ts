@@ -8,7 +8,7 @@ import { Review } from '@entities/Review';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@entities/User';
 import { UserReviewLike } from '@entities/UserReviewLike';
-import { UserCommentLike } from '@entities/UserCommentLike';
+import { YouTubeService } from '@modules/youtube/youtube.service';
 
 @Module({
   imports: [
@@ -21,7 +21,7 @@ import { UserCommentLike } from '@entities/UserCommentLike';
     ]),
   ],
   controllers: [BookController],
-  providers: [BookService, JwtService],
+  providers: [BookService, JwtService, YouTubeService],
   exports: [BookService],
 })
 export class BookModule {}
