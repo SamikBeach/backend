@@ -8,9 +8,11 @@ export class YouTubeService {
   private readonly logger = new Logger(YouTubeService.name);
 
   constructor(private readonly configService: ConfigService) {
+    const apiKey = this.configService.get<string>('YOUTUBE_API_KEY');
+
     this.youtube = google.youtube({
       version: 'v3',
-      auth: this.configService.get<string>('YOUTUBE_API_KEY'),
+      auth: apiKey,
     });
   }
 
@@ -43,10 +45,20 @@ export class YouTubeService {
         })) || []
       );
     } catch (error) {
-      this.logger.error(
-        `YouTube 검색 중 오류 발생: ${error.message}`,
-        error.stack,
-      );
+      console.error('YouTube API 오류:', error.message);
+
+      // 할당량 초과 여부 확인
+      if (
+        error.code === 403 ||
+        (error.response && error.response.status === 403)
+      ) {
+        console.error('YouTube API 할당량 초과 가능성:', {
+          code: error.code,
+          status: error.response?.status,
+          reason: error.response?.data?.error?.errors?.[0]?.reason,
+        });
+      }
+
       return [];
     }
   }
