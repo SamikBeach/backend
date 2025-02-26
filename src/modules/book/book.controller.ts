@@ -117,4 +117,16 @@ export class BookController {
       includeOtherTranslations,
     );
   }
+
+  /**
+   * 책 관련 YouTube 동영상을 검색합니다.
+   */
+  @Get(':id/videos')
+  async getBookVideos(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('maxResults', new DefaultValuePipe(5), ParseIntPipe)
+    maxResults: number,
+  ) {
+    return this.bookService.getBookVideos(id, maxResults);
+  }
 }

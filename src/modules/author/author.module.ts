@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '@entities/User';
 import { Review } from '@entities/Review';
 import { UserReviewLike } from '@entities/UserReviewLike';
+import { YouTubeService } from '@modules/youtube/youtube.service';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { UserReviewLike } from '@entities/UserReviewLike';
     ]),
   ],
   controllers: [AuthorController],
-  providers: [AuthorService, JwtService],
+  providers: [AuthorService, JwtService, YouTubeService],
   exports: [AuthorService],
 })
 export class AuthorModule {}

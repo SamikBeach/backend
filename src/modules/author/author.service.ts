@@ -10,6 +10,7 @@ import { UserReviewLike } from '@entities/UserReviewLike';
 import { addKoreanSearchCondition } from '@utils/search';
 import axios from 'axios';
 import { AuthorDetailResponse } from './dto/author.dto';
+import { YouTubeService } from '../youtube/youtube.service';
 
 interface WikiPage {
   extract?: string;
@@ -76,6 +77,7 @@ export class AuthorService {
     private readonly reviewRepository: Repository<Review>,
     @InjectRepository(UserReviewLike)
     private readonly userReviewLikeRepository: Repository<UserReviewLike>,
+    private readonly youtubeService: YouTubeService,
   ) {}
 
   /**
@@ -608,5 +610,16 @@ export class AuthorService {
     }
 
     return reviews;
+  }
+
+  /**
+   * 작가 관련 YouTube 동영상을 검색합니다.
+   */
+  async getAuthorVideos(authorId: number, maxResults: number = 5) {
+    const author = await this.findAuthorBasicInfo(authorId);
+    return this.youtubeService.searchAuthorVideos({
+      authorName: author.nameInKor,
+      maxResults,
+    });
   }
 }

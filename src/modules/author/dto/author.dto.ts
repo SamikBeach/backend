@@ -1,5 +1,14 @@
 import { Author } from '@entities/Author';
 
+export interface YouTubeVideo {
+  id: string;
+  title: string;
+  description: string;
+  thumbnailUrl: string;
+  publishedAt: string;
+  channelTitle: string;
+}
+
 export interface AuthorDetailResponse extends Author {
   bookCount: number;
   description: string | null;

@@ -5,6 +5,8 @@ import {
   Post,
   UseGuards,
   ParseIntPipe,
+  Query,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { AuthorService } from './author.service';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
@@ -55,6 +57,18 @@ export class AuthorController {
     @CurrentUser() user?: User,
   ) {
     return this.authorService.findById(id, user?.id);
+  }
+
+  /**
+   * 저자 관련 YouTube 동영상을 검색합니다.
+   */
+  @Get(':id/videos')
+  async getAuthorVideos(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('maxResults', new DefaultValuePipe(5), ParseIntPipe)
+    maxResults: number,
+  ) {
+    return this.authorService.getAuthorVideos(id, maxResults);
   }
 
   /**
