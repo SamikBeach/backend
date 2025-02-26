@@ -39,6 +39,7 @@ import { UserBlock } from '@entities/UserBlock';
 import { YouTubeModule } from './youtube/youtube.module';
 // import { CacheModule } from '@nestjs/cache-manager';
 // import { CacheConfigService } from '@config/cache.config';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -156,6 +157,7 @@ import { YouTubeModule } from './youtube/youtube.module';
     PrometheusModule,
     EraModule,
     YouTubeModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [
