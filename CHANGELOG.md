@@ -1,5 +1,17 @@
 # 🚦 CHANGELOG
 
+# [1.44.0](https://github.com/SamikBeach/backend/compare/1.43.0...1.44.0) (2025-02-26)
+
+
+### Bug Fixes
+
+* AI 서비스 오류 처리 및 로깅 개선 ([bb5166c](https://github.com/SamikBeach/backend/commit/bb5166c86c636660abbd2e6ddec4b8858ffcd442))
+
+
+### Features
+
+* 작가 AI 대화 프롬프트 강화 ([a5da213](https://github.com/SamikBeach/backend/commit/a5da21324001f9617cff91df749be0e697d76828))
+
 # [1.43.0](https://github.com/SamikBeach/backend/compare/1.42.1...1.43.0) (2025-02-26)
 
 
