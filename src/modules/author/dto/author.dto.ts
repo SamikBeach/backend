@@ -1,4 +1,6 @@
 import { Author } from '@entities/Author';
+import { OriginalWork } from '@entities/OriginalWork';
+import { Book } from '@entities/Book';
 
 export interface YouTubeVideo {
   id: string;
@@ -7,6 +9,10 @@ export interface YouTubeVideo {
   thumbnailUrl: string;
   publishedAt: string;
   channelTitle: string;
+}
+
+export interface OriginalWorkWithBooks extends OriginalWork {
+  books: Book[];
 }
 
 export interface AuthorDetailResponse extends Author {
@@ -23,4 +29,5 @@ export interface AuthorDetailResponse extends Author {
     name: string;
     nameInKor: string;
   }>;
+  originalWorks?: OriginalWorkWithBooks[];
 }

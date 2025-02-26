@@ -109,6 +109,14 @@ export class AuthorController {
   }
 
   /**
+   * 저자의 모든 원작 목록을 조회합니다.
+   */
+  @Get(':id/original-works')
+  async getAuthorOriginalWorks(@Param('id', ParseIntPipe) id: number) {
+    return this.authorService.getAuthorOriginalWorks(id);
+  }
+
+  /**
    * 저자에게 영향을 받은 저자 목록을 조회합니다.
    */
   @Get(':id/influenced')

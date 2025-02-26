@@ -10,6 +10,8 @@ import { User } from '@entities/User';
 import { Review } from '@entities/Review';
 import { UserReviewLike } from '@entities/UserReviewLike';
 import { YouTubeService } from '@modules/youtube/youtube.service';
+import { OriginalWork } from '@entities/OriginalWork';
+import { AuthorOriginalWork } from '@entities/AuthorOriginalWork';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { YouTubeService } from '@modules/youtube/youtube.service';
       User,
       Review,
       UserReviewLike,
+      OriginalWork,
+      AuthorOriginalWork,
     ]),
   ],
   controllers: [AuthorController],

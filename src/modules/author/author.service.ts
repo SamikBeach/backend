@@ -9,8 +9,10 @@ import { Review } from '@entities/Review';
 import { UserReviewLike } from '@entities/UserReviewLike';
 import { addKoreanSearchCondition } from '@utils/search';
 import axios from 'axios';
-import { AuthorDetailResponse } from './dto/author.dto';
+import { AuthorDetailResponse, OriginalWorkWithBooks } from './dto/author.dto';
 import { YouTubeService } from '../youtube/youtube.service';
+import { OriginalWork } from '@entities/OriginalWork';
+import { AuthorOriginalWork } from '@entities/AuthorOriginalWork';
 
 interface WikiPage {
   extract?: string;
@@ -77,6 +79,10 @@ export class AuthorService {
     private readonly reviewRepository: Repository<Review>,
     @InjectRepository(UserReviewLike)
     private readonly userReviewLikeRepository: Repository<UserReviewLike>,
+    @InjectRepository(OriginalWork)
+    private readonly originalWorkRepository: Repository<OriginalWork>,
+    @InjectRepository(AuthorOriginalWork)
+    private readonly authorOriginalWorkRepository: Repository<AuthorOriginalWork>,
     private readonly youtubeService: YouTubeService,
   ) {}
 
@@ -328,38 +334,76 @@ export class AuthorService {
   }
 
   /**
+   * 작가의 모든 원작을 가져옵니다.
+   */
+  async getAuthorOriginalWorks(
+    authorId: number,
+  ): Promise<OriginalWorkWithBooks[]> {
+    const authorOriginalWorks = await this.authorOriginalWorkRepository.find({
+      where: { author: { id: authorId } },
+      relations: [
+        'originalWork',
+        'originalWork.bookOriginalWorks',
+        'originalWork.bookOriginalWorks.book',
+        'originalWork.bookOriginalWorks.book.authorBooks',
+        'originalWork.bookOriginalWorks.book.authorBooks.author',
+      ],
+    });
+
+    return authorOriginalWorks.map((aow) => {
+      const originalWork = aow.originalWork;
+      const books =
+        originalWork.bookOriginalWorks?.map((bow) => bow.book) || [];
+
+      return {
+        ...originalWork,
+        books,
+      };
+    });
+  }
+
+  /**
    * ID로 저자를 찾습니다.
    */
   async findById(id: number, userId?: number): Promise<AuthorDetailResponse> {
     const author = await this.authorRepository.findOne({
       where: { id },
-      relations: ['authorBooks.book'],
+      relations: ['era', 'genre'],
     });
 
     if (!author) {
       throw new NotFoundException('저자를 찾을 수 없습니다.');
     }
 
-    const bookCount = author.authorBooks.length;
+    // 책 수 계산
+    const bookCount = await this.bookRepository
+      .createQueryBuilder('book')
+      .innerJoin('book.authorBooks', 'authorBook')
+      .where('authorBook.author.id = :authorId', { authorId: id })
+      .getCount();
 
-    // 위키피디아 정보만 가져오기
+    // 위키 정보 가져오기
     const wikiInfo = await this.getWikiInfo(author.nameInKor);
 
-    const response: AuthorDetailResponse = {
-      ...author,
-      bookCount,
-      ...wikiInfo,
-    };
-
+    // 좋아요 여부 확인
+    let isLiked = false;
     if (userId) {
-      const userLike = await this.userAuthorLikeRepository.findOne({
-        where: { userId, authorId: id },
+      const like = await this.userAuthorLikeRepository.findOne({
+        where: { user: { id: userId }, author: { id } },
       });
-
-      response.isLiked = !!userLike;
+      isLiked = !!like;
     }
 
-    return response;
+    // 원작 가져오기 (번역서 포함)
+    const originalWorks = await this.getAuthorOriginalWorks(id);
+
+    return {
+      ...author,
+      bookCount,
+      description: wikiInfo.description,
+      isLiked,
+      originalWorks,
+    };
   }
 
   /**
