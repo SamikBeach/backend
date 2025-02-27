@@ -10,9 +10,27 @@ import { addKoreanSearchCondition } from '@utils/search';
 import { YouTubeService } from '../youtube/youtube.service';
 import { AiService } from '../ai/ai.service';
 import { ConversationMessageDto } from '../ai/ai.controller';
+import axios from 'axios';
+
+// 위키피디아 API 응답 인터페이스
+interface WikiPage {
+  extract?: string;
+  pageid?: number;
+  title?: string;
+}
+
+interface WikiResponse {
+  query: {
+    pages: {
+      [key: string]: WikiPage;
+    };
+  };
+}
 
 @Injectable()
 export class BookService {
+  private readonly wikiApiUrl = 'https://ko.wikipedia.org/w/api.php';
+
   constructor(
     @InjectRepository(Book)
     private readonly bookRepository: Repository<Book>,
@@ -74,10 +92,14 @@ export class BookService {
       );
     }
 
+    // 위키 정보 가져오기
+    const wikiInfo = await this.getBookWikiInfo(book.title);
+
     const response = {
       ...book,
       totalTranslationCount,
       reviewCount,
+      description: wikiInfo.description,
     };
 
     if (userId) {
@@ -466,6 +488,39 @@ export class BookService {
   }
 
   /**
+   * 위키피디아 API에서 책 정보를 가져옵니다.
+   * @param title 책 제목
+   * @returns 위키피디아에서 가져온 책 설명
+   */
+  private async getBookWikiInfo(title: string) {
+    try {
+      // 한국어 위키피디아 검색
+      const korResponse = await axios.get<WikiResponse>(this.wikiApiUrl, {
+        params: {
+          action: 'query',
+          format: 'json',
+          prop: 'extracts',
+          exintro: true,
+          explaintext: true,
+          titles: title.trim(),
+        },
+      });
+
+      const korPages = korResponse.data.query.pages;
+      const korPage = Object.values(korPages)[0] as WikiPage;
+
+      return {
+        description: korPage?.extract || null,
+      };
+    } catch (error) {
+      console.error('위키피디아 API 호출 중 오류:', error);
+      return {
+        description: null,
+      };
+    }
+  }
+
+  /**
    * 책과 대화합니다. 책의 내용, 주제, 등장인물 등에 대해 AI가 답변합니다.
    * @param bookId 책 ID
    * @param message 사용자 메시지
@@ -477,7 +532,7 @@ export class BookService {
     message: string,
     conversationHistory: ConversationMessageDto[] = [],
   ): Promise<string> {
-    // 책 상세 정보 조회
+    // 책 상세 정보 조회 (위키피디아 정보 포함)
     const book = await this.findById(bookId);
 
     if (!book) {
@@ -497,7 +552,7 @@ export class BookService {
         book,
         authors,
         originalWorks,
-        description: book.title, // 책 설명이 없으므로 제목을 설명으로 사용
+        description: book.description || book.title, // 위키 설명이 없으면 제목 사용
       },
       message,
       conversationHistory,
