@@ -8,9 +8,34 @@ import { UserReviewLike } from '@entities/UserReviewLike';
 import { PaginateQuery, paginate } from 'nestjs-paginate';
 import { addKoreanSearchCondition } from '@utils/search';
 import { YouTubeService } from '../youtube/youtube.service';
+import { AiService } from '../ai/ai.service';
+import { ConversationMessageDto } from '../ai/ai.controller';
+import axios from 'axios';
+import { ConfigService } from '@nestjs/config';
+
+// 알라딘 API 응답 인터페이스
+interface AladinResponse {
+  item?: Array<{
+    title: string;
+    author: string;
+    publisher: string;
+    pubDate: string;
+    description: string;
+    isbn: string;
+    isbn13: string;
+    cover: string;
+    categoryName: string;
+    itemPage: number;
+  }>;
+  errorCode?: number;
+  errorMessage?: string;
+}
 
 @Injectable()
 export class BookService {
+  private readonly aladinApiUrl =
+    'http://www.aladin.co.kr/ttb/api/ItemLookUp.aspx';
+
   constructor(
     @InjectRepository(Book)
     private readonly bookRepository: Repository<Book>,
@@ -22,6 +47,8 @@ export class BookService {
     private readonly userReviewLikeRepository: Repository<UserReviewLike>,
     private readonly dataSource: DataSource,
     private readonly youtubeService: YouTubeService,
+    private readonly aiService: AiService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -71,10 +98,18 @@ export class BookService {
       );
     }
 
+    // 알라딘 API에서 책 정보 가져오기
+    let description = null;
+    if (book.isbn13) {
+      const aladinInfo = await this.getBookAladinInfo(book.isbn13);
+      description = aladinInfo?.description;
+    }
+
     const response = {
       ...book,
       totalTranslationCount,
       reviewCount,
+      description,
     };
 
     if (userId) {
@@ -460,5 +495,103 @@ export class BookService {
       maxResults,
       authorName,
     });
+  }
+
+  /**
+   * 알라딘 API에서 책 정보를 가져옵니다.
+   * @param isbn13 ISBN13 코드
+   * @returns 알라딘에서 가져온 책 설명
+   */
+  private async getBookAladinInfo(isbn13: string) {
+    try {
+      const aladinApiKey = this.configService.get<string>('ALADIN_API_KEY');
+
+      if (!aladinApiKey) {
+        console.error('알라딘 API 키가 설정되지 않았습니다.');
+        return { description: null };
+      }
+
+      // URL을 직접 구성하여 로깅
+      const url = `${this.aladinApiUrl}?ttbkey=${aladinApiKey}&itemIdType=ISBN&ItemId=${isbn13}&output=js&Version=20131101&OptResult=ebookList,usedList,reviewList`;
+
+      const response = await axios.get<AladinResponse>(url);
+
+      // 에러 코드 확인
+      if (response.data.errorCode) {
+        console.error(
+          `알라딘 API 오류: 코드=${response.data.errorCode}, 메시지=${response.data.errorMessage}`,
+        );
+        return { description: null };
+      }
+
+      if (response.data.item && response.data.item.length > 0) {
+        const bookInfo = response.data.item[0];
+        const result = {
+          description: bookInfo.description || null,
+          author: bookInfo.author || null,
+          publisher: bookInfo.publisher || null,
+          pubDate: bookInfo.pubDate || null,
+          cover: bookInfo.cover || null,
+          categoryName: bookInfo.categoryName || null,
+          itemPage: bookInfo.itemPage || null,
+        };
+
+        return result;
+      }
+
+      return {
+        description: null,
+      };
+    } catch (error) {
+      console.error('알라딘 API 호출 중 오류:', error);
+      if (error.response) {
+        console.error('오류 응답 데이터:', error.response.data);
+        console.error('오류 응답 상태:', error.response.status);
+      }
+      return {
+        description: null,
+      };
+    }
+  }
+
+  /**
+   * 책과 대화합니다. 책의 내용, 주제, 등장인물 등에 대해 AI가 답변합니다.
+   * @param bookId 책 ID
+   * @param message 사용자 메시지
+   * @param conversationHistory 대화 기록
+   * @returns AI 응답
+   */
+  async chatWithBook(
+    bookId: number,
+    message: string,
+    conversationHistory: ConversationMessageDto[] = [],
+  ): Promise<string> {
+    // 책 상세 정보 조회
+    const book = await this.findById(bookId);
+
+    if (!book) {
+      throw new NotFoundException('책을 찾을 수 없습니다.');
+    }
+
+    // 작가 정보 추출
+    const authors = book.authorBooks?.map((ab) => ab.author) || [];
+
+    // 원작 정보 추출
+    const originalWorks =
+      book.bookOriginalWorks?.map((bow) => bow.originalWork) || [];
+
+    // AI 응답 생성
+    const response = await this.aiService.chatWithBook(
+      {
+        book,
+        authors,
+        originalWorks,
+        description: book.description || book.title, // 알라딘 설명이 없으면 제목 사용
+      },
+      message,
+      conversationHistory,
+    );
+
+    return response;
   }
 }
