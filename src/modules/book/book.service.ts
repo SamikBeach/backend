@@ -8,6 +8,8 @@ import { UserReviewLike } from '@entities/UserReviewLike';
 import { PaginateQuery, paginate } from 'nestjs-paginate';
 import { addKoreanSearchCondition } from '@utils/search';
 import { YouTubeService } from '../youtube/youtube.service';
+import { AiService } from '../ai/ai.service';
+import { ConversationMessageDto } from '../ai/ai.controller';
 
 @Injectable()
 export class BookService {
@@ -22,6 +24,7 @@ export class BookService {
     private readonly userReviewLikeRepository: Repository<UserReviewLike>,
     private readonly dataSource: DataSource,
     private readonly youtubeService: YouTubeService,
+    private readonly aiService: AiService,
   ) {}
 
   /**
@@ -460,5 +463,46 @@ export class BookService {
       maxResults,
       authorName,
     });
+  }
+
+  /**
+   * 책과 대화합니다. 책의 내용, 주제, 등장인물 등에 대해 AI가 답변합니다.
+   * @param bookId 책 ID
+   * @param message 사용자 메시지
+   * @param conversationHistory 대화 기록
+   * @returns AI 응답
+   */
+  async chatWithBook(
+    bookId: number,
+    message: string,
+    conversationHistory: ConversationMessageDto[] = [],
+  ): Promise<string> {
+    // 책 상세 정보 조회
+    const book = await this.findById(bookId);
+
+    if (!book) {
+      throw new NotFoundException('책을 찾을 수 없습니다.');
+    }
+
+    // 작가 정보 추출
+    const authors = book.authorBooks?.map((ab) => ab.author) || [];
+
+    // 원작 정보 추출
+    const originalWorks =
+      book.bookOriginalWorks?.map((bow) => bow.originalWork) || [];
+
+    // AI 응답 생성
+    const response = await this.aiService.chatWithBook(
+      {
+        book,
+        authors,
+        originalWorks,
+        description: book.title, // 책 설명이 없으므로 제목을 설명으로 사용
+      },
+      message,
+      conversationHistory,
+    );
+
+    return response;
   }
 }

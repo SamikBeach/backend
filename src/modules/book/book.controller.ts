@@ -8,6 +8,7 @@ import {
   Query,
   DefaultValuePipe,
   ParseBoolPipe,
+  Body,
 } from '@nestjs/common';
 import { BookService } from './book.service';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
@@ -15,6 +16,7 @@ import { CurrentUser } from '@decorators/current-user.decorator';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { User } from '@entities/User';
 import { OptionalJwtAuthGuard } from '@guards/optional-jwt-auth.guard';
+import { ChatMessageDto } from '../ai/ai.controller';
 
 @Controller('book')
 export class BookController {
@@ -128,5 +130,35 @@ export class BookController {
     maxResults: number,
   ) {
     return this.bookService.getBookVideos(id, maxResults);
+  }
+
+  /**
+   * 책과 대화합니다.
+   * @param bookId 책 ID
+   * @param chatMessageDto 채팅 메시지 정보
+   * @returns AI 응답
+   */
+  @Post(':id/chat')
+  @UseGuards(JwtAuthGuard)
+  async chatWithBook(
+    @Param('id', ParseIntPipe) bookId: number,
+    @Body() chatMessageDto: ChatMessageDto,
+  ) {
+    // AI 응답 생성
+    const response = await this.bookService.chatWithBook(
+      bookId,
+      chatMessageDto.message,
+      chatMessageDto.conversationHistory || [],
+    );
+
+    // 책 정보 조회
+    const book = await this.bookService.findById(bookId);
+
+    return {
+      bookId,
+      bookTitle: book.title,
+      response,
+      timestamp: new Date().toISOString(),
+    };
   }
 }

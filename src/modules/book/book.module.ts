@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '@entities/User';
 import { UserReviewLike } from '@entities/UserReviewLike';
 import { YouTubeService } from '@modules/youtube/youtube.service';
+import { AiModule } from '@modules/ai/ai.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { YouTubeService } from '@modules/youtube/youtube.service';
       User,
       UserReviewLike,
     ]),
+    AiModule,
   ],
   controllers: [BookController],
   providers: [BookService, JwtService, YouTubeService],
