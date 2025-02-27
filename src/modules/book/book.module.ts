@@ -10,6 +10,7 @@ import { User } from '@entities/User';
 import { UserReviewLike } from '@entities/UserReviewLike';
 import { YouTubeService } from '@modules/youtube/youtube.service';
 import { AiModule } from '@modules/ai/ai.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AiModule } from '@modules/ai/ai.module';
       UserReviewLike,
     ]),
     AiModule,
+    ConfigModule,
   ],
   controllers: [BookController],
   providers: [BookService, JwtService, YouTubeService],

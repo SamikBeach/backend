@@ -11,25 +11,30 @@ import { YouTubeService } from '../youtube/youtube.service';
 import { AiService } from '../ai/ai.service';
 import { ConversationMessageDto } from '../ai/ai.controller';
 import axios from 'axios';
+import { ConfigService } from '@nestjs/config';
 
-// 위키피디아 API 응답 인터페이스
-interface WikiPage {
-  extract?: string;
-  pageid?: number;
-  title?: string;
-}
-
-interface WikiResponse {
-  query: {
-    pages: {
-      [key: string]: WikiPage;
-    };
-  };
+// 알라딘 API 응답 인터페이스
+interface AladinResponse {
+  item?: Array<{
+    title: string;
+    author: string;
+    publisher: string;
+    pubDate: string;
+    description: string;
+    isbn: string;
+    isbn13: string;
+    cover: string;
+    categoryName: string;
+    itemPage: number;
+  }>;
+  errorCode?: number;
+  errorMessage?: string;
 }
 
 @Injectable()
 export class BookService {
-  private readonly wikiApiUrl = 'https://ko.wikipedia.org/w/api.php';
+  private readonly aladinApiUrl =
+    'http://www.aladin.co.kr/ttb/api/ItemLookUp.aspx';
 
   constructor(
     @InjectRepository(Book)
@@ -43,6 +48,7 @@ export class BookService {
     private readonly dataSource: DataSource,
     private readonly youtubeService: YouTubeService,
     private readonly aiService: AiService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -92,14 +98,18 @@ export class BookService {
       );
     }
 
-    // 위키 정보 가져오기
-    const wikiInfo = await this.getBookWikiInfo(book.title);
+    // 알라딘 API에서 책 정보 가져오기
+    let description = null;
+    if (book.isbn13) {
+      const aladinInfo = await this.getBookAladinInfo(book.isbn13);
+      description = aladinInfo?.description;
+    }
 
     const response = {
       ...book,
       totalTranslationCount,
       reviewCount,
-      description: wikiInfo.description,
+      description,
     };
 
     if (userId) {
@@ -488,32 +498,56 @@ export class BookService {
   }
 
   /**
-   * 위키피디아 API에서 책 정보를 가져옵니다.
-   * @param title 책 제목
-   * @returns 위키피디아에서 가져온 책 설명
+   * 알라딘 API에서 책 정보를 가져옵니다.
+   * @param isbn13 ISBN13 코드
+   * @returns 알라딘에서 가져온 책 설명
    */
-  private async getBookWikiInfo(title: string) {
+  private async getBookAladinInfo(isbn13: string) {
     try {
-      // 한국어 위키피디아 검색
-      const korResponse = await axios.get<WikiResponse>(this.wikiApiUrl, {
-        params: {
-          action: 'query',
-          format: 'json',
-          prop: 'extracts',
-          exintro: true,
-          explaintext: true,
-          titles: title.trim(),
-        },
-      });
+      const aladinApiKey = this.configService.get<string>('ALADIN_API_KEY');
 
-      const korPages = korResponse.data.query.pages;
-      const korPage = Object.values(korPages)[0] as WikiPage;
+      if (!aladinApiKey) {
+        console.error('알라딘 API 키가 설정되지 않았습니다.');
+        return { description: null };
+      }
+
+      // URL을 직접 구성하여 로깅
+      const url = `${this.aladinApiUrl}?ttbkey=${aladinApiKey}&itemIdType=ISBN&ItemId=${isbn13}&output=js&Version=20131101&OptResult=ebookList,usedList,reviewList`;
+
+      const response = await axios.get<AladinResponse>(url);
+
+      // 에러 코드 확인
+      if (response.data.errorCode) {
+        console.error(
+          `알라딘 API 오류: 코드=${response.data.errorCode}, 메시지=${response.data.errorMessage}`,
+        );
+        return { description: null };
+      }
+
+      if (response.data.item && response.data.item.length > 0) {
+        const bookInfo = response.data.item[0];
+        const result = {
+          description: bookInfo.description || null,
+          author: bookInfo.author || null,
+          publisher: bookInfo.publisher || null,
+          pubDate: bookInfo.pubDate || null,
+          cover: bookInfo.cover || null,
+          categoryName: bookInfo.categoryName || null,
+          itemPage: bookInfo.itemPage || null,
+        };
+
+        return result;
+      }
 
       return {
-        description: korPage?.extract || null,
+        description: null,
       };
     } catch (error) {
-      console.error('위키피디아 API 호출 중 오류:', error);
+      console.error('알라딘 API 호출 중 오류:', error);
+      if (error.response) {
+        console.error('오류 응답 데이터:', error.response.data);
+        console.error('오류 응답 상태:', error.response.status);
+      }
       return {
         description: null,
       };
@@ -532,7 +566,7 @@ export class BookService {
     message: string,
     conversationHistory: ConversationMessageDto[] = [],
   ): Promise<string> {
-    // 책 상세 정보 조회 (위키피디아 정보 포함)
+    // 책 상세 정보 조회
     const book = await this.findById(bookId);
 
     if (!book) {
@@ -552,7 +586,7 @@ export class BookService {
         book,
         authors,
         originalWorks,
-        description: book.description || book.title, // 위키 설명이 없으면 제목 사용
+        description: book.description || book.title, // 알라딘 설명이 없으면 제목 사용
       },
       message,
       conversationHistory,
