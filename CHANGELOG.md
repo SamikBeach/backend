@@ -1,5 +1,13 @@
 # 🚦 CHANGELOG
 
+## [1.44.1](https://github.com/SamikBeach/backend/compare/1.44.0...1.44.1) (2025-02-27)
+
+
+### Bug Fixes
+
+* Book 엔티티의 description 속성 관련 타입 에러 수정 ([911268d](https://github.com/SamikBeach/backend/commit/911268d27425401fa627909a33465eae955d3ea5))
+* 알라딘 API 호출 방식 개선 및 에러 처리 강화 ([6222379](https://github.com/SamikBeach/backend/commit/6222379b7bd23424179027c1b29bfdc432fa30db))
+
 # [1.44.0](https://github.com/SamikBeach/backend/compare/1.43.0...1.44.0) (2025-02-26)
 
 
