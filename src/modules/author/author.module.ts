@@ -12,6 +12,8 @@ import { UserReviewLike } from '@entities/UserReviewLike';
 import { YouTubeService } from '@modules/youtube/youtube.service';
 import { OriginalWork } from '@entities/OriginalWork';
 import { AuthorOriginalWork } from '@entities/AuthorOriginalWork';
+import { AiModule } from '@modules/ai/ai.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { AuthorOriginalWork } from '@entities/AuthorOriginalWork';
       OriginalWork,
       AuthorOriginalWork,
     ]),
+    AiModule,
+    ConfigModule,
   ],
   controllers: [AuthorController],
   providers: [AuthorService, JwtService, YouTubeService],

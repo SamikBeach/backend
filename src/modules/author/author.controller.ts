@@ -8,6 +8,7 @@ import {
   Query,
   DefaultValuePipe,
   UseInterceptors,
+  Body,
 } from '@nestjs/common';
 import { AuthorService } from './author.service';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
@@ -16,10 +17,15 @@ import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { User } from '@entities/User';
 import { OptionalJwtAuthGuard } from '@guards/optional-jwt-auth.guard';
 import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { AiService } from '@modules/ai/ai.service';
+import { ChatMessageDto } from '@modules/ai/dto/chat.dto';
 
 @Controller('author')
 export class AuthorController {
-  constructor(private readonly authorService: AuthorService) {}
+  constructor(
+    private readonly authorService: AuthorService,
+    private readonly aiService: AiService,
+  ) {}
 
   /**
    * 모든 저자 목록을 가져옵니다.
@@ -145,5 +151,43 @@ export class AuthorController {
   async getInfluencedByAuthors(@Param('id', ParseIntPipe) id: number) {
     const author = await this.authorService.findAuthorBasicInfo(id);
     return this.authorService.getInfluencedByAuthors(author.nameInKor);
+  }
+
+  /**
+   * 작가와 대화합니다.
+   * @param authorId 작가 ID
+   * @param chatMessageDto 채팅 메시지 정보
+   * @returns AI 응답
+   */
+  @Post(':id/chat')
+  @UseGuards(JwtAuthGuard)
+  async chatWithAuthor(
+    @Param('id', ParseIntPipe) authorId: number,
+    @Body() chatMessageDto: ChatMessageDto,
+  ) {
+    // 작가 상세 정보 조회
+    const authorDetail = await this.authorService.findById(authorId);
+
+    // 작가의 책 목록 조회
+    const books = await this.authorService.getAllAuthorBooks(authorId);
+
+    // AI 응답 생성
+    const response = await this.aiService.chatWithAuthor(
+      {
+        author: authorDetail,
+        originalWorks: authorDetail.originalWorks || [],
+        books: books,
+        description: authorDetail.description,
+      },
+      chatMessageDto.message,
+      chatMessageDto.conversationHistory || [],
+    );
+
+    return {
+      authorId,
+      authorName: authorDetail.nameInKor,
+      response,
+      timestamp: new Date().toISOString(),
+    };
   }
 }
