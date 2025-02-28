@@ -67,7 +67,7 @@ export class AuthorController {
 
   /**
    * 저자 관련 YouTube 동영상을 검색합니다.
-   * 결과는 1시간 동안 캐싱됩니다.
+   * 결과는 24시간 동안 캐싱됩니다.
    */
   @Get(':id/videos')
   async getAuthorVideos(

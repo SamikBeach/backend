@@ -13,7 +13,7 @@ export class YouTubeController {
 
   /**
    * 검색어로 YouTube 동영상을 검색합니다.
-   * 결과는 1시간 동안 캐싱됩니다.
+   * 결과는 24시간 동안 캐싱됩니다.
    */
   @Get('search')
   async searchVideos(
@@ -26,7 +26,7 @@ export class YouTubeController {
 
   /**
    * 작가 이름으로 YouTube 동영상을 검색합니다.
-   * 결과는 1시간 동안 캐싱됩니다.
+   * 결과는 24시간 동안 캐싱됩니다.
    */
   @Get('author')
   async searchAuthorVideos(
@@ -42,7 +42,7 @@ export class YouTubeController {
 
   /**
    * 책 제목으로 YouTube 동영상을 검색합니다.
-   * 결과는 1시간 동안 캐싱됩니다.
+   * 결과는 24시간 동안 캐싱됩니다.
    */
   @Get('book')
   async searchBookVideos(

@@ -18,7 +18,7 @@ export interface YouTubeVideoResult {
 export class YouTubeService {
   private readonly youtube: youtube_v3.Youtube;
   private readonly logger = new Logger(YouTubeService.name);
-  private readonly cacheTTL = 3600; // 1시간 (초 단위)
+  private readonly cacheTTL = 86400; // 24시간 (초 단위)
 
   constructor(
     private readonly configService: ConfigService,
@@ -49,7 +49,9 @@ export class YouTubeService {
     const cachedData =
       await this.cacheManager.get<YouTubeVideoResult[]>(cacheKey);
     if (cachedData) {
-      this.logger.log(`캐시에서 YouTube 검색 결과 반환: ${cacheKey}`);
+      this.logger.log(
+        `캐시에서 YouTube 검색 결과 반환 (24시간 유효): ${cacheKey}`,
+      );
       return cachedData;
     }
 
@@ -119,7 +121,9 @@ export class YouTubeService {
     const cachedData =
       await this.cacheManager.get<YouTubeVideoResult[]>(cacheKey);
     if (cachedData) {
-      this.logger.log(`캐시에서 작가 동영상 결과 반환: ${cacheKey}`);
+      this.logger.log(
+        `캐시에서 작가 동영상 결과 반환 (24시간 유효): ${cacheKey}`,
+      );
       return cachedData;
     }
 
@@ -156,7 +160,9 @@ export class YouTubeService {
     const cachedData =
       await this.cacheManager.get<YouTubeVideoResult[]>(cacheKey);
     if (cachedData) {
-      this.logger.log(`캐시에서 책 동영상 결과 반환: ${cacheKey}`);
+      this.logger.log(
+        `캐시에서 책 동영상 결과 반환 (24시간 유효): ${cacheKey}`,
+      );
       return cachedData;
     }
 
