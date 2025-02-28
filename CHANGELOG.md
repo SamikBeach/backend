@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+# [1.45.0](https://github.com/SamikBeach/backend/compare/1.44.1...1.45.0) (2025-02-28)
+
+
+### Features
+
+* redis 캐시 설정 추가 ([fd010b4](https://github.com/SamikBeach/backend/commit/fd010b423419d13b5f027c1ca43f1b5f31f62d4c))
+
 ## [1.44.1](https://github.com/SamikBeach/backend/compare/1.44.0...1.44.1) (2025-02-27)
 
 
