@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+# [1.46.0](https://github.com/SamikBeach/backend/compare/1.45.0...1.46.0) (2025-02-28)
+
+
+### Features
+
+* 프롬프트 수정 ([ccd5a57](https://github.com/SamikBeach/backend/commit/ccd5a57c613ec75b7409dec561f4e9b193277297))
+
 # [1.45.0](https://github.com/SamikBeach/backend/compare/1.44.1...1.45.0) (2025-02-28)
 
 
