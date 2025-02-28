@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Query,
   DefaultValuePipe,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthorService } from './author.service';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
@@ -14,6 +15,7 @@ import { CurrentUser } from '@decorators/current-user.decorator';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { User } from '@entities/User';
 import { OptionalJwtAuthGuard } from '@guards/optional-jwt-auth.guard';
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
 @Controller('author')
 export class AuthorController {
@@ -61,13 +63,24 @@ export class AuthorController {
 
   /**
    * 저자 관련 YouTube 동영상을 검색합니다.
+   * 결과는 1시간 동안 캐싱됩니다.
    */
   @Get(':id/videos')
+  @UseInterceptors(CacheInterceptor)
+  @CacheKey('author_videos')
+  @CacheTTL(3600) // 1시간 캐싱
   async getAuthorVideos(
     @Param('id', ParseIntPipe) id: number,
     @Query('maxResults', new DefaultValuePipe(5), ParseIntPipe)
     maxResults: number,
   ) {
+    // 동적 캐시 키 생성
+    const cacheKey = `author_videos_${id}_${maxResults}`;
+    Reflect.defineMetadata('cache_key', cacheKey, this.getAuthorVideos);
+
+    console.log(
+      `[YouTube API] 저자 ID: ${id}, 최대 결과 수: ${maxResults}에 대한 동영상 검색`,
+    );
     return this.authorService.getAuthorVideos(id, maxResults);
   }
 
