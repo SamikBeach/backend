@@ -9,7 +9,6 @@ import {
   DefaultValuePipe,
   ParseBoolPipe,
   Body,
-  UseInterceptors,
 } from '@nestjs/common';
 import { BookService } from './book.service';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
@@ -18,7 +17,6 @@ import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { User } from '@entities/User';
 import { OptionalJwtAuthGuard } from '@guards/optional-jwt-auth.guard';
 import { ChatMessageDto } from '@modules/ai/dto/chat.dto';
-import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
 @Controller('book')
 export class BookController {
@@ -127,21 +125,11 @@ export class BookController {
    * 결과는 1시간 동안 캐싱됩니다.
    */
   @Get(':id/videos')
-  @UseInterceptors(CacheInterceptor)
-  @CacheKey('book_videos')
-  @CacheTTL(3600) // 1시간 캐싱
   async getBookVideos(
     @Param('id', ParseIntPipe) id: number,
     @Query('maxResults', new DefaultValuePipe(5), ParseIntPipe)
     maxResults: number,
   ) {
-    // 동적 캐시 키 생성
-    const cacheKey = `book_videos_${id}_${maxResults}`;
-    Reflect.defineMetadata('cache_key', cacheKey, this.getBookVideos);
-
-    console.log(
-      `[YouTube API] 책 ID: ${id}, 최대 결과 수: ${maxResults}에 대한 동영상 검색`,
-    );
     return this.bookService.getBookVideos(id, maxResults);
   }
 
