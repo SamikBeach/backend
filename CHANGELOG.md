@@ -1,5 +1,12 @@
 # 🚦 CHANGELOG
 
+## [1.46.1](https://github.com/SamikBeach/backend/compare/1.46.0...1.46.1) (2025-02-28)
+
+
+### Bug Fixes
+
+* Youtube 캐시 타임 하루로 수정 ([d858d18](https://github.com/SamikBeach/backend/commit/d858d1829a7fd9b7159abbdc73c34344ad8740cd))
+
 # [1.46.0](https://github.com/SamikBeach/backend/compare/1.45.0...1.46.0) (2025-02-28)
 
 
