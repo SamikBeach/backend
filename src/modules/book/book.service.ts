@@ -9,7 +9,7 @@ import { PaginateQuery, paginate } from 'nestjs-paginate';
 import { addKoreanSearchCondition } from '@utils/search';
 import { YouTubeService } from '../youtube/youtube.service';
 import { AiService } from '../ai/ai.service';
-import { ConversationMessageDto } from '../ai/ai.controller';
+import { ConversationMessageDto } from '@modules/ai/dto/chat.dto';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
 

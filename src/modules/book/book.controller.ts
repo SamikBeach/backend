@@ -17,7 +17,7 @@ import { CurrentUser } from '@decorators/current-user.decorator';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { User } from '@entities/User';
 import { OptionalJwtAuthGuard } from '@guards/optional-jwt-auth.guard';
-import { ChatMessageDto } from '../ai/ai.controller';
+import { ChatMessageDto } from '@modules/ai/dto/chat.dto';
 import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
 @Controller('book')

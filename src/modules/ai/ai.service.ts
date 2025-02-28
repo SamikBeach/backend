@@ -10,7 +10,7 @@ import {
   AIMessage,
   SystemMessage,
 } from '@langchain/core/messages';
-import { ConversationMessageDto } from './ai.controller';
+import { ConversationMessageDto } from './dto/chat.dto';
 
 interface AuthorInfo {
   author: Author;
