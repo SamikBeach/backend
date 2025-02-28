@@ -12,6 +12,7 @@ export class CacheConfigService implements CacheOptionsFactory {
       store: redisStore,
       host: this.configService.get('REDIS_HOST', 'localhost'),
       port: this.configService.get('REDIS_PORT', 6379),
+      password: this.configService.get('REDIS_PASSWORD'),
       ttl: 60 * 60 * 24, // 24시간
       max: 100, // 최대 캐시 아이템 수
     };

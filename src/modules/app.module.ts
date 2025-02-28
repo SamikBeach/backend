@@ -37,8 +37,8 @@ import { APP_FILTER } from '@nestjs/core';
 import { ReviewReport } from '@entities/ReviewReport';
 import { UserBlock } from '@entities/UserBlock';
 import { YouTubeModule } from './youtube/youtube.module';
-// import { CacheModule } from '@nestjs/cache-manager';
-// import { CacheConfigService } from '@config/cache.config';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CacheConfigService } from '@config/cache.config';
 import { AiModule } from './ai/ai.module';
 
 @Module({
@@ -48,10 +48,10 @@ import { AiModule } from './ai/ai.module';
       envFilePath: `.env.${process.env.NODE_ENV}`,
       isGlobal: true,
     }),
-    // CacheModule.registerAsync({
-    //   isGlobal: true,
-    //   useClass: CacheConfigService,
-    // }),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      useClass: CacheConfigService,
+    }),
     WinstonModule.forRoot({
       transports: [
         new winston.transports.Console({
