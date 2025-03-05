@@ -1,5 +1,111 @@
 # 🚦 CHANGELOG
 
+## [1.46.1](https://github.com/SamikBeach/backend/compare/1.46.0...1.46.1) (2025-02-28)
+
+### Bug Fixes
+
+- Youtube 캐시 타임 하루로 수정 ([d858d18](https://github.com/SamikBeach/backend/commit/d858d1829a7fd9b7159abbdc73c34344ad8740cd))
+
+# [1.46.0](https://github.com/SamikBeach/backend/compare/1.45.0...1.46.0) (2025-02-28)
+
+### Features
+
+- 프롬프트 수정 ([ccd5a57](https://github.com/SamikBeach/backend/commit/ccd5a57c613ec75b7409dec561f4e9b193277297))
+
+# [1.45.0](https://github.com/SamikBeach/backend/compare/1.44.1...1.45.0) (2025-02-28)
+
+### Features
+
+- redis 캐시 설정 추가 ([fd010b4](https://github.com/SamikBeach/backend/commit/fd010b423419d13b5f027c1ca43f1b5f31f62d4c))
+
+## [1.44.1](https://github.com/SamikBeach/backend/compare/1.44.0...1.44.1) (2025-02-27)
+
+### Bug Fixes
+
+- Book 엔티티의 description 속성 관련 타입 에러 수정 ([911268d](https://github.com/SamikBeach/backend/commit/911268d27425401fa627909a33465eae955d3ea5))
+- 알라딘 API 호출 방식 개선 및 에러 처리 강화 ([6222379](https://github.com/SamikBeach/backend/commit/6222379b7bd23424179027c1b29bfdc432fa30db))
+
+# [1.44.0](https://github.com/SamikBeach/backend/compare/1.43.0...1.44.0) (2025-02-26)
+
+### Bug Fixes
+
+- AI 서비스 오류 처리 및 로깅 개선 ([bb5166c](https://github.com/SamikBeach/backend/commit/bb5166c86c636660abbd2e6ddec4b8858ffcd442))
+
+### Features
+
+- 작가 AI 대화 프롬프트 강화 ([a5da213](https://github.com/SamikBeach/backend/commit/a5da21324001f9617cff91df749be0e697d76828))
+
+# [1.43.0](https://github.com/SamikBeach/backend/compare/1.42.1...1.43.0) (2025-02-26)
+
+### Features
+
+- YouTube API 호출 시 콘솔 로그 추가 ([f0b2303](https://github.com/SamikBeach/backend/commit/f0b2303677e7385a2e5a4b2ab1e8e8b1c8adc719))
+- 작가의 원작 목록 조회 시 번역서 정보 포함 ([9da3d6c](https://github.com/SamikBeach/backend/commit/9da3d6cd07b7c848306fd140f9a07d7bf017c40a))
+
+## [1.42.1](https://github.com/SamikBeach/backend/compare/1.42.0...1.42.1) (2025-02-25)
+
+### Bug Fixes
+
+- 위키데이터 SPARQL 쿼리 오류 수정 ([5a6b990](https://github.com/SamikBeach/backend/commit/5a6b990e44c0feed75527d48a288576b528fde5a))
+
+# [1.42.0](https://github.com/SamikBeach/backend/compare/1.41.5...1.42.0) (2025-02-25)
+
+### Bug Fixes
+
+- 저자 영향 관계 API 응답에 이미지 추가 ([cdc59fe](https://github.com/SamikBeach/backend/commit/cdc59fecc7a059a2866d048c8599ccc9b700cb72))
+- 저자 출생연도 정렬 로직 개선 ([2506181](https://github.com/SamikBeach/backend/commit/25061813187611c35a7aea6b743a96a7a215974a))
+
+### Features
+
+- 위키데이터 저자 정보 반환 개선 ([1b7f4cd](https://github.com/SamikBeach/backend/commit/1b7f4cd99c152397c5a84d028a5ccc0ca73d9178))
+- 위키데이터 저자 정보에 영어 이름 추가 ([0a80996](https://github.com/SamikBeach/backend/commit/0a80996b6b4a786e4ad99fa01b9c2eee3cdbb554))
+- 저자 검색 로직 개선 ([d8b8f06](https://github.com/SamikBeach/backend/commit/d8b8f06d83fda3023e7d94ecb5182459c114ac18))
+- 저자 정보에 위키피디아 데이터 추가 ([19e1f56](https://github.com/SamikBeach/backend/commit/19e1f56bab12303309cef1b7ea50b8ad6b21e4b9))
+
+## [1.41.5](https://github.com/SamikBeach/backend/compare/1.41.4...1.41.5) (2025-02-20)
+
+### Bug Fixes
+
+- searchReviews 수정 ([204caf0](https://github.com/SamikBeach/backend/commit/204caf0d98aac2abdc544e7256e6f1ad6a0ba8e3))
+
+## [1.41.4](https://github.com/SamikBeach/backend/compare/1.41.3...1.41.4) (2025-02-20)
+
+### Bug Fixes
+
+- searchReviews 원복 ([93b677c](https://github.com/SamikBeach/backend/commit/93b677c7eea93ba7e9e4068af2bfa273edb8489f))
+
+## [1.41.3](https://github.com/SamikBeach/backend/compare/1.41.2...1.41.3) (2025-02-20)
+
+### Bug Fixes
+
+- 리뷰 목록 조회 시 중복 데이터 제거 ([8b613cb](https://github.com/SamikBeach/backend/commit/8b613cb9b7e78b37e9fb5488b0e042a4cb745600))
+
+## [1.41.2](https://github.com/SamikBeach/backend/compare/1.41.1...1.41.2) (2025-02-16)
+
+## [1.41.1](https://github.com/SamikBeach/backend/compare/1.41.0...1.41.1) (2025-02-16)
+
+### Bug Fixes
+
+- 스크립트 수정 ([e2619c5](https://github.com/SamikBeach/backend/commit/e2619c55ea05ae1d22e52250a74c9a1ad3495752))
+
+# [1.41.0](https://github.com/SamikBeach/backend/compare/1.40.0...1.41.0) (2025-02-16)
+
+### Features
+
+- Redis 환경별 설정 분리 ([542d75c](https://github.com/SamikBeach/backend/commit/542d75ca9c17b5130db743c2851f1606b22bf0fc))
+
+# [1.40.0](https://github.com/SamikBeach/backend/compare/1.39.1...1.40.0) (2025-02-16)
+
+### Bug Fixes
+
+- 애플 로그인 시 사용자 정보 처리 개선 ([a28fcaf](https://github.com/SamikBeach/backend/commit/a28fcaf8e87a113f7862b46f87e21066e6fef10d))
+
+### Features
+
+- Redis 서비스 추가 ([dc6c057](https://github.com/SamikBeach/backend/commit/dc6c05701ee2b4e30e35a08cb8f76a2892a26efc))
+
+## [1.39.1](https://github.com/SamikBeach/backend/compare/1.39.0...1.39.1) (2025-02-13)
+
 # [1.39.0](https://github.com/SamikBeach/backend/compare/1.38.0...1.39.0) (2025-02-12)
 
 ### Features
